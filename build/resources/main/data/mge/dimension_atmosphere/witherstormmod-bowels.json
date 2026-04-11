@@ -1,0 +1,24 @@
+{
+  "dimension": "witherstormmod:bowels",
+  "breathable": false,
+  "has_sky_access": false,
+  "base_pressure_mbar": 1100.0,
+  "gases": {
+    "mge:nitrogen":            280.0,
+    "mge:carbon_dioxide":      220.0,
+    "mge:carbon_monoxide":     180.0,
+    "mge:wither_miasma":       150.0,
+    "mge:hydrogen_sulfide":     90.0,
+    "mge:ammonia":              80.0,
+    "mge:methane":              50.0,
+    "mge:necrotic_acid_vapor":  30.0,
+    "mge:biogas":               20.0
+  },
+  "particulates": {
+    "ash_cloud": 120.0,
+    "soot": 80.0,
+    "soul_dust": 60.0,
+    "smoke_aerosol": 50.0,
+    "spores": 30.0
+  }
+}

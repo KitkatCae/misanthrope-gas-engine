@@ -1,0 +1,5 @@
+{
+  "entity": "minecraft:elder_guardian",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.5
+}

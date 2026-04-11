@@ -1,0 +1,5 @@
+{
+  "entity": "minecraft:zombie_villager",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}

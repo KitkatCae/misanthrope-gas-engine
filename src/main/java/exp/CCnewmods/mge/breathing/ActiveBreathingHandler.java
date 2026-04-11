@@ -15,10 +15,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -44,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <h3>Tier 3 — Plant photosynthesis via random tick hook</h3>
  * <p>Grass, leaves, crops, and other plant blocks already receive vanilla random ticks.
- * We hook {@link BlockEvent.RandomTickEvent} — but rather than immediately marking
+ * We hook {@link exp.CCnewmods.mge.mixin.MixinRandomTick} — but rather than immediately marking
  * the block's atmosphere dirty (which would cascade through the scheduler), we
  * accumulate deltas in a per-chunk staging map and flush once per second.
  * Net effect: surface plant life slowly scrubs CO₂ and produces O₂ over time.</p>
@@ -176,65 +174,30 @@ public final class ActiveBreathingHandler {
     // =========================================================================
 
     private static void sampleMobPopulation(ServerLevel level) {
-        // Iterate loaded chunks — Forge exposes this via level.getChunkSource()
-        level.getChunkSource().chunkMap.getChunks().forEach(holder -> {
-            LevelChunk chunk = holder.getTickingChunk();
-            if (chunk == null) return;
+        // Iterate loaded chunks via the public getChunkSource().getLoadedChunksCount()
+        // approach — we walk entity sections instead of the protected chunkMap.
+        level.getAllEntities().forEach(entity -> {
+            if (!(entity instanceof LivingEntity living)) return;
+            if (living instanceof Player) return;
 
-            // Count breathing entities in this chunk
-            int breatherCount = 0;
-            for (var entry : chunk.getBlockEntities().entrySet()) {
-                // We count entities differently — use level entity list filtered by chunk pos
-            }
+            EntityBreathingProfile profile = EntityBreathingLoader.get(living);
+            if (!profile.needsToBreathe) return;
 
-            // Use the chunk's entity storage via Forge/vanilla entity section access
-            int totalBreathers = 0;
-            int totalNonBreathers = 0;
+            // Only sample a fraction each interval to avoid doing this for every entity
+            // every 400 ticks — use entity ID mod to spread the work
+            if (Math.abs(living.getId()) % MOB_SAMPLE_INTERVAL_TICKS != globalTick % MOB_SAMPLE_INTERVAL_TICKS) return;
 
-            // Get all entities in chunk — iterate via level entity access
-            var chunkPos = chunk.getPos();
-            var entities = level.getEntities().get(
-                    new net.minecraft.world.level.entity.EntityTypeTest<>(
-                            net.minecraft.world.entity.LivingEntity.class,
-                            e -> e instanceof LivingEntity),
-                    new net.minecraft.world.phys.AABB(
-                            chunkPos.getMinBlockX(), level.getMinBuildHeight(),
-                            chunkPos.getMinBlockZ(),
-                            chunkPos.getMaxBlockX() + 1, level.getMaxBuildHeight(),
-                            chunkPos.getMaxBlockZ() + 1),
-                    e -> !(e instanceof Player));
-
-            for (LivingEntity entity : entities) {
-                EntityBreathingProfile profile = EntityBreathingLoader.get(entity);
-                if (!profile.needsToBreathe) { totalNonBreathers++; continue; }
-                totalBreathers++;
-            }
-
-            if (totalBreathers == 0) return;
-
-            // Apply aggregate gas exchange at the chunk's representative surface block
-            // Find a loaded atmosphere block near the centre of the chunk at surface height
-            BlockPos centre = new BlockPos(
-                    chunkPos.getMiddleBlockX(),
-                    level.getHeightmapPos(
-                            net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
-                            new BlockPos(chunkPos.getMiddleBlockX(), 0, chunkPos.getMiddleBlockZ())
-                    ).getY() - 1,
-                    chunkPos.getMiddleBlockZ());
-
-            if (!level.isLoaded(centre)) return;
-            var be = level.getBlockEntity(centre);
+            BlockPos pos = living.blockPosition();
+            if (!level.isLoaded(pos)) return;
+            var be = level.getBlockEntity(pos);
             if (!(be instanceof AtmosphereBlockEntity atm)) return;
 
             var comp = atm.getComposition();
-            float o2Consumed  = totalBreathers * MOB_O2_CONSUMPTION_PER_SAMPLE;
-            float co2Produced = totalBreathers * MOB_CO2_PRODUCTION_PER_SAMPLE;
-
             float o2 = comp.get(GasRegistry.OXYGEN);
-            comp.add(GasRegistry.OXYGEN,         -Math.min(o2, o2Consumed));
-            comp.add(GasRegistry.CARBON_DIOXIDE,  co2Produced);
+            comp.add(GasRegistry.OXYGEN,         -Math.min(o2, MOB_O2_CONSUMPTION_PER_SAMPLE));
+            comp.add(GasRegistry.CARBON_DIOXIDE,  MOB_CO2_PRODUCTION_PER_SAMPLE);
             atm.setComposition(comp);
-            Mge.getScheduler(level).enqueue(centre);
+            Mge.getScheduler(level).enqueue(pos);
         });
     }
 
@@ -246,7 +209,7 @@ public final class ActiveBreathingHandler {
     private static boolean isPhotosyntheticBlock(BlockState state) {
         Block block = state.getBlock();
         return block == Blocks.GRASS_BLOCK
-                || block == Blocks.SHORT_GRASS
+                || block == Blocks.GRASS
                 || block == Blocks.TALL_GRASS
                 || block == Blocks.FERN
                 || block == Blocks.LARGE_FERN
@@ -265,21 +228,22 @@ public final class ActiveBreathingHandler {
                 || state.is(BlockTags.CROPS);
     }
 
-    @SubscribeEvent
-    public static void onRandomTick(BlockEvent.RandomTickEvent event) {
-        if (event.getLevel().isClientSide()) return;
+    // Plant photosynthesis accumulation is driven by MixinRandomTick,
+    // which calls ActiveBreathingHandler.onPlantRandomTick() directly.
+    // See exp.CCnewmods.mge.mixin.MixinRandomTick.
+
+    /**
+     * Called by {@link exp.CCnewmods.mge.mixin.MixinRandomTick} whenever a block
+     * receives a random tick on the server. Accumulates photosynthesis deltas for
+     * photosynthetic blocks with sky access; the staging maps are flushed once per
+     * second by {@link #flushPlantDeltas}.
+     */
+    public static void onPlantRandomTick(BlockState state, ServerLevel level, BlockPos pos) {
         if (!MgeConfig.enableGasEffects || !MgeConfig.enableActiveBreathing
                 || !MgeConfig.enablePlantPhotosynthesis) return;
-
-        BlockState state = event.getState();
         if (!isPhotosyntheticBlock(state)) return;
-
-        // Check it has sky access (crude but fast — expensive raycast avoided)
-        BlockPos pos = event.getPos();
-        if (!(event.getLevel() instanceof ServerLevel level)) return;
         if (!level.canSeeSky(pos.above())) return;
 
-        // Accumulate in staging map keyed by ChunkPos
         long chunkKey = new net.minecraft.world.level.ChunkPos(pos).toLong();
         PLANT_O2_STAGING.merge(chunkKey, PLANT_O2_PER_TICK, Float::sum);
         PLANT_CO2_STAGING.merge(chunkKey, PLANT_CO2_PER_TICK, Float::sum);

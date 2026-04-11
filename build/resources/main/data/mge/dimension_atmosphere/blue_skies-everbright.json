@@ -1,0 +1,18 @@
+{
+  "dimension": "blue_skies:everbright",
+  "breathable": true,
+  "has_sky_access": true,
+  "base_pressure_mbar": 920.0,
+  "gases": {
+    "mge:nitrogen":        695.0,
+    "mge:oxygen":          195.0,
+    "mge:argon":             8.0,
+    "mge:water_vapor":       8.0,
+    "mge:carbon_dioxide":    0.3,
+    "mge:neon":              0.01
+  },
+  "particulates": {
+    "ice_crystals": 12.0,
+    "water_droplets": 5.0
+  }
+}

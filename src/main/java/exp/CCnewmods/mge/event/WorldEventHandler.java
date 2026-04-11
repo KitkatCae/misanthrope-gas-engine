@@ -110,16 +110,17 @@ public final class WorldEventHandler {
         GasComposition comp = atm.getComposition();
         float totalPressure = Math.max(1f, comp.totalPressure());
         float fluorineFraction = comp.get(GasRegistry.FLUORINE) / totalPressure;
+        float consumed;
 
         if (fluorineFraction > 0.1f) {
             // Fluorine atmosphere — combustion produces HF instead of CO₂
-            float consumed = Math.min(comp.get(GasRegistry.FLUORINE), intensity * 2f);
+            consumed = Math.min(comp.get(GasRegistry.FLUORINE), intensity * 2f);
             comp.add(GasRegistry.FLUORINE,         -consumed);
             comp.add(GasRegistry.HYDROGEN_FLUORIDE, consumed * 0.8f);
             comp.add(GasRegistry.CARBON_DIOXIDE,    intensity * 0.05f);
         } else {
             float o2 = comp.get(GasRegistry.OXYGEN);
-            float consumed = Math.min(o2, intensity);
+            consumed = Math.min(o2, intensity);
             comp.add(GasRegistry.OXYGEN,         -consumed);
             comp.add(GasRegistry.CARBON_DIOXIDE,  consumed * 0.7f);
             comp.add(GasRegistry.CARBON_MONOXIDE, consumed * 0.15f);

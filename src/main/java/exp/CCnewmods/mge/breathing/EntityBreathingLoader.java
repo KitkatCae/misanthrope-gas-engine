@@ -1,6 +1,7 @@
 package exp.CCnewmods.mge.breathing;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import exp.CCnewmods.mge.Mge;
 import net.minecraft.resources.ResourceLocation;
@@ -58,16 +59,17 @@ public final class EntityBreathingLoader extends SimpleJsonResourceReloadListene
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonObject> map,
+    protected void apply(Map<ResourceLocation, JsonElement> map,
                           ResourceManager manager,
                           ProfilerFiller profiler) {
         PROFILES.clear();
         int loaded = 0;
 
-        for (Map.Entry<ResourceLocation, JsonObject> entry : map.entrySet()) {
+        for (Map.Entry<ResourceLocation, JsonElement> entry : map.entrySet()) {
             try {
+                JsonObject json = entry.getValue().getAsJsonObject();
                 EntityBreathingProfile profile =
-                        EntityBreathingProfile.fromJson(entry.getKey(), entry.getValue());
+                        EntityBreathingProfile.fromJson(entry.getKey(), json);
                 PROFILES.put(profile.entityType, profile);
                 loaded++;
             } catch (Exception e) {

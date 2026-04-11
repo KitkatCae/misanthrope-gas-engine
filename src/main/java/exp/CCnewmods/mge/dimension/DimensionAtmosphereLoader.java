@@ -1,6 +1,7 @@
 package exp.CCnewmods.mge.dimension;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import exp.CCnewmods.mge.Mge;
 import net.minecraft.resources.ResourceLocation;
@@ -61,17 +62,18 @@ public final class DimensionAtmosphereLoader
     // -------------------------------------------------------------------------
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonObject> map,
+    protected void apply(Map<ResourceLocation, JsonElement> map,
                           ResourceManager resourceManager,
                           ProfilerFiller profiler) {
         PROFILES.clear();
         int loaded = 0;
 
-        for (Map.Entry<ResourceLocation, JsonObject> entry : map.entrySet()) {
+        for (Map.Entry<ResourceLocation, JsonElement> entry : map.entrySet()) {
             ResourceLocation fileId = entry.getKey();
             try {
+                JsonObject json = entry.getValue().getAsJsonObject();
                 DimensionAtmosphereProfile profile =
-                        DimensionAtmosphereProfile.fromJson(fileId, entry.getValue());
+                        DimensionAtmosphereProfile.fromJson(fileId, json);
                 PROFILES.put(profile.dimension, profile);
                 loaded++;
             } catch (Exception e) {

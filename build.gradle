@@ -67,7 +67,7 @@ dependencies {
     compileOnly files('libs/Forge-projectatmosphere-0.8.0.0.jar')
     compileOnly files('libs/thermodynamica-0.2.3.jar')
     compileOnly files('libs/ColdSweat-2.4.jar')
-    compileOnly files('libs/beyondoxygenfix-1.0.0-all.jar')
+    compileOnly files('libs/beyond_oxygen-0.12.8-all.jar')
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
