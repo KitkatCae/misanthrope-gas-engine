@@ -1,0 +1,20 @@
+{
+  "dimension": "minecraft:overworld",
+  "breathable": true,
+  "has_sky_access": true,
+  "base_pressure_mbar": 1013.25,
+  "gases": {
+    "mge:nitrogen":        780.9,
+    "mge:oxygen":          209.5,
+    "mge:argon":             9.3,
+    "mge:carbon_dioxide":    0.4,
+    "mge:water_vapor":      10.0,
+    "mge:neon":              0.018,
+    "mge:helium":            0.005,
+    "mge:methane":           0.002,
+    "mge:krypton":           0.001,
+    "mge:hydrogen":          0.0005,
+    "mge:nitrous_oxide":     0.0003
+  },
+  "particulates": {}
+}

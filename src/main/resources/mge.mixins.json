@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "exp.CCnewmods.mge.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "mge.refmap.json",
+  "mixins": [
+    "MixinLevelSetBlock",
+    "MixinChunkAccess$MixinLevelChunk",
+    "MixinChunkAccess$MixinProtoChunk"
+  ],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,40 @@
+modLoader = "javafml"
+loaderVersion = "${loader_version_range}"
+license = "${mod_license}"
+
+[[mods]]
+modId          = "${mod_id}"
+version        = "${mod_version}"
+displayName    = "${mod_name}"
+authors        = "${mod_authors}"
+description    = '''${mod_description}'''
+
+[[dependencies."${mod_id}"]]
+modId = "forge"; mandatory = true; versionRange = "${forge_version_range}"; ordering = "NONE"; side = "BOTH"
+
+[[dependencies."${mod_id}"]]
+modId = "minecraft"; mandatory = true; versionRange = "${minecraft_version_range}"; ordering = "NONE"; side = "BOTH"
+
+# MGE loads BEFORE misanthrope_core so core can depend on MGE being ready
+[[dependencies."${mod_id}"]]
+modId = "misanthrope_core"; mandatory = false; versionRange = "[1.0,)"; ordering = "BEFORE"; side = "BOTH"
+
+# Project Atmosphere — wind + weather integration
+[[dependencies."${mod_id}"]]
+modId = "projectatmosphere"; mandatory = false; versionRange = "[0.8,)"; ordering = "AFTER"; side = "BOTH"
+
+# Thermodynamica — block temperature → gas reactions
+[[dependencies."${mod_id}"]]
+modId = "thermodynamica"; mandatory = false; versionRange = "[0.2,)"; ordering = "AFTER"; side = "BOTH"
+
+# Cold Sweat — entity body/world temperature → atmosphere reactions
+[[dependencies."${mod_id}"]]
+modId = "cold_sweat"; mandatory = false; versionRange = "[2.4,)"; ordering = "AFTER"; side = "BOTH"
+
+# Beyond Oxygen — per-block O₂ breathability override
+[[dependencies."${mod_id}"]]
+modId = "beyond_oxygen"; mandatory = false; versionRange = "[0.12,)"; ordering = "AFTER"; side = "BOTH"
+
+# Sinytra Connector — Fabric API bridge (transparent, no code dep)
+[[dependencies."${mod_id}"]]
+modId = "connector"; mandatory = false; versionRange = "[1.0,)"; ordering = "NONE"; side = "BOTH"
