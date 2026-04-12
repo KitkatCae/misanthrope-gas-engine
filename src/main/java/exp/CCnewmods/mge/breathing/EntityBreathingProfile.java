@@ -98,7 +98,8 @@ public final class EntityBreathingProfile {
 
     public static EntityBreathingProfile fromJson(ResourceLocation fileId, JsonObject json) {
         ResourceLocation entityType = new ResourceLocation(
-                json.has("entity") ? json.get("entity").getAsString() : fileId.toString());
+                json.has("entity") && !json.get("entity").isJsonNull()
+                        ? json.get("entity").getAsString() : fileId.toString());
 
         boolean needsToBreathe = !json.has("needs_to_breathe")
                 || json.get("needs_to_breathe").getAsBoolean();

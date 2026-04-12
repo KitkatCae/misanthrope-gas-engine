@@ -137,7 +137,8 @@ public final class DimensionAtmosphereProfile {
      */
     public static DimensionAtmosphereProfile fromJson(ResourceLocation fileId, JsonObject json) {
         ResourceLocation dimension = new ResourceLocation(
-                json.has("dimension") ? json.get("dimension").getAsString() : fileId.toString());
+                json.has("dimension") && !json.get("dimension").isJsonNull()
+                        ? json.get("dimension").getAsString() : fileId.toString());
 
         boolean breathable    = json.has("breathable")     && json.get("breathable").getAsBoolean();
         boolean hasSkyAccess  = !json.has("has_sky_access") || json.get("has_sky_access").getAsBoolean();
