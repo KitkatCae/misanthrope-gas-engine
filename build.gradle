@@ -27,6 +27,7 @@ java { toolchain.languageVersion = JavaLanguageVersion.of(17) }
 
 minecraft {
     mappings channel: mapping_channel, version: mapping_version
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
     copyIdeResources = true
     runs {
         configureEach {
@@ -62,8 +63,7 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 
-    // Optional compat jars — compileOnly so they don't get bundled
-    // Place these in the libs/ directory before running ./gradlew build
+    // Optional compat jars — place in libs/ before building
     compileOnly files('libs/Forge-projectatmosphere-0.8.0.0.jar')
     compileOnly files('libs/thermodynamica-0.2.3.jar')
     compileOnly files('libs/ColdSweat-2.4.jar')
@@ -96,7 +96,7 @@ tasks.named('jar', Jar).configure {
     manifest {
         attributes([
             "Specification-Title": mod_id, "Specification-Vendor": mod_authors,
-            "Specification-Version": "1", "Implementation-Title": project.name,
+            "Specification-Version": "2.5.0", "Implementation-Title": project.name,
             "Implementation-Version": project.jar.archiveVersion,
             "Implementation-Vendor": mod_authors,
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),

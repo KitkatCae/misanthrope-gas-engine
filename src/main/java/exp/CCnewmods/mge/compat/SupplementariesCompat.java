@@ -3,6 +3,7 @@ package exp.CCnewmods.mge.compat;
 import exp.CCnewmods.mge.Mge;
 import exp.CCnewmods.mge.MgeConfig;
 import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
+import exp.CCnewmods.mge.gas.GasComposition;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,16 +18,7 @@ import net.mehvahdjukaar.supplementaries.common.block.tiles.BellowsBlockTile;
 
 /**
  * Supplementaries Bellows compat.
- *
- * When a bellows is in its compression stroke it physically displaces the gas in
- * front of it — the entire atmosphere block is pushed N blocks further in the facing
- * direction, proportional to compression intensity. No oxygen is injected; the air
- * that was there is simply moved.
- *
- * Implementation: every SCAN_INTERVAL ticks, scan all loaded block entities. For
- * each blowing BellowsBlockTile, take a fraction of the output block's gas and
- * particulate composition and push it one block further in the facing direction.
- * Simultaneously pull from the block behind the bellows into the output block.
+ * Displaces gas bodily in the facing direction — no O₂ injection.
  */
 @Mod.EventBusSubscriber(modid = Mge.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class SupplementariesCompat {
@@ -49,81 +41,79 @@ public final class SupplementariesCompat {
         if (!loaded || event.phase != TickEvent.Phase.END) return;
         if (++tick % SCAN_INTERVAL != 0) return;
         if (!MgeConfig.enableGasEffects) return;
-
-        for (var level : event.getServer().getAllLevels()) {
-            tickBellows(level);
-        }
+        for (var level : event.getServer().getAllLevels()) tickBellows(level);
     }
 
     private static void tickBellows(ServerLevel level) {
-        level.blockEntityList.forEach(be -> {
-            if (!(be instanceof BellowsBlockTile bellows) || be.isRemoved()) return;
-
-            Direction dir = bellows.getDirection();
-            if (dir == null) return;
-
-            // getHeight() < 0.35 means compression stroke (blowing)
-            float height = bellows.getHeight(1.0f);
-            if (height >= 0.35f) return;
-
-            float intensity = (0.35f - height) / 0.35f; // 0..1
-
-            BlockPos outputPos = be.getBlockPos().relative(dir);
-            BlockPos pushPos   = outputPos.relative(dir);   // one further
-            BlockPos sourcePos = be.getBlockPos().relative(dir.getOpposite()); // behind bellows
-
-            if (!level.isLoaded(outputPos) || !level.isLoaded(pushPos)) return;
-
-            BlockEntity outBE  = level.getBlockEntity(outputPos);
-            BlockEntity pushBE = level.getBlockEntity(pushPos);
-            if (!(outBE instanceof AtmosphereBlockEntity outAtm)) return;
-            if (!(pushBE instanceof AtmosphereBlockEntity pushAtm)) return;
-
-            // Fraction of output block's content to displace forward
-            float fraction = Math.min(0.25f, intensity * 0.3f);
-
-            // --- Push output → pushPos ---
-            var outComp  = outAtm.getComposition();
-            var pushComp = pushAtm.getComposition();
-            outComp.getTag().getAllKeys().forEach(key -> {
-                float amt = outComp.get(key);
-                float transfer = amt * fraction;
-                outComp.addByKey(key, -transfer);
-                pushComp.addByKey(key, transfer);
+        level.getChunkSource().chunkMap.getChunks().forEach(holder -> {
+            var chunk = holder.getTickingChunk();
+            if (chunk == null) return;
+            chunk.getBlockEntities().forEach((pos, be) -> {
+                if (!(be instanceof BellowsBlockTile bellows) || be.isRemoved()) return;
+                processBellows(level, bellows, pos);
             });
-            outAtm.setComposition(outComp);
-            pushAtm.setComposition(pushComp);
-
-            // Displace particulates forward too
-            var outParts  = outAtm.getParticulates();
-            var pushParts = pushAtm.getParticulates();
-            for (ParticulateType type : ParticulateType.values()) {
-                float amt = outParts.get(type);
-                if (amt <= 0f) continue;
-                float transfer = amt * fraction;
-                outParts.add(type, -transfer);
-                pushParts.add(type, transfer);
-            }
-            outAtm.setParticulates(outParts);
-            pushAtm.setParticulates(pushParts);
-
-            // --- Pull source → output (replace what was pushed) ---
-            BlockEntity srcBE = level.getBlockEntity(sourcePos);
-            if (srcBE instanceof AtmosphereBlockEntity srcAtm && level.isLoaded(sourcePos)) {
-                var srcComp = srcAtm.getComposition();
-                srcComp.getTag().getAllKeys().forEach(key -> {
-                    float amt = srcComp.get(key);
-                    float transfer = amt * fraction * 0.5f; // pull is gentler than push
-                    srcComp.addByKey(key, -transfer);
-                    outComp.addByKey(key, transfer);
-                });
-                srcAtm.setComposition(srcComp);
-                outAtm.setComposition(outComp);
-                Mge.getScheduler(level).enqueue(sourcePos);
-            }
-
-            Mge.getScheduler(level).enqueue(outputPos);
-            Mge.getScheduler(level).enqueue(pushPos);
         });
+    }
+
+    private static void processBellows(ServerLevel level, BellowsBlockTile bellows, BlockPos bePos) {
+        Direction dir = bellows.getDirection();
+        if (dir == null) return;
+
+        float height = bellows.getHeight(1.0f);
+        if (height >= 0.35f) return; // not in compression stroke
+
+        float intensity = (0.35f - height) / 0.35f;
+        float fraction  = Math.min(0.25f, intensity * 0.3f);
+
+        BlockPos outputPos = bePos.relative(dir);
+        BlockPos pushPos   = outputPos.relative(dir);
+        BlockPos sourcePos = bePos.relative(dir.getOpposite());
+
+        if (!level.isLoaded(outputPos) || !level.isLoaded(pushPos)) return;
+        BlockEntity outBE  = level.getBlockEntity(outputPos);
+        BlockEntity pushBE = level.getBlockEntity(pushPos);
+        if (!(outBE  instanceof AtmosphereBlockEntity outAtm))  return;
+        if (!(pushBE instanceof AtmosphereBlockEntity pushAtm)) return;
+
+        // Push output → pushPos
+        transferGas(outAtm.getComposition(), pushAtm.getComposition(), fraction);
+        outAtm.setComposition(outAtm.getComposition());
+        pushAtm.setComposition(pushAtm.getComposition());
+
+        // Displace particulates
+        for (ParticulateType type : ParticulateType.values()) {
+            float amt = outAtm.getParticulates().get(type);
+            if (amt <= 0f) continue;
+            float t = amt * fraction;
+            outAtm.getParticulates().add(type, -t);
+            pushAtm.getParticulates().add(type, t);
+        }
+        outAtm.setParticulates(outAtm.getParticulates());
+        pushAtm.setParticulates(pushAtm.getParticulates());
+
+        // Pull source → output
+        BlockEntity srcBE = level.getBlockEntity(sourcePos);
+        if (srcBE instanceof AtmosphereBlockEntity srcAtm && level.isLoaded(sourcePos)) {
+            transferGas(srcAtm.getComposition(), outAtm.getComposition(), fraction * 0.5f);
+            srcAtm.setComposition(srcAtm.getComposition());
+            outAtm.setComposition(outAtm.getComposition());
+            Mge.getScheduler(level).enqueue(sourcePos);
+        }
+
+        Mge.getScheduler(level).enqueue(outputPos);
+        Mge.getScheduler(level).enqueue(pushPos);
+    }
+
+    /** Transfer {@code fraction} of each gas in src into dst using raw NBT operations. */
+    private static void transferGas(GasComposition src, GasComposition dst, float fraction) {
+        var srcTag = src.getTag();
+        var dstTag = dst.getTag();
+        for (String key : new java.util.ArrayList<>(srcTag.getAllKeys())) {
+            float amt      = srcTag.getFloat(key);
+            float transfer = amt * fraction;
+            if (transfer <= 0f) continue;
+            srcTag.putFloat(key, Math.max(0f, amt - transfer));
+            dstTag.putFloat(key, dstTag.getFloat(key) + transfer);
+        }
     }
 }

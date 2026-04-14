@@ -143,7 +143,7 @@ public final class GasDetonationHandler {
         Vec3 centre = Vec3.atCenterOf(pos);
         level.explode(null, centre.x, centre.y, centre.z,
                 Math.max(1f, Math.min(8f, strength)),
-                net.minecraft.world.level.Explosion.BlockInteraction.DESTROY);
+                net.minecraft.world.level.Level.ExplosionInteraction.BLOCK);
 
         Mge.LOGGER.debug("[MGE] Gas detonation at {} — gas: {}, strength: {}",
                 pos, gas.id(), strength);
@@ -168,7 +168,7 @@ public final class GasDetonationHandler {
         float strength = Math.min(4f, dustAmount / COAL_DUST_LEL_MG_M3 * 2.5f);
         Vec3 centre = Vec3.atCenterOf(pos);
         level.explode(null, centre.x, centre.y, centre.z, strength,
-                net.minecraft.world.level.Explosion.BlockInteraction.DESTROY);
+                net.minecraft.world.level.Level.ExplosionInteraction.BLOCK);
 
         Mge.LOGGER.debug("[MGE] Coal dust explosion at {} — dust: {}, strength: {}",
                 pos, dustAmount, strength);

@@ -17,31 +17,42 @@ import com.drmangotea.tfmg.content.machinery.misc.exhaust.ExhaustBlockEntity;
 import com.drmangotea.tfmg.content.machinery.misc.smokestack.SmokestackBlockEntity;
 import com.drmangotea.tfmg.content.machinery.metallurgy.blast_furnace.BlastFurnaceOutputBlockEntity;
 
+import java.lang.reflect.Field;
+
 /**
- * TFMG (The Factory Must Grow) compat.
- *
- * Hooks three TFMG block entities:
- *
- * ExhaustBlock / SmokestackBlock — both have a smokeTimer and fluid tank. When
- * smokeTimer > 0 (actively exhausting), inject combustion products above them:
- * CO₂, CO, SO₂, smoke aerosol, soot. Rate scales with tank fill level.
- *
- * BlastFurnaceOutputBlockEntity — isActive flag. When smelting, inject CO₂, CO,
- * SO₂ and consume local O₂ (enriched O₂ in the atmosphere increases heat output
- * via FurnaceEnvironmentSampler from misanthrope_core).
+ * TFMG compat — hooks exhaust, smokestack, and blast furnace block entities.
+ * Uses reflection to access package-private fields smokeTimer and isActive.
  */
 @Mod.EventBusSubscriber(modid = Mge.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class TfmgCompat {
 
     public static final String TFMG_MODID = "tfmg";
     private static boolean loaded = false;
-    private static final int SCAN_INTERVAL = 10; // every 10 ticks = 0.5s
+    private static final int SCAN_INTERVAL = 10;
     private static int tick = 0;
+
+    // Reflected fields — resolved once at load time
+    private static Field exhaustSmokeTimer;
+    private static Field smokestackSmokeTimer;
+    private static Field blastFurnaceIsActive;
 
     private TfmgCompat() {}
 
     public static void tryLoad() {
         if (!ModList.get().isLoaded(TFMG_MODID)) return;
+        try {
+            exhaustSmokeTimer = ExhaustBlockEntity.class.getDeclaredField("smokeTimer");
+            exhaustSmokeTimer.setAccessible(true);
+
+            smokestackSmokeTimer = SmokestackBlockEntity.class.getDeclaredField("smokeTimer");
+            smokestackSmokeTimer.setAccessible(true);
+
+            blastFurnaceIsActive = BlastFurnaceOutputBlockEntity.class.getDeclaredField("isActive");
+            blastFurnaceIsActive.setAccessible(true);
+        } catch (Exception e) {
+            Mge.LOGGER.warn("[MGE] TFMG: could not reflect fields — {}", e.getMessage());
+            return;
+        }
         loaded = true;
         Mge.LOGGER.info("[MGE] TFMG detected — furnace/exhaust atmosphere emissions active.");
     }
@@ -51,40 +62,40 @@ public final class TfmgCompat {
         if (!loaded || event.phase != TickEvent.Phase.END) return;
         if (++tick % SCAN_INTERVAL != 0) return;
         if (!MgeConfig.enableGasEffects) return;
-
-        for (ServerLevel level : event.getServer().getAllLevels()) {
-            tickTfmg(level);
-        }
+        for (ServerLevel level : event.getServer().getAllLevels()) tickTfmg(level);
     }
 
     private static void tickTfmg(ServerLevel level) {
-        level.blockEntityList.forEach(be -> {
-            if (be.isRemoved()) return;
+        level.getChunkSource().chunkMap.getChunks().forEach(holder -> {
+            var chunk = holder.getTickingChunk();
+            if (chunk == null) return;
+            chunk.getBlockEntities().forEach((pos, be) -> {
+                if (be.isRemoved()) return;
+                try {
+                    if (be instanceof ExhaustBlockEntity exhaust) {
+                        if ((int) exhaustSmokeTimer.get(exhaust) <= 0) return;
+                        float fill = exhaust.tankInventory.getFluidAmount() /
+                                     (float) Math.max(1, exhaust.tankInventory.getCapacity());
+                        emitExhaust(level, pos.above(), fill * 0.8f, true);
 
-            if (be instanceof ExhaustBlockEntity exhaust) {
-                if (exhaust.smokeTimer <= 0) return;
-                float fill = exhaust.tankInventory.getFluidAmount() /
-                             (float) Math.max(1, exhaust.tankInventory.getCapacity());
-                emitExhaust(level, be.getBlockPos().above(), fill * 0.8f, true);
+                    } else if (be instanceof SmokestackBlockEntity smokestack) {
+                        if ((int) smokestackSmokeTimer.get(smokestack) <= 0) return;
+                        float fill = smokestack.tankInventory.getFluidAmount() /
+                                     (float) Math.max(1, smokestack.tankInventory.getCapacity());
+                        emitExhaust(level, pos.above(), fill * 0.6f, false);
 
-            } else if (be instanceof SmokestackBlockEntity smokestack) {
-                if (smokestack.smokeTimer <= 0) return;
-                float fill = smokestack.tankInventory.getFluidAmount() /
-                             (float) Math.max(1, smokestack.tankInventory.getCapacity());
-                emitExhaust(level, be.getBlockPos().above(), fill * 0.6f, false);
-
-            } else if (be instanceof BlastFurnaceOutputBlockEntity blastFurnace) {
-                if (!blastFurnace.isActive) return;
-                emitBlastFurnace(level, be.getBlockPos().above());
-            }
+                    } else if (be instanceof BlastFurnaceOutputBlockEntity blastFurnace) {
+                        if (!(boolean) blastFurnaceIsActive.get(blastFurnace)) return;
+                        emitBlastFurnace(level, pos.above());
+                    }
+                } catch (Exception e) { /* skip silently */ }
+            });
         });
     }
 
-    /**
-     * Emit combustion exhaust above a position.
-     * @param intense true for exhaust (direct fluid burn), false for smokestack (diffuse)
-     */
-    private static void emitExhaust(ServerLevel level, BlockPos pos, float scale, boolean intense) {
+    private static void emitExhaust(ServerLevel level, BlockPos pos,
+                                     float scale, boolean intense) {
+        if (!level.isLoaded(pos)) return;
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof AtmosphereBlockEntity atm)) return;
 
@@ -98,13 +109,13 @@ public final class TfmgCompat {
 
         var parts = atm.getParticulates();
         parts.add(ParticulateType.SMOKE_AEROSOL, scale * (intense ? 20f : 12f));
-        parts.add(ParticulateType.SOOT,          scale * (intense ? 8f : 4f));
+        parts.add(ParticulateType.SOOT,          scale * (intense ? 8f  :  4f));
         atm.setParticulates(parts);
-
         Mge.getScheduler(level).enqueue(pos);
     }
 
     private static void emitBlastFurnace(ServerLevel level, BlockPos pos) {
+        if (!level.isLoaded(pos)) return;
         BlockEntity be = level.getBlockEntity(pos);
         if (!(be instanceof AtmosphereBlockEntity atm)) return;
 
@@ -112,7 +123,7 @@ public final class TfmgCompat {
         float o2 = comp.get(GasRegistry.OXYGEN);
         comp.add(GasRegistry.OXYGEN,         -Math.min(o2, 15f));
         comp.add(GasRegistry.CARBON_DIOXIDE,  12f);
-        comp.add(GasRegistry.CARBON_MONOXIDE,  8f); // blast furnaces produce significant CO
+        comp.add(GasRegistry.CARBON_MONOXIDE,  8f);
         comp.add(GasRegistry.SULFUR_DIOXIDE,   3f);
         atm.setComposition(comp);
 
@@ -121,7 +132,6 @@ public final class TfmgCompat {
         parts.add(ParticulateType.SMOKE_AEROSOL, 25f);
         parts.add(ParticulateType.ASH_CLOUD,     10f);
         atm.setParticulates(parts);
-
         Mge.getScheduler(level).enqueue(pos);
     }
 }
