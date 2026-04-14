@@ -248,6 +248,10 @@ public final class PlayerGasEffectHandler {
     /** Maps {@link ParticulateType.ToxicEffect} to vanilla MobEffects. */
     private static void applyParticulateToxicEffect(LivingEntity entity,
                                                       ParticulateType type, int amplifier) {
+        // Oreganized/Carcinogenius override — applies modded effects for lead and asbestos
+        if (exp.CCnewmods.mge.compat.OreganizedCompat.applyOverrideEffect(entity, type, amplifier)) {
+            return;
+        }
         switch (type.toxicEffect) {
             case NONE          -> {}
             case MINING_FATIGUE -> addEffect(entity, MobEffects.DIG_SLOWDOWN,       EFFECT_DURATION_TICKS, amplifier);

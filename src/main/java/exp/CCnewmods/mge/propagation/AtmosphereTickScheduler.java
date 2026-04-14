@@ -73,6 +73,8 @@ public final class AtmosphereTickScheduler {
             if (!level.isLoaded(pos)) continue;
             BlockEntity be = level.getBlockEntity(pos);
             if (!(be instanceof AtmosphereBlockEntity atm)) continue;
+            // Check for explosive conditions before diffusing
+            if (exp.CCnewmods.mge.cave.GasDetonationHandler.checkDetonation(level, pos, atm)) continue;
             diffuseGas(pos, atm);
             settleParticulates(pos, atm);
             processed++;

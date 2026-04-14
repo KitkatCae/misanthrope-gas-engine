@@ -64,3 +64,52 @@ description    = '''A physically-simulated atmospheric gas engine. Replaces all 
     versionRange = "[1.0,)"
     ordering    = "NONE"
     side        = "BOTH"
+
+[[dependencies."mge"]]
+    modId       = "supplementaries"
+    mandatory   = false
+    versionRange = "[1.0,)"
+    ordering    = "AFTER"
+    side        = "BOTH"
+
+[[dependencies."mge"]]
+    modId       = "create"
+    mandatory   = false
+    versionRange = "[0.5,)"
+    ordering    = "AFTER"
+    side        = "BOTH"
+
+[[dependencies."mge"]]
+    modId       = "tfmg"
+    mandatory   = false
+    versionRange = "[1.0,)"
+    ordering    = "AFTER"
+    side        = "BOTH"
+
+[[dependencies."mge"]]
+    modId       = "burnt"
+    mandatory   = false
+    versionRange = "[1.0,)"
+    ordering    = "AFTER"
+    side        = "BOTH"
+
+[[dependencies."mge"]]
+    modId       = "oreganized"
+    mandatory   = false
+    versionRange = "[1.0,)"
+    ordering    = "AFTER"
+    side        = "BOTH"
+
+[[dependencies."mge"]]
+    modId       = "oreganized_carcinogenius"
+    mandatory   = false
+    versionRange = "[1.0,)"
+    ordering    = "AFTER"
+    side        = "BOTH"
+
+[[dependencies."mge"]]
+    modId       = "misanthrope_core"
+    mandatory   = false
+    versionRange = "[1.0,)"
+    ordering    = "AFTER"
+    side        = "BOTH"

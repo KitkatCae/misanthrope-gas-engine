@@ -180,7 +180,49 @@ public enum ParticulateType {
             0x88336688,
             SettleBehaviour.SLOW,
             100f, ToxicEffect.SLOWNESS,
-            0.8f);
+            0.8f),
+
+    /**
+     * Coal dust — produced by mining coal ore/blocks and by coal combustion.
+     * Causes respiratory impairment at concentration. Explosive above ~150 mg/m³
+     * with an ignition source present (handled by GasDetonationHandler).
+     */
+    COAL_DUST("coal_dust",
+            0xBB111111,
+            SettleBehaviour.SLOW,
+            80f, ToxicEffect.MINING_FATIGUE,
+            0.5f),
+
+    /**
+     * Asbestos fibres — produced by mining/disturbing asbestos ore or block.
+     * Requires Oreganized Carcinogenius. Applies lung_damage effect via compat.
+     * Low settle rate — fibres remain suspended in air for a long time.
+     */
+    ASBESTOS_FIBER("asbestos_fiber",
+            0xAAC8C8B0,
+            SettleBehaviour.VERY_SLOW,
+            15f, ToxicEffect.SUFFOCATION,  // lung_damage applied via OreganizedCompat override
+            1.2f),
+
+    /**
+     * Lead dust — produced by mining lead ore, breaking lead blocks, and firing lead bolts.
+     * Requires Oreganized. Applies stunning effect via compat. Heavier than air, settles fast.
+     */
+    LEAD_DUST("lead_dust",
+            0xAAA0A8A0,
+            SettleBehaviour.FAST,
+            40f, ToxicEffect.SLOWNESS,     // stunning applied via OreganizedCompat override
+            0.3f),
+
+    /**
+     * Organic aerosol — fine droplets and particulates from biological matter,
+     * cooking, corpse decay, and swamp environments. Causes nausea at high concentration.
+     */
+    ORGANIC_AEROSOL("organic_aerosol",
+            0x66886644,
+            SettleBehaviour.VERY_SLOW,
+            200f, ToxicEffect.NAUSEA,
+            1.0f);
 
     // ── Data ──────────────────────────────────────────────────────────────────
 

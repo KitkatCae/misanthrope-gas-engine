@@ -68,6 +68,12 @@ dependencies {
     compileOnly files('libs/thermodynamica-0.2.3.jar')
     compileOnly files('libs/ColdSweat-2.4.jar')
     compileOnly files('libs/beyond_oxygen-0.12.8-all.jar')
+    compileOnly files('libs/supplementaries-1_20-3_1_43-forge.jar')
+    compileOnly files('libs/create-1_20_1-6_0_8.jar')
+    compileOnly files('libs/tfmg-1_0_2f.jar')
+    compileOnly files('libs/burnt-1_9_1_4-forge-1_20_1.jar')
+    compileOnly files('libs/Oreganized_1_20_1-4_3_2.jar')
+    compileOnly files('libs/Oreganized_Carcinogenius_1_20_1-4_1_0.jar')
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }

@@ -6,6 +6,13 @@ import exp.CCnewmods.mge.block.MgeBlockEntities;
 import exp.CCnewmods.mge.compat.BeyondOxygenCompat;
 import exp.CCnewmods.mge.compat.ColdSweatCompat;
 import exp.CCnewmods.mge.compat.WitherStormCompat;
+import exp.CCnewmods.mge.compat.SupplementariesCompat;
+import exp.CCnewmods.mge.compat.CreateCompat;
+import exp.CCnewmods.mge.compat.TfmgCompat;
+import exp.CCnewmods.mge.compat.BurntCompat;
+import exp.CCnewmods.mge.compat.OreganizedCompat;
+import exp.CCnewmods.mge.compat.MisanthropeCoreCompat;
+import exp.CCnewmods.mge.cave.CaveGasAccumulator;
 import exp.CCnewmods.mge.breathing.ActiveBreathingHandler;
 import exp.CCnewmods.mge.breathing.EntityBreathingLoader;
 import exp.CCnewmods.mge.dimension.DimensionAtmosphereLoader;
@@ -77,11 +84,18 @@ public class Mge {
             // then CS (listens to entity temperatures and calls into Thermo optionally)
             DimensionAtmosphereLoader.INSTANCE.getClass(); // ensure class loads
             EntityBreathingLoader.INSTANCE.getClass();    // ensure class loads
+            CaveGasAccumulator.class.getName();           // ensure class loads
             ProjectAtmosphereCompat.tryLoad();
             ThermodynamicaCompat.tryLoad();
             ColdSweatCompat.tryLoad();
             BeyondOxygenCompat.tryLoad();
             WitherStormCompat.tryLoad();
+            SupplementariesCompat.tryLoad();
+            CreateCompat.tryLoad();
+            TfmgCompat.tryLoad();
+            BurntCompat.tryLoad();
+            OreganizedCompat.tryLoad();
+            MisanthropeCoreCompat.tryLoad();
             LOGGER.info("[MGE] Common setup complete.");
         });
     }

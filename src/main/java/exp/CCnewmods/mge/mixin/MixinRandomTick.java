@@ -34,5 +34,7 @@ public abstract class MixinRandomTick {
                                    BlockPos pos, RandomSource random,
                                    CallbackInfo ci) {
         ActiveBreathingHandler.onPlantRandomTick(state, level, pos);
+        // Oreganized ore continuous emission
+        exp.CCnewmods.mge.compat.OreganizedCompat.onOreRandomTick(state, level, pos);
     }
 }

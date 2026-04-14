@@ -48,12 +48,30 @@ public final class WorldEventHandler {
         if (event.getLevel().isClientSide()) return;
         if (!(event.getLevel() instanceof ServerLevel level)) return;
 
-        // Breaking blocks creates dust particulates
         BlockPos pos = event.getPos();
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof AtmosphereBlockEntity atm) {
             var parts = atm.getParticulates();
             parts.add(ParticulateType.DUST, 20f);
+
+            // Coal ore and coal blocks emit coal dust when mined
+            var blockId = net.minecraftforge.registries.ForgeRegistries.BLOCKS
+                    .getKey(event.getState().getBlock());
+            if (blockId != null) {
+                String path = blockId.getPath();
+                if (path.contains("coal") && (path.contains("ore") || path.equals("coal_block")
+                        || path.equals("coal"))) {
+                    parts.add(ParticulateType.COAL_DUST, 80f);
+                    // Also inject above
+                    BlockEntity above = level.getBlockEntity(pos.above());
+                    if (above instanceof AtmosphereBlockEntity aboveAtm) {
+                        var ap = aboveAtm.getParticulates();
+                        ap.add(ParticulateType.COAL_DUST, 40f);
+                        aboveAtm.setParticulates(ap);
+                        Mge.getScheduler(level).enqueue(pos.above());
+                    }
+                }
+            }
             atm.setParticulates(parts);
         }
         Mge.getScheduler(level).enqueueWithNeighbours(pos);

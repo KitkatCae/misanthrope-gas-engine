@@ -46,5 +46,10 @@
   "gas.mge.smoke_particulate": "Smoke Particulate",
   "gas.mge.ash_cloud": "Ash Cloud",
 
+  "particulate.mge.coal_dust": "Coal Dust",
+  "particulate.mge.asbestos_fiber": "Asbestos Fibres",
+  "particulate.mge.lead_dust": "Lead Dust",
+  "particulate.mge.organic_aerosol": "Organic Aerosol",
+
   "itemGroup.mge.tab": "Misanthrope Gas Engine"
 }
