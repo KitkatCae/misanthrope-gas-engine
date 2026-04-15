@@ -3,6 +3,7 @@ package exp.CCnewmods.mge.compat;
 import exp.CCnewmods.mge.Mge;
 import exp.CCnewmods.mge.MgeConfig;
 import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
+import exp.CCnewmods.mge.util.ChunkIterator;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -53,7 +54,7 @@ public final class MisanthropeCoreCompat {
 
     private static void sampleLevel(ServerLevel level) {
         var rand = level.getRandom();
-        level.getChunkSource().chunkMap.getChunks().forEach(holder -> {
+        ChunkIterator.forEach(level, holder -> {
             if (rand.nextInt(8) != 0) return;
             var chunk = holder.getTickingChunk();
             if (chunk == null) return;

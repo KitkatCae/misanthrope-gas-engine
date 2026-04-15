@@ -3,6 +3,7 @@ package exp.CCnewmods.mge.compat;
 import exp.CCnewmods.mge.Mge;
 import exp.CCnewmods.mge.MgeConfig;
 import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
+import exp.CCnewmods.mge.util.ChunkIterator;
 import exp.CCnewmods.mge.gas.GasComposition;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import net.minecraft.core.BlockPos;
@@ -45,7 +46,7 @@ public final class SupplementariesCompat {
     }
 
     private static void tickBellows(ServerLevel level) {
-        level.getChunkSource().chunkMap.getChunks().forEach(holder -> {
+        ChunkIterator.forEach(level, holder -> {
             var chunk = holder.getTickingChunk();
             if (chunk == null) return;
             chunk.getBlockEntities().forEach((pos, be) -> {

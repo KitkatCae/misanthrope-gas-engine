@@ -25,22 +25,29 @@ description    = '''A physically-simulated atmospheric gas engine. Replaces all 
     side        = "BOTH"
 
 [[dependencies."mge"]]
+    modId       = "misanthrope_core"
+    mandatory   = false
+    versionRange = "[1.0,)"
+    ordering    = "BEFORE"
+    side        = "BOTH"
+
+[[dependencies."mge"]]
     modId       = "projectatmosphere"
-    mandatory   = true
+    mandatory   = false
     versionRange = "[0.8,)"
     ordering    = "AFTER"
     side        = "BOTH"
 
 [[dependencies."mge"]]
     modId       = "thermodynamica"
-    mandatory   = true
+    mandatory   = false
     versionRange = "[0.2,)"
     ordering    = "AFTER"
     side        = "BOTH"
 
 [[dependencies."mge"]]
     modId       = "cold_sweat"
-    mandatory   = true
+    mandatory   = false
     versionRange = "[2.4,)"
     ordering    = "AFTER"
     side        = "BOTH"

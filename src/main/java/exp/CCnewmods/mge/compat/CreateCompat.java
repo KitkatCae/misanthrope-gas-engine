@@ -3,6 +3,7 @@ package exp.CCnewmods.mge.compat;
 import exp.CCnewmods.mge.Mge;
 import exp.CCnewmods.mge.MgeConfig;
 import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
+import exp.CCnewmods.mge.util.ChunkIterator;
 import exp.CCnewmods.mge.gas.GasComposition;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import net.minecraft.core.BlockPos;
@@ -45,8 +46,7 @@ public final class CreateCompat {
     }
 
     private static void tickFans(ServerLevel level) {
-        // Iterate chunk block entity maps — avoids both blockEntityList and getChunks()
-        level.getChunkSource().chunkMap.getChunks().forEach(holder -> {
+        ChunkIterator.forEach(level, holder -> {
             var chunk = holder.getTickingChunk();
             if (chunk == null) return;
             chunk.getBlockEntities().forEach((pos, be) -> {
@@ -60,10 +60,11 @@ public final class CreateCompat {
         var airCurrent = fan.airCurrent;
         if (airCurrent == null) return;
 
-        // Use reflection to get speed — avoids the VirtualBlockEntity classpath issue
         float speed;
         try {
-            speed = Math.abs(fan.getSpeed());
+            java.lang.reflect.Field sf = fan.getClass().getSuperclass().getDeclaredField("speed");
+            sf.setAccessible(true);
+            speed = Math.abs(sf.getFloat(fan));
         } catch (Exception e) {
             return;
         }

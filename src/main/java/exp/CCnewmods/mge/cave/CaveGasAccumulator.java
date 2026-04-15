@@ -4,6 +4,7 @@ import exp.CCnewmods.mge.Mge;
 import exp.CCnewmods.mge.MgeConfig;
 import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.gas.GasRegistry;
+import exp.CCnewmods.mge.util.ChunkIterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -40,7 +41,7 @@ public final class CaveGasAccumulator {
 
     private static void tickLevel(ServerLevel level) {
         var rand = level.getRandom();
-        level.getChunkSource().chunkMap.getChunks().forEach(holder -> {
+        ChunkIterator.forEach(level, holder -> {
             if (rand.nextInt(20) != 0) return;
             var chunk = holder.getTickingChunk();
             if (chunk == null) return;
