@@ -3,9 +3,9 @@ package exp.CCnewmods.mge.compat;
 import exp.CCnewmods.mge.Mge;
 import exp.CCnewmods.mge.MgeConfig;
 import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
-import exp.CCnewmods.mge.util.ChunkIterator;
 import exp.CCnewmods.mge.gas.GasComposition;
 import exp.CCnewmods.mge.particulate.ParticulateType;
+import exp.CCnewmods.mge.util.ChunkIterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -16,16 +16,22 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 
-import com.simibubi.create.content.kinetics.fan.EncasedFanBlockEntity;
+import com.simibubi.create.content.kinetics.fan.AirCurrent;
+import com.simibubi.create.content.kinetics.fan.IAirCurrentSource;
 
 /**
  * Create Encased Fan compat — displaces atmosphere in the fan's air current volume.
+ *
+ * We cast the block entity to {@link IAirCurrentSource} (an interface with no Ponder
+ * dependency) rather than the concrete {@code EncasedFanBlockEntity} to avoid pulling
+ * in the SmartBlockEntity → VirtualBlockEntity (Ponder) class hierarchy at compile time.
  */
 @Mod.EventBusSubscriber(modid = Mge.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class CreateCompat {
 
     public static final String CREATE_MODID = "create";
     private static boolean loaded = false;
+    private static Class<?> encasedFanClass = null;
     private static final int SCAN_INTERVAL = 2;
     private static int tick = 0;
 
@@ -33,6 +39,13 @@ public final class CreateCompat {
 
     public static void tryLoad() {
         if (!ModList.get().isLoaded(CREATE_MODID)) return;
+        try {
+            encasedFanClass = Class.forName(
+                "com.simibubi.create.content.kinetics.fan.EncasedFanBlockEntity");
+        } catch (ClassNotFoundException e) {
+            Mge.LOGGER.warn("[MGE] Create: EncasedFanBlockEntity not found — {}", e.getMessage());
+            return;
+        }
         loaded = true;
         Mge.LOGGER.info("[MGE] Create detected — Encased Fan atmosphere displacement active.");
     }
@@ -50,24 +63,19 @@ public final class CreateCompat {
             var chunk = holder.getTickingChunk();
             if (chunk == null) return;
             chunk.getBlockEntities().forEach((pos, be) -> {
-                if (!(be instanceof EncasedFanBlockEntity fan) || be.isRemoved()) return;
+                // Check via reflected class to avoid compile-time hierarchy resolution
+                if (!encasedFanClass.isInstance(be) || be.isRemoved()) return;
+                if (!(be instanceof IAirCurrentSource fan)) return;
                 processFan(level, fan, pos);
             });
         });
     }
 
-    private static void processFan(ServerLevel level, EncasedFanBlockEntity fan, BlockPos fanPos) {
-        var airCurrent = fan.airCurrent;
+    private static void processFan(ServerLevel level, IAirCurrentSource fan, BlockPos fanPos) {
+        AirCurrent airCurrent = fan.getAirCurrent();
         if (airCurrent == null) return;
 
-        float speed;
-        try {
-            java.lang.reflect.Field sf = fan.getClass().getSuperclass().getDeclaredField("speed");
-            sf.setAccessible(true);
-            speed = Math.abs(sf.getFloat(fan));
-        } catch (Exception e) {
-            return;
-        }
+        float speed = Math.abs(fan.getSpeed());
         if (speed < 1f) return;
 
         Direction flowDir = fan.getAirFlowDirection();
@@ -87,7 +95,6 @@ public final class CreateCompat {
 
         int dx = flowDir.getStepX(), dy = flowDir.getStepY(), dz = flowDir.getStepZ();
 
-        // Build and sort column — farthest from fan first
         java.util.List<BlockPos> column = new java.util.ArrayList<>();
         BlockPos.betweenClosedStream(minX, minY, minZ, maxX, maxY, maxZ)
                 .forEach(p -> column.add(p.immutable()));
@@ -132,7 +139,7 @@ public final class CreateCompat {
         var srcTag = src.getTag();
         var dstTag = dst.getTag();
         for (String key : new java.util.ArrayList<>(srcTag.getAllKeys())) {
-            float amt      = srcTag.getFloat(key);
+            float amt = srcTag.getFloat(key);
             float transfer = amt * fraction;
             if (transfer <= 0f) continue;
             srcTag.putFloat(key, Math.max(0f, amt - transfer));
