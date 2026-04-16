@@ -1,0 +1,15 @@
+{
+  "dimension": "minecraft:the_end",
+  "breathable": false,
+  "has_sky_access": true,
+  "base_pressure_mbar": 45.0,
+  "gases": {
+    "mge:nitrogen":        30.0,
+    "mge:carbon_dioxide":   8.0,
+    "mge:argon":            1.5,
+    "mge:helium":           0.5
+  },
+  "particulates": {
+    "chorus_spores": 5.0
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "entity": "minecraft:ghast",
+  "needs_to_breathe": true,
+  "required_gas": "mge:nitrogen",
+  "minimum_partial_pressure_mbar": 50.0,
+  "tolerance_ticks": 400,
+  "toxic_sensitivity": 0.1
+}

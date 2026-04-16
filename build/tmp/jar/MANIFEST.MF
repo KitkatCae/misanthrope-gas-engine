@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Specification-Title: mge
+Specification-Vendor: CCnewmods
+Specification-Version: 2.5.2
+Implementation-Title: misanthrope-gas-engine
+Implementation-Version: 2.5.2
+Implementation-Vendor: CCnewmods
+Implementation-Timestamp: 2026-04-15T20:20:23-0400
+MixinConfigs: mge.mixins.json
+

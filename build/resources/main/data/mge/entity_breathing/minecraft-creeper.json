@@ -1,0 +1,8 @@
+{
+  "entity": "minecraft:creeper",
+  "needs_to_breathe": true,
+  "required_gas": "mge:oxygen",
+  "minimum_partial_pressure_mbar": 120.0,
+  "tolerance_ticks": 100,
+  "toxic_sensitivity": 0.8
+}

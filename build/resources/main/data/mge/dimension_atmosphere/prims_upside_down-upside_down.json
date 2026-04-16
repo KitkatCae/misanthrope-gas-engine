@@ -1,0 +1,23 @@
+{
+  "dimension": "prims_upside_down:upside_down",
+  "breathable": false,
+  "has_sky_access": false,
+  "base_pressure_mbar": 980.0,
+  "gases": {
+    "mge:fluorine":             420.0,
+    "mge:hydrogen":             280.0,
+    "mge:hydrogen_fluoride":    140.0,
+    "mge:nitrogen":              80.0,
+    "mge:carbon_dioxide":        35.0,
+    "mge:mind_flayer_spore_gas": 15.0,
+    "mge:hydrogen_sulfide":      10.0
+  },
+  "particulates": {
+    "smoke_aerosol": 80.0,
+    "spores": 60.0,
+    "mushroom_spores": 40.0,
+    "soot": 25.0,
+    "water_droplets": 15.0,
+    "plant_debris": 10.0
+  }
+}

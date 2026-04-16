@@ -1,0 +1,5 @@
+{
+  "entity": "minecraft:phantom",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}
