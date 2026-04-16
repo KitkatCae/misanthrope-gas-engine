@@ -107,10 +107,3 @@ description    = '''A physically-simulated atmospheric gas engine. Replaces all 
     versionRange = "[1.0,)"
     ordering    = "AFTER"
     side        = "BOTH"
-
-[[dependencies."mge"]]
-    modId       = "misanthrope_core"
-    mandatory   = false
-    versionRange = "[1.0,)"
-    ordering    = "AFTER"
-    side        = "BOTH"
