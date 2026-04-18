@@ -74,6 +74,8 @@ dependencies {
     compileOnly files('libs/burnt-1_9_1_4-forge-1_20_1.jar')
     compileOnly files('libs/Oreganized_1_20_1-4_3_2.jar')
     compileOnly files('libs/Oreganized_Carcinogenius_1_20_1-4_1_0.jar')
+    compileOnly files('libs/pneumaticcraft-repressurized-6_0_22_mc1_20_1.jar')
+    compileOnly files('libs/chemica-0_3_0.jar')
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }

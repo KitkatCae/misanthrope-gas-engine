@@ -114,3 +114,17 @@ description    = '''A physically-simulated atmospheric gas engine. Replaces all 
     versionRange = "[1.0,)"
     ordering    = "AFTER"
     side        = "BOTH"
+
+[[dependencies."mge"]]
+    modId       = "pneumaticcraft"
+    mandatory   = false
+    versionRange = "[6.0,)"
+    ordering    = "AFTER"
+    side        = "BOTH"
+
+[[dependencies."mge"]]
+    modId       = "chemica"
+    mandatory   = false
+    versionRange = "[0.3,)"
+    ordering    = "AFTER"
+    side        = "BOTH"

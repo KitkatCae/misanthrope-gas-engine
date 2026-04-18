@@ -11,7 +11,10 @@ import exp.CCnewmods.mge.compat.CreateCompat;
 import exp.CCnewmods.mge.compat.TfmgCompat;
 import exp.CCnewmods.mge.compat.BurntCompat;
 import exp.CCnewmods.mge.compat.OreganizedCompat;
+import exp.CCnewmods.mge.compat.ChemicaCompat;
 import exp.CCnewmods.mge.compat.MisanthropeCoreCompat;
+import exp.CCnewmods.mge.compat.PneumaticCraftCompat;
+import exp.CCnewmods.mge.fluid.GasFluidRegistry;
 import exp.CCnewmods.mge.cave.CaveGasAccumulator;
 import exp.CCnewmods.mge.breathing.ActiveBreathingHandler;
 import exp.CCnewmods.mge.breathing.EntityBreathingLoader;
@@ -68,9 +71,11 @@ public class Mge {
 
         BLOCKS.register(modBus);
         MgeBlockEntities.BLOCK_ENTITIES.register(modBus);
+        GasFluidRegistry.registerAll(modBus);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, MgeConfig.SPEC);
 
         modBus.addListener(this::commonSetup);
+        modBus.addListener(this::loadComplete);
         modBus.addListener(this::clientSetup);
         MinecraftForge.EVENT_BUS.register(this);
 
@@ -96,8 +101,15 @@ public class Mge {
             BurntCompat.tryLoad();
             OreganizedCompat.tryLoad();
             MisanthropeCoreCompat.tryLoad();
+            PneumaticCraftCompat.tryLoad();
+            ChemicaCompat.tryLoad();
             LOGGER.info("[MGE] Common setup complete.");
         });
+    }
+
+    private void loadComplete(net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent event) {
+        // Resolve cross-mod gas↔fluid aliases after all mods have registered their fluids
+        event.enqueueWork(GasFluidRegistry::resolveAliases);
     }
 
     private void clientSetup(FMLClientSetupEvent event) {
