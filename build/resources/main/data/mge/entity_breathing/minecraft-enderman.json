@@ -1,0 +1,8 @@
+{
+  "entity": "minecraft:enderman",
+  "needs_to_breathe": true,
+  "required_gas": "mge:nitrogen",
+  "minimum_partial_pressure_mbar": 5.0,
+  "tolerance_ticks": 1200,
+  "toxic_sensitivity": 0.05
+}

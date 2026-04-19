@@ -1,0 +1,5 @@
+{
+  "entity": "minecraft:magma_cube",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.3
+}

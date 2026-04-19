@@ -1,0 +1,26 @@
+{
+  "dimension": "minecraft:the_nether",
+  "breathable": false,
+  "has_sky_access": false,
+  "base_pressure_mbar": 1200.0,
+  "gases": {
+    "mge:nitrogen":            360.0,
+    "mge:carbon_dioxide":      200.0,
+    "mge:carbon_monoxide":     130.0,
+    "mge:acetylene":            95.0,
+    "mge:dinitrogen_tetroxide": 85.0,
+    "mge:sulfur_dioxide":       70.0,
+    "mge:hydrogen_sulfide":     50.0,
+    "mge:blaze_fume":           60.0,
+    "mge:soul_smoke":           30.0,
+    "mge:nitric_oxide":         20.0,
+    "mge:water_vapor":          60.0,
+    "mge:methane":              40.0
+  },
+  "particulates": {
+    "ash_cloud": 40.0,
+    "soul_dust": 20.0,
+    "soot": 15.0,
+    "nether_quartz_dust": 10.0
+  }
+}

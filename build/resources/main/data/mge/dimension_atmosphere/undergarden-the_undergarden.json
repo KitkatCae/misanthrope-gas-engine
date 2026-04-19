@@ -1,0 +1,22 @@
+{
+  "dimension": "undergarden:the_undergarden",
+  "breathable": false,
+  "has_sky_access": false,
+  "base_pressure_mbar": 1350.0,
+  "gases": {
+    "mge:nitrogen":           620.0,
+    "mge:carbon_dioxide":     380.0,
+    "mge:carbon_monoxide":     90.0,
+    "mge:methane":             60.0,
+    "mge:hydrogen_sulfide":    40.0,
+    "mge:sulfur_dioxide":      25.0,
+    "mge:water_vapor":         80.0,
+    "mge:radon":               55.0
+  },
+  "particulates": {
+    "spores": 25.0,
+    "mushroom_spores": 15.0,
+    "dust": 10.0,
+    "soot": 5.0
+  }
+}

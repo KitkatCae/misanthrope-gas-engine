@@ -1,0 +1,17 @@
+{
+  "dimension": "dimdoors:limbo",
+  "breathable": false,
+  "has_sky_access": false,
+  "base_pressure_mbar": 120.0,
+  "gases": {
+    "mge:nitrogen":           80.0,
+    "mge:carbon_dioxide":     25.0,
+    "mge:soul_smoke":         10.0,
+    "mge:ender_particulate":   5.0
+  },
+  "particulates": {
+    "soul_dust": 35.0,
+    "dust": 20.0,
+    "redstone_dust": 5.0
+  }
+}

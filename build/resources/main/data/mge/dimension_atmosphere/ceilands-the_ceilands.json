@@ -1,0 +1,19 @@
+{
+  "dimension": "ceilands:the_ceilands",
+  "breathable": true,
+  "has_sky_access": false,
+  "base_pressure_mbar": 1100.0,
+  "gases": {
+    "mge:nitrogen":        830.0,
+    "mge:oxygen":          210.0,
+    "mge:argon":            10.0,
+    "mge:carbon_dioxide":    0.5,
+    "mge:water_vapor":      40.0,
+    "mge:neon":              0.02
+  },
+  "particulates": {
+    "water_droplets": 8.0,
+    "dust": 5.0,
+    "plant_debris": 3.0
+  }
+}
