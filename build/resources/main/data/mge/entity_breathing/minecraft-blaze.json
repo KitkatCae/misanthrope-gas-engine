@@ -1,8 +1,0 @@
-{
-  "entity": "minecraft:blaze",
-  "needs_to_breathe": true,
-  "required_gas": "mge:sulfur_dioxide",
-  "minimum_partial_pressure_mbar": 10.0,
-  "tolerance_ticks": 600,
-  "toxic_sensitivity": 0.0
-}
