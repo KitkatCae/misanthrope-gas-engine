@@ -16,6 +16,10 @@ import exp.CCnewmods.mge.compat.MisanthropeCoreCompat;
 import exp.CCnewmods.mge.compat.PneumaticCraftCompat;
 import exp.CCnewmods.mge.fluid.GasFluidRegistry;
 import exp.CCnewmods.mge.cave.CaveGasAccumulator;
+import exp.CCnewmods.mge.permeability.BlockPermeabilityLoader;
+import exp.CCnewmods.mge.vacuum.VacuumHandler;
+import exp.CCnewmods.mge.shockwave.ShockwaveHandler;
+import exp.CCnewmods.mge.shockwave.ShockwaveDataPacket;
 import exp.CCnewmods.mge.breathing.ActiveBreathingHandler;
 import exp.CCnewmods.mge.breathing.EntityBreathingLoader;
 import exp.CCnewmods.mge.dimension.DimensionAtmosphereLoader;
@@ -78,6 +82,7 @@ public class Mge {
         modBus.addListener(this::loadComplete);
         modBus.addListener(this::clientSetup);
         MinecraftForge.EVENT_BUS.register(this);
+        ShockwaveDataPacket.register();
 
         // Force gas registry init
         LOGGER.info("[MGE] Initialising — {} gases registered.", GasRegistry.all().size());
@@ -90,6 +95,8 @@ public class Mge {
             DimensionAtmosphereLoader.INSTANCE.getClass(); // ensure class loads
             EntityBreathingLoader.INSTANCE.getClass();    // ensure class loads
             CaveGasAccumulator.class.getName();           // ensure class loads
+            VacuumHandler.class.getName();
+            BlockPermeabilityLoader.INSTANCE.getClass();
             ProjectAtmosphereCompat.tryLoad();
             ThermodynamicaCompat.tryLoad();
             ColdSweatCompat.tryLoad();
@@ -101,6 +108,8 @@ public class Mge {
             BurntCompat.tryLoad();
             OreganizedCompat.tryLoad();
             MisanthropeCoreCompat.tryLoad();
+            if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient())
+                exp.CCnewmods.mge.photon.MgePhotonEffects.tryLoad();
             PneumaticCraftCompat.tryLoad();
             ChemicaCompat.tryLoad();
             LOGGER.info("[MGE] Common setup complete.");
@@ -115,6 +124,8 @@ public class Mge {
     private void clientSetup(FMLClientSetupEvent event) {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             MinecraftForge.EVENT_BUS.addListener(Mge::onClientTick);
+            MinecraftForge.EVENT_BUS.register(
+                exp.CCnewmods.mge.shockwave.ShockwaveDistortionRenderer.class);
             LOGGER.info("[MGE] Client setup complete.");
         });
     }
@@ -128,6 +139,7 @@ public class Mge {
     public void onServerStopping(ServerStoppingEvent event) {
         SCHEDULERS.clear();
         exp.CCnewmods.mge.breathing.BreathingTracker.clear();
+        event.getServer().getAllLevels().forEach(ShockwaveHandler::onLevelUnload);
         LOGGER.info("[MGE] Server stopping — schedulers cleared.");
     }
 
@@ -143,5 +155,6 @@ public class Mge {
     private static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (MgeConfig.enableAtmosphereRenderer) AtmosphereRenderer.clientTick();
+        exp.CCnewmods.mge.shockwave.ShockwaveDistortionRenderer.clientTick();
     }
 }

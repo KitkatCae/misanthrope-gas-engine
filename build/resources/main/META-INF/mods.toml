@@ -128,3 +128,10 @@ description    = '''A physically-simulated atmospheric gas engine. Replaces all 
     versionRange = "[0.3,)"
     ordering    = "AFTER"
     side        = "BOTH"
+
+[[dependencies."mge"]]
+    modId       = "photon"
+    mandatory   = false
+    versionRange = "[1.1,)"
+    ordering    = "AFTER"
+    side        = "CLIENT"

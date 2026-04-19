@@ -76,6 +76,7 @@ dependencies {
     compileOnly files('libs/Oreganized_Carcinogenius_1_20_1-4_1_0.jar')
     compileOnly files('libs/pneumaticcraft-repressurized-6_0_22_mc1_20_1.jar')
     compileOnly files('libs/chemica-0_3_0.jar')
+    compileOnly files('libs/photon-forge-1_20_1-1_1_17.jar')
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }

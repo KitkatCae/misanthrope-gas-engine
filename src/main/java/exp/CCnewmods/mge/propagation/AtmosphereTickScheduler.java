@@ -1,6 +1,7 @@
 package exp.CCnewmods.mge.propagation;
 
 import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
+import exp.CCnewmods.mge.permeability.BlockPermeabilityLoader;
 import exp.CCnewmods.mge.gas.Gas;
 import exp.CCnewmods.mge.gas.GasComposition;
 import exp.CCnewmods.mge.gas.GasRegistry;
@@ -92,7 +93,7 @@ public final class AtmosphereTickScheduler {
         Vec3 wind = WindProviderManager.getWind(level, pos);
         float windX = (float) wind.x, windY = (float) wind.y, windZ = (float) wind.z;
 
-        record Neighbour(BlockPos pos, AtmosphereBlockEntity entity, int dx, int dy, int dz) {}
+        record Neighbour(BlockPos pos, AtmosphereBlockEntity entity, int dx, int dy, int dz, float permeability) {}
         List<Neighbour> neighbours = new ArrayList<>(26);
 
         for (int dx = -1; dx <= 1; dx++)
@@ -101,9 +102,11 @@ public final class AtmosphereTickScheduler {
                     if (dx == 0 && dy == 0 && dz == 0) continue;
                     BlockPos nPos = pos.offset(dx, dy, dz);
                     if (!level.isLoaded(nPos)) continue;
+                    float permeability = computePathPermeability(pos, nPos, dx, dy, dz);
+                    if (permeability <= 0.001f) continue;
                     BlockEntity nbe = level.getBlockEntity(nPos);
                     if (!(nbe instanceof AtmosphereBlockEntity nAtm)) continue;
-                    neighbours.add(new Neighbour(nPos, nAtm, dx, dy, dz));
+                    neighbours.add(new Neighbour(nPos, nAtm, dx, dy, dz, permeability));
                 }
 
         if (neighbours.isEmpty()) return;
@@ -139,7 +142,8 @@ public final class AtmosphereTickScheduler {
 
             for (int i = 0; i < neighbours.size(); i++) {
                 if (weights[i] <= 0f) continue;
-                float transfer = totalTransfer * (weights[i] / totalTransferWeight);
+                float transfer = totalTransfer * (weights[i] / totalTransferWeight)
+                        * neighbours.get(i).permeability();
                 AtmosphereBlockEntity nAtm = neighbours.get(i).entity();
                 nAtm.getComposition().add(gas, transfer);
                 nAtm.setComposition(nAtm.getComposition());
@@ -260,4 +264,15 @@ public final class AtmosphereTickScheduler {
     }
 
     public int queueSize() { return dirtyQueue.size(); }
+
+    private float computePathPermeability(BlockPos src, BlockPos dst, int dx, int dy, int dz) {
+        int manhattan = Math.abs(dx) + Math.abs(dy) + Math.abs(dz);
+        if (manhattan == 1)
+            return BlockPermeabilityLoader.getPermeability(level, dst, level.getBlockState(dst));
+        float min = 1.0f;
+        if (dx != 0) { BlockPos f = src.offset(dx,0,0); min = Math.min(min, BlockPermeabilityLoader.getPermeability(level,f,level.getBlockState(f))); }
+        if (dy != 0) { BlockPos f = src.offset(0,dy,0); min = Math.min(min, BlockPermeabilityLoader.getPermeability(level,f,level.getBlockState(f))); }
+        if (dz != 0) { BlockPos f = src.offset(0,0,dz); min = Math.min(min, BlockPermeabilityLoader.getPermeability(level,f,level.getBlockState(f))); }
+        return min;
+    }
 }
