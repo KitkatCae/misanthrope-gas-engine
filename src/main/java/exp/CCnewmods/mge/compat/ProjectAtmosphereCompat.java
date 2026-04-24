@@ -120,17 +120,36 @@ public final class ProjectAtmosphereCompat implements IWindProvider {
         if (!(be instanceof AtmosphereBlockEntity atm)) return;
         float scrub = snap.rainIntensity() * 2f;
         var comp = atm.getComposition();
-        comp.add(GasRegistry.SULFUR_DIOXIDE,   -Math.min(comp.get(GasRegistry.SULFUR_DIOXIDE), scrub));
+
+        // Acid rain: when SO₂ or NO₂ is elevated, rain becomes acidic
+        float so2Before = comp.get(GasRegistry.SULFUR_DIOXIDE);
+        float no2Before = comp.get(GasRegistry.NITROGEN_DIOXIDE);
+        float acidPotential = (so2Before + no2Before) / 1013.25f;
+
+        comp.add(GasRegistry.SULFUR_DIOXIDE,   -Math.min(so2Before, scrub));
         comp.add(GasRegistry.AMMONIA,           -Math.min(comp.get(GasRegistry.AMMONIA), scrub));
         comp.add(GasRegistry.HYDROGEN_CHLORIDE, -Math.min(comp.get(GasRegistry.HYDROGEN_CHLORIDE), scrub));
-        comp.add(GasRegistry.NITROGEN_DIOXIDE,  -Math.min(comp.get(GasRegistry.NITROGEN_DIOXIDE), scrub * 0.5f));
+        comp.add(GasRegistry.NITROGEN_DIOXIDE,  -Math.min(no2Before, scrub * 0.5f));
         comp.add(GasRegistry.WATER_VAPOR, snap.rainIntensity() * 5f);
         atm.setComposition(comp);
+
         var parts = atm.getParticulates();
         parts.add(ParticulateType.DUST,         -Math.min(parts.get(ParticulateType.DUST), scrub * 5f));
         parts.add(ParticulateType.POLLEN,       -Math.min(parts.get(ParticulateType.POLLEN), scrub * 8f));
         parts.add(ParticulateType.SMOKE_AEROSOL,-Math.min(parts.get(ParticulateType.SMOKE_AEROSOL), scrub * 3f));
         atm.setParticulates(parts);
+
+        // Apply acid rain damage to exposed entities if acid potential is significant
+        if (acidPotential > 0.05f) {
+            float damage = acidPotential * snap.rainIntensity() * 2f;
+            level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
+                    new net.minecraft.world.phys.AABB(pos).inflate(0.5))
+                .forEach(entity -> {
+                    if (entity.isUnderWater() || !entity.isInRain()) return;
+                    entity.hurt(entity.damageSources().generic(), damage);
+                });
+        }
+
         Mge.getScheduler(level).enqueueWithNeighbours(pos);
     }
 

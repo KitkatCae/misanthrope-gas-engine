@@ -1,0 +1,9 @@
+{
+  "structure": "minecraft:desert_pyramid",
+  "biomes": ["#minecraft:is_dry", "#minecraft:is_badlands"],
+  "min_distance": 70,
+  "max_distance": 130,
+  "scale": 1.0,
+  "frequency": 0.4,
+  "float_height": 1.5
+}

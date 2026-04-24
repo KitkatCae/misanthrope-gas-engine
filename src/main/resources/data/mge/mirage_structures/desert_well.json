@@ -1,0 +1,9 @@
+{
+  "structure": "minecraft:desert_well",
+  "biomes": ["minecraft:desert"],
+  "min_distance": 50,
+  "max_distance": 100,
+  "scale": 1.0,
+  "frequency": 0.3,
+  "float_height": 0.5
+}

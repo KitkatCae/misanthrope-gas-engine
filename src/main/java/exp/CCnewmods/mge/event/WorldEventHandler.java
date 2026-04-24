@@ -85,6 +85,33 @@ public final class WorldEventHandler {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
 
         List<BlockPos> affected = event.getAffectedBlocks();
+        if (affected.isEmpty()) return;
+
+        net.minecraft.world.phys.Vec3 centre = event.getExplosion().getPosition();
+        BlockPos centrePos = BlockPos.containing(centre);
+        float baseRadius = event.getExplosion().radius;
+
+        // Check atmosphere at centre for amplification / vacuum suppression
+        BlockEntity centreBE = level.getBlockEntity(centrePos);
+        if (centreBE instanceof AtmosphereBlockEntity centreAtm) {
+            float pressure = centreAtm.getComposition().totalPressure();
+
+            // Vacuum: suppress explosion (no medium to carry blast)
+            if (pressure < exp.CCnewmods.mge.vacuum.VacuumHandler.VACUUM_THRESHOLD_MBAR) {
+                affected.subList(affected.size() / 2, affected.size()).clear();
+            } else {
+                // Atmospheric amplification from flammable gas
+                float amp = checkAtmosphericAmplification(centreAtm);
+                if (amp > 1f) {
+                    exp.CCnewmods.mge.shockwave.ShockwaveHandler.spawn(
+                            level, centrePos, baseRadius * amp * 2f);
+                    exp.CCnewmods.mge.shockwave.ShockwaveDataPacket.sendToNear(
+                            level, centre, baseRadius * amp * 2f, baseRadius * 32f);
+                }
+            }
+        }
+
+        // Mutate atmosphere in all affected blocks
         for (BlockPos pos : affected) {
             BlockEntity be = level.getBlockEntity(pos);
             if (!(be instanceof AtmosphereBlockEntity atm)) continue;
@@ -97,15 +124,43 @@ public final class WorldEventHandler {
             comp.add(GasRegistry.CARBON_MONOXIDE, consumed * 0.2f);
             atm.setComposition(comp);
 
-            // Explosion produces heavy smoke and soot
             var parts = atm.getParticulates();
             parts.add(ParticulateType.SMOKE_AEROSOL, 120f);
             parts.add(ParticulateType.SOOT,           40f);
             parts.add(ParticulateType.DUST,            30f);
             atm.setParticulates(parts);
-
             Mge.getScheduler(level).enqueue(pos);
         }
+
+        // Shockwave from every explosion
+        exp.CCnewmods.mge.shockwave.ShockwaveHandler.spawn(level, centrePos, baseRadius * 1.5f);
+        exp.CCnewmods.mge.shockwave.ShockwaveDataPacket.sendToNear(
+                level, centre, baseRadius * 1.5f, baseRadius * 24f);
+    }
+
+    private static float checkAtmosphericAmplification(AtmosphereBlockEntity atm) {
+        GasComposition comp = atm.getComposition();
+        float total = comp.totalPressure();
+        if (total <= 0) return 1f;
+        float oxidiser = comp.get(GasRegistry.OXYGEN);
+        for (String key : comp.getTag().getAllKeys()) {
+            exp.CCnewmods.mge.gas.Gas g = exp.CCnewmods.mge.gas.GasRegistry.get(key).orElse(null);
+            if (g != null && g.properties().hasReactivity(exp.CCnewmods.mge.gas.ReactivityFlag.OXIDISER))
+                oxidiser += comp.get(key);
+        }
+        if (oxidiser / total < 0.16f) return 1f;
+        float maxAmp = 1f;
+        for (String key : comp.getTag().getAllKeys()) {
+            exp.CCnewmods.mge.gas.Gas gas = exp.CCnewmods.mge.gas.GasRegistry.get(key).orElse(null);
+            if (gas == null || !gas.properties().isFlammable()) continue;
+            float frac = comp.get(key) / total;
+            if (frac >= gas.properties().lowerExplosiveLimit()
+                    && frac <= gas.properties().upperExplosiveLimit()) {
+                float amp = 1f + frac * 5f;
+                if (amp > maxAmp) maxAmp = amp;
+            }
+        }
+        return maxAmp;
     }
 
     // ── Nether portal ─────────────────────────────────────────────────────────

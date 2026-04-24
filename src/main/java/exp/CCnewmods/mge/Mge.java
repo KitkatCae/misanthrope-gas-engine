@@ -97,6 +97,9 @@ public class Mge {
             CaveGasAccumulator.class.getName();           // ensure class loads
             VacuumHandler.class.getName();
             BlockPermeabilityLoader.INSTANCE.getClass();
+            exp.CCnewmods.mge.event.BlockGasReactionHandler.class.getName();
+            exp.CCnewmods.mge.event.BreathWeaponHandler.class.getName();
+            exp.CCnewmods.mge.mirage.MirageStructureLoader.INSTANCE.getClass();
             ProjectAtmosphereCompat.tryLoad();
             ThermodynamicaCompat.tryLoad();
             ColdSweatCompat.tryLoad();
@@ -126,6 +129,10 @@ public class Mge {
             MinecraftForge.EVENT_BUS.addListener(Mge::onClientTick);
             MinecraftForge.EVENT_BUS.register(
                 exp.CCnewmods.mge.shockwave.ShockwaveDistortionRenderer.class);
+            MinecraftForge.EVENT_BUS.register(
+                exp.CCnewmods.mge.render.DesertMirageRenderer.class);
+            MinecraftForge.EVENT_BUS.register(
+                exp.CCnewmods.mge.mirage.MirageRenderer.class);
             LOGGER.info("[MGE] Client setup complete.");
         });
     }
@@ -156,5 +163,7 @@ public class Mge {
         if (event.phase != TickEvent.Phase.END) return;
         if (MgeConfig.enableAtmosphereRenderer) AtmosphereRenderer.clientTick();
         exp.CCnewmods.mge.shockwave.ShockwaveDistortionRenderer.clientTick();
+        exp.CCnewmods.mge.render.DesertMirageRenderer.clientTick();
+        exp.CCnewmods.mge.mirage.MirageRenderer.clientTick();
     }
 }

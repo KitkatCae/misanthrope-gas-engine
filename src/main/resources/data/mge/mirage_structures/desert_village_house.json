@@ -1,0 +1,9 @@
+{
+  "structure": "minecraft:village/desert/houses/desert_small_house_1",
+  "biomes": ["minecraft:desert"],
+  "min_distance": 60,
+  "max_distance": 110,
+  "scale": 1.0,
+  "frequency": 0.25,
+  "float_height": 0.0
+}
