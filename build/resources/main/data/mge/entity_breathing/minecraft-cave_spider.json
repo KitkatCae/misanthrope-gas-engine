@@ -1,8 +1,0 @@
-{
-  "entity": "minecraft:cave_spider",
-  "needs_to_breathe": true,
-  "required_gas": "mge:oxygen",
-  "minimum_partial_pressure_mbar": 80.0,
-  "tolerance_ticks": 300,
-  "toxic_sensitivity": 0.6
-}

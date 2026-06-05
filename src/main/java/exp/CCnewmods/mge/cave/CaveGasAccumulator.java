@@ -1,13 +1,14 @@
 package exp.CCnewmods.mge.cave;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
+
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import exp.CCnewmods.mge.util.ChunkIterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -69,19 +70,13 @@ public final class CaveGasAccumulator {
 
     private static void accumulate(ServerLevel level, BlockPos pos, boolean isValley) {
         if (!isValley && level.canSeeSky(pos)) return;
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-
         float mult = isValley ? VALLEY_RATE_MULT : 1.0f;
-        var comp = atm.getComposition();
-        comp.add(GasRegistry.CARBON_DIOXIDE, CAVE_CO2_RATE * mult);
-        comp.add(GasRegistry.RADON,          CAVE_RADON_RATE * mult);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.CARBON_DIOXIDE, CAVE_CO2_RATE * mult);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.RADON,          CAVE_RADON_RATE * mult);
         if (!isValley) {
-            comp.add(GasRegistry.METHANE,          CAVE_CH4_RATE);
-            comp.add(GasRegistry.HYDROGEN_SULFIDE, CAVE_H2S_RATE);
+            GridAtmosphereCompat.addGas(level, pos, GasRegistry.METHANE,          CAVE_CH4_RATE);
+            GridAtmosphereCompat.addGas(level, pos, GasRegistry.HYDROGEN_SULFIDE, CAVE_H2S_RATE);
         }
-        atm.setComposition(comp);
-        Mge.getScheduler(level).enqueue(pos);
     }
 
     private static boolean isEnclosed(ServerLevel level, BlockPos pos) {

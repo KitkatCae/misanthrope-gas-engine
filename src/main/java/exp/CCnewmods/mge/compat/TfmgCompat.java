@@ -1,14 +1,14 @@
 package exp.CCnewmods.mge.compat;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.util.ChunkIterator;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -97,42 +97,26 @@ public final class TfmgCompat {
     private static void emitExhaust(ServerLevel level, BlockPos pos,
                                      float scale, boolean intense) {
         if (!level.isLoaded(pos)) return;
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-
-        var comp = atm.getComposition();
-        comp.add(GasRegistry.CARBON_DIOXIDE,  scale * (intense ? 8f : 5f));
-        comp.add(GasRegistry.CARBON_MONOXIDE, scale * (intense ? 3f : 1.5f));
-        comp.add(GasRegistry.SULFUR_DIOXIDE,  scale * (intense ? 2f : 1f));
-        float o2 = comp.get(GasRegistry.OXYGEN);
-        comp.add(GasRegistry.OXYGEN, -Math.min(o2, scale * 4f));
-        atm.setComposition(comp);
-
-        var parts = atm.getParticulates();
-        parts.add(ParticulateType.SMOKE_AEROSOL, scale * (intense ? 20f : 12f));
-        parts.add(ParticulateType.SOOT,          scale * (intense ? 8f  :  4f));
-        atm.setParticulates(parts);
-        Mge.getScheduler(level).enqueue(pos);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.CARBON_DIOXIDE,  scale * (intense ? 8f : 5f));
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.CARBON_MONOXIDE, scale * (intense ? 3f : 1.5f));
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.SULFUR_DIOXIDE,  scale * (intense ? 2f : 1f));
+        float o2 = GridAtmosphereCompat.getGas(level, pos, GasRegistry.OXYGEN);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.OXYGEN, -Math.min(o2, scale * 4f));
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SMOKE_AEROSOL, scale * (intense ? 20f : 12f));
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SOOT,          scale * (intense ? 8f : 4f));
+        EnvironmentGrid.enqueue(level, pos);
     }
 
     private static void emitBlastFurnace(ServerLevel level, BlockPos pos) {
         if (!level.isLoaded(pos)) return;
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-
-        var comp = atm.getComposition();
-        float o2 = comp.get(GasRegistry.OXYGEN);
-        comp.add(GasRegistry.OXYGEN,         -Math.min(o2, 15f));
-        comp.add(GasRegistry.CARBON_DIOXIDE,  12f);
-        comp.add(GasRegistry.CARBON_MONOXIDE,  8f);
-        comp.add(GasRegistry.SULFUR_DIOXIDE,   3f);
-        atm.setComposition(comp);
-
-        var parts = atm.getParticulates();
-        parts.add(ParticulateType.SOOT,          15f);
-        parts.add(ParticulateType.SMOKE_AEROSOL, 25f);
-        parts.add(ParticulateType.ASH_CLOUD,     10f);
-        atm.setParticulates(parts);
-        Mge.getScheduler(level).enqueue(pos);
+        float o2 = GridAtmosphereCompat.getGas(level, pos, GasRegistry.OXYGEN);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.OXYGEN,         -Math.min(o2, 15f));
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.CARBON_DIOXIDE,  12f);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.CARBON_MONOXIDE,  8f);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.SULFUR_DIOXIDE,   3f);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SOOT,          15f);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SMOKE_AEROSOL, 25f);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.ASH_CLOUD,     10f);
+        EnvironmentGrid.enqueue(level, pos);
     }
 }

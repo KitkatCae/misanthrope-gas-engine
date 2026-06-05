@@ -1,112 +1,181 @@
-buildscript {
-    repositories {
-        maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
-        maven { name = 'ParchmentMC'; url = 'https://maven.parchmentmc.org' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
-        classpath 'org.parchmentmc:librarian:1.+'
-    }
-}
-
 plugins {
     id 'eclipse'
     id 'idea'
-    id 'net.minecraftforge.gradle' version '[6.0.16,6.2)'
+    id 'java'
+    id 'maven-publish'
+    id 'io.freefair.lombok' version '8.6'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
 }
 
-apply plugin: 'org.spongepowered.mixin'
-apply plugin: 'org.parchmentmc.librarian.forgegradle'
-
-group = mod_group_id
 version = mod_version
+group = mod_group_id
+archivesBaseName = mod_id
 
-base { archivesName = mod_id }
-java { toolchain.languageVersion = JavaLanguageVersion.of(17) }
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+}
+
+// Target Java 21 bytecode. Forge 47.4.x runs on Java 21+ at runtime;
+// targeting 21 (not 24) keeps us within what Mixin 0.8.5 and Forge's
+// ASM pipeline have been validated against.
+compileJava.options.release = 21
+compileTestJava.options.release = 21
 
 minecraft {
-    mappings channel: mapping_channel, version: mapping_version
+    mappings channel: "${mapping_channel}", version: "${mapping_version}"
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
     copyIdeResources = true
+
     runs {
-        configureEach {
+        client {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+            property 'forge.enabledGameTestNamespaces', mod_id
             mods { "${mod_id}" { source sourceSets.main } }
         }
-        client { property 'forge.enabledGameTestNamespaces', mod_id }
-        server { property 'forge.enabledGameTestNamespaces', mod_id; args '--nogui' }
-        gameTestServer { property 'forge.enabledGameTestNamespaces', mod_id }
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.enabledGameTestNamespaces', mod_id
+            args '--nogui'
+            mods { "${mod_id}" { source sourceSets.main } }
+        }
+        gameTestServer {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            property 'forge.enabledGameTestNamespaces', mod_id
+            mods { "${mod_id}" { source sourceSets.main } }
+        }
         data {
             workingDirectory project.file('run-data')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
             args '--mod', mod_id, '--all',
-                 '--output', file('src/generated/resources/'),
-                 '--existing', file('src/main/resources/')
+                    '--output', file('src/generated/resources/'),
+                    '--existing', file('src/main/resources/')
+            mods { "${mod_id}" { source sourceSets.main } }
         }
     }
 }
 
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+    srcDir 'src/generated/data'
 }
-
-sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
     maven { name = 'ParchmentMC'; url = 'https://maven.parchmentmc.org' }
+    maven { name = 'Curse Maven'; url = 'https://www.cursemaven.com' }
+    maven { url = "https://api.modrinth.com/maven" }
+    mavenCentral()
+    maven { url = "https://repo.spongepowered.org/maven" }
     flatDir { dirs 'libs' }
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     // Optional compat jars — place in libs/ before building
-    compileOnly files('libs/Forge-projectatmosphere-0.8.0.0.jar')
-    compileOnly files('libs/thermodynamica-0.2.3.jar')
-    compileOnly files('libs/ColdSweat-2.4.jar')
-    compileOnly files('libs/beyond_oxygen-0.12.8-all.jar')
-    compileOnly files('libs/supplementaries-1_20-3_1_43-forge.jar')
-    compileOnly files('libs/create-1_20_1-6_0_8.jar')
-    compileOnly files('libs/tfmg-1_0_2f.jar')
-    compileOnly files('libs/burnt-1_9_1_4-forge-1_20_1.jar')
-    compileOnly files('libs/Oreganized_1_20_1-4_3_2.jar')
-    compileOnly files('libs/Oreganized_Carcinogenius_1_20_1-4_1_0.jar')
-    compileOnly files('libs/pneumaticcraft-repressurized-6_0_22_mc1_20_1.jar')
-    compileOnly files('libs/chemica-0_3_0.jar')
-    compileOnly files('libs/photon-forge-1_20_1-1_1_17.jar')
-
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    implementation fg.deobf("curse.maven:project-atmoshere-1258344:7772950")
+    compileOnly fg.deobf("curse.maven:thermodynamica-1469308:7743758")
+    compileOnly fg.deobf("curse.maven:cold-sweat-506194:7492468")
+    compileOnly fg.deobf("curse.maven:create-328085:7178761")
+    compileOnly fg.deobf("curse.maven:tfmg-693815:7344584")
+    compileOnly fg.deobf("curse.maven:supplementaries-412082:7884611")
+    compileOnly fg.deobf("maven.modrinth:alexs-caves:${alexscaves_version}")
+    compileOnly fg.deobf("curse.maven:beyond-oxygen-1270752:7891099")
+    compileOnly fg.deobf("curse.maven:burnt-998916:7098467")
+    compileOnly fg.deobf("curse.maven:oreganized-769203:7707202")
+    compileOnly fg.deobf("curse.maven:oreganized-carcinogenius-1279957:7098467")
+    compileOnly fg.deobf("curse.maven:pneumaticcraft-repressurized-281849:7307654")
+    compileOnly fg.deobf("curse.maven:chemica-1351412:7440231")
+    compileOnly fg.deobf("curse.maven:photon-871522:7501597")
+    compileOnly fg.deobf("curse.maven:unloaded-activity-831523:5578486")
+    compileOnly fg.deobf("curse.maven:ntrials-1355816:7762779")
+    compileOnly fg.deobf("curse.maven:ice-and-fire-dragons-264231:5633453")
+    compileOnly fg.deobf("curse.maven:the-twilight-forest-227639:5468648")
+    compileOnly fg.deobf("curse.maven:mowzies-mobs-250498:7815705")
+    compileOnly fg.deobf("curse.maven:alexs-mobs-426558:5698791")
+    compileOnly fg.deobf("curse.maven:betterend-forge-1435127:7800936")
+    compileOnly fg.deobf("curse.maven:betternether-forge-1436171:7713601")
+    compileOnly fg.deobf("curse.maven:born-in-chaos-686437:7917933")
+    compileOnly fg.deobf("curse.maven:bosses-of-mass-destruction-forge-941573:5067728")
+    compileOnly fg.deobf("curse.maven:bossesrise-1314084:7655140")
+    compileOnly fg.deobf("curse.maven:craziness-awakened-963163:7430459")
+    compileOnly fg.deobf("curse.maven:monster-expansion-1336105:7388120")
+    compileOnly fg.deobf("curse.maven:crackers-wither-storm-mod-621405:5619741")
+    compileOnly fg.deobf("curse.maven:intense-horror-1093229:7556024")
+    compileOnly fg.deobf("curse.maven:box-of-horrors-408707:7335503")
+    compileOnly fg.deobf("curse.maven:legendary-monsters-944035:8170235")
+    compileOnly fg.deobf("curse.maven:rediscovered-349561:6131050")
+    compileOnly fg.deobf("curse.maven:mutant-monsters-852665:7232503")
+    compileOnly fg.deobf("curse.maven:new-mutant-more-831753:7404733")
+    compileOnly fg.deobf("curse.maven:nether-exorcism-925095:6874615")
+    compileOnly fg.deobf("curse.maven:qliphoth-awakening-1271707:7653115")
+    compileOnly fg.deobf("curse.maven:more-critters-1322511:7938899")
+    compileOnly fg.deobf("curse.maven:dragon-mounts-legacy-375088:5335579")
+    compileOnly fg.deobf("curse.maven:pehkui-319596:5393101")
+    compileOnly fg.deobf("curse.maven:desert-behemoths-sandworms-1066153:5600383")
+    compileOnly fg.deobf("curse.maven:saints-dragons-1358098:8170276")
+    compileOnly fg.deobf("curse.maven:choups-drakvyrn-mod-945686:7586580")
+    compileOnly fg.deobf("curse.maven:blue-skies-312918:5010316")
+    compileOnly fg.deobf("curse.maven:ravenous-1218882:6948738")
+    compileOnly fg.deobf("curse.maven:threateningly-mobs-1280678:8141947")
+    compileOnly fg.deobf("curse.maven:rats-323596:5904296")
+    compileOnly fg.deobf("curse.maven:lendercataclysm-551586:6906993")
+    compileOnly fg.deobf("curse.maven:realms-of-redemption-1140632:8114868")
+    compileOnly fg.deobf("curse.maven:terramity-1084134:6054971")
+    compileOnly fg.deobf("curse.maven:opposing-force-1051360:7888374")
+    compileOnly fg.deobf("curse.maven:create-ornithopter-glider-1312780:8192293")
+    compileOnly fg.deobf("curse.maven:gliders-828331:7349611")
+    compileOnly files('libs/Ponder-Forge-1.20.1-1.0.91.jar')
 }
 
-tasks.named('processResources', ProcessResources).configure {
-    var replaceProperties = [
-        minecraft_version: minecraft_version, minecraft_version_range: minecraft_version_range,
-        forge_version: forge_version, forge_version_range: forge_version_range,
-        loader_version_range: loader_version_range,
-        mod_id: mod_id, mod_name: mod_name, mod_license: mod_license,
-        mod_version: mod_version, mod_authors: mod_authors, mod_description: mod_description,
-    ]
-    inputs.properties replaceProperties
-    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties + [project: project]
-    }
+// Tell the Mixin AP which refmap filename to declare in the jar.
+compileJava {
+    options.compilerArgs += ["-AmixinRefMapDefault=${mod_id}.refmap.json"]
 }
 
-tasks.named('jar', Jar).configure {
+
+jar {
     manifest {
         attributes([
-            "Specification-Title": mod_id, "Specification-Vendor": mod_authors,
-            "Specification-Version": "2.5.3", "Implementation-Title": project.name,
-            "Implementation-Version": project.jar.archiveVersion,
-            "Implementation-Vendor": mod_authors,
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-            "MixinConfigs": "${mod_id}.mixins.json"
+                'Specification-Title'     : mod_id,
+                'Specification-Vendor'    : mod_authors,
+                'Specification-Version'   : '2.7.3',
+                'MixinConfigs'            : "${mod_id}.mixins.json",
+                'Implementation-Title'    : project.name,
+                'Implementation-Version'  : project.jar.archiveVersion,
+                'Implementation-Vendor'   : mod_authors,
+                'Implementation-Timestamp': new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
     finalizedBy 'reobfJar'
+}
+
+processResources {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            forge_version          : forge_version,
+            forge_version_range    : forge_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description
+    ]
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
+        expand replaceProperties
+    }
 }
 
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }

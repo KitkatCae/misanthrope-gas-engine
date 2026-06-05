@@ -1,8 +1,9 @@
 package exp.CCnewmods.mge.event;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import net.minecraft.core.BlockPos;
@@ -16,7 +17,6 @@ import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.entity.projectile.LargeFireball;
 import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.entity.projectile.WitherSkull;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.event.entity.ProjectileImpactEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -54,26 +54,19 @@ public final class BreathWeaponHandler {
 
         if (proj instanceof DragonFireball) {
             // Dragon breath — corrosive cloud, consumes O₂
-            injectAt(level, pos, atm -> {
-                var comp = atm.getComposition();
-                float o2 = comp.get(GasRegistry.OXYGEN);
-                comp.add(GasRegistry.OXYGEN, -Math.min(o2, 80f));
-                comp.add(GasRegistry.CARBON_DIOXIDE, 30f);
-                // Inject wither_miasma as the dragon breath carrier
-                comp.add(GasRegistry.WITHER_MIASMA, 60f);
-                atm.setComposition(comp);
-                var parts = atm.getParticulates();
-                parts.add(ParticulateType.SMOKE_AEROSOL, 200f);
-                parts.add(ParticulateType.SOOT, 50f);
-                atm.setParticulates(parts);
+            injectAt(level, pos, p -> {
+                float o2 = GridAtmosphereCompat.getGas(level, p, GasRegistry.OXYGEN);
+                GridAtmosphereCompat.addGas(level, p, GasRegistry.OXYGEN,          -Math.min(o2, 80f));
+                GridAtmosphereCompat.addGas(level, p, GasRegistry.CARBON_DIOXIDE,   30f);
+                GridAtmosphereCompat.addGas(level, p, GasRegistry.WITHER_MIASMA,    60f);
+                GridAtmosphereCompat.addParticulate(level, p, ParticulateType.SMOKE_AEROSOL, 200f);
+                GridAtmosphereCompat.addParticulate(level, p, ParticulateType.SOOT,           50f);
             });
             // Spread to adjacent blocks
             for (BlockPos adj : new BlockPos[]{pos.north(),pos.south(),pos.east(),pos.west(),pos.above()}) {
-                injectAt(level, adj, atm -> {
-                    atm.getComposition().add(GasRegistry.WITHER_MIASMA, 20f);
-                    atm.setComposition(atm.getComposition());
-                    atm.getParticulates().add(ParticulateType.SMOKE_AEROSOL, 80f);
-                    atm.setParticulates(atm.getParticulates());
+                injectAt(level, adj, p -> {
+                    GridAtmosphereCompat.addGas(level, p, GasRegistry.WITHER_MIASMA, 20f);
+                    GridAtmosphereCompat.addParticulate(level, p, ParticulateType.SMOKE_AEROSOL, 80f);
                 });
             }
         } else if (proj instanceof LargeFireball || proj instanceof SmallFireball) {
@@ -81,31 +74,23 @@ public final class BreathWeaponHandler {
             Entity owner = proj instanceof LargeFireball fb ? fb.getOwner()
                          : ((SmallFireball) proj).getOwner();
             boolean isGhast = owner instanceof Ghast;
-            injectAt(level, pos, atm -> {
-                var comp = atm.getComposition();
-                float o2 = comp.get(GasRegistry.OXYGEN);
-                comp.add(GasRegistry.OXYGEN, -Math.min(o2, 40f));
-                comp.add(GasRegistry.CARBON_DIOXIDE, 25f);
-                comp.add(GasRegistry.BLAZE_FUME, isGhast ? 30f : 15f);
-                comp.add(GasRegistry.SULFUR_DIOXIDE, 10f);
-                atm.setComposition(comp);
-                var parts = atm.getParticulates();
-                parts.add(ParticulateType.SMOKE_AEROSOL, isGhast ? 150f : 60f);
-                parts.add(ParticulateType.SOOT, 30f);
-                atm.setParticulates(parts);
+            injectAt(level, pos, p -> {
+                float o2 = GridAtmosphereCompat.getGas(level, p, GasRegistry.OXYGEN);
+                GridAtmosphereCompat.addGas(level, p, GasRegistry.OXYGEN,         -Math.min(o2, 40f));
+                GridAtmosphereCompat.addGas(level, p, GasRegistry.CARBON_DIOXIDE,  25f);
+                GridAtmosphereCompat.addGas(level, p, GasRegistry.BLAZE_FUME,      isGhast ? 30f : 15f);
+                GridAtmosphereCompat.addGas(level, p, GasRegistry.SULFUR_DIOXIDE,  10f);
+                GridAtmosphereCompat.addParticulate(level, p, ParticulateType.SMOKE_AEROSOL, isGhast ? 150f : 60f);
+                GridAtmosphereCompat.addParticulate(level, p, ParticulateType.SOOT,           30f);
             });
             WorldEventHandler.mutateFire(level, pos, isGhast ? 20f : 10f);
         } else if (proj instanceof WitherSkull skull) {
             // Wither skull — necrotic wither_miasma + soul smoke
-            injectAt(level, pos, atm -> {
-                var comp = atm.getComposition();
-                comp.add(GasRegistry.WITHER_MIASMA, skull.isDangerous() ? 80f : 40f);
-                comp.add(GasRegistry.SOUL_SMOKE, 30f);
-                atm.setComposition(comp);
-                var parts = atm.getParticulates();
-                parts.add(ParticulateType.SOUL_DUST, 50f);
-                parts.add(ParticulateType.SMOKE_AEROSOL, 80f);
-                atm.setParticulates(parts);
+            injectAt(level, pos, p -> {
+                GridAtmosphereCompat.addGas(level, p, GasRegistry.WITHER_MIASMA, skull.isDangerous() ? 80f : 40f);
+                GridAtmosphereCompat.addGas(level, p, GasRegistry.SOUL_SMOKE,    30f);
+                GridAtmosphereCompat.addParticulate(level, p, ParticulateType.SOUL_DUST,      50f);
+                GridAtmosphereCompat.addParticulate(level, p, ParticulateType.SMOKE_AEROSOL,  80f);
             });
         }
     }
@@ -121,11 +106,13 @@ public final class BreathWeaponHandler {
         if (!blaze.isOnFire()) return;
 
         BlockPos pos = blaze.blockPosition();
-        injectAt(level, pos, atm -> {
-            atm.getComposition().add(GasRegistry.BLAZE_FUME, 5f);
-            atm.getComposition().add(GasRegistry.SULFUR_DIOXIDE, 2f);
-            atm.setComposition(atm.getComposition());
-            Mge.getScheduler(level).enqueue(pos);
+        injectAt(level, pos, p -> {
+            GridAtmosphereCompat.addGas(level, p, GasRegistry.BLAZE_FUME,      5f);
+            GridAtmosphereCompat.addGas(level, p, GasRegistry.SULFUR_DIOXIDE,  2f);
+            // Blazes are biological pyrotheum colonies — their blazing blood off-gases
+            // pyrotheum dust continuously. The dust ionises surrounding air.
+            GridAtmosphereCompat.addParticulate(level, p, exp.CCnewmods.mge.particulate.ParticulateType.PYROTHEUM_DUST, 8f);
+            GridAtmosphereCompat.addGas(level, p, GasRegistry.IONISED_AIR, 3f);
         });
     }
 
@@ -140,22 +127,19 @@ public final class BreathWeaponHandler {
 
         // Dragon constantly off-gases ender particulate and CO₂ from wing beats
         BlockPos pos = dragon.blockPosition();
-        injectAt(level, pos, atm -> {
-            atm.getComposition().add(GasRegistry.CARBON_DIOXIDE, 3f);
-            atm.getComposition().add(GasRegistry.ENDER_PARTICULATE, 5f);
-            atm.setComposition(atm.getComposition());
+        injectAt(level, pos, p -> {
+            GridAtmosphereCompat.addGas(level, p, GasRegistry.CARBON_DIOXIDE,    3f);
+            GridAtmosphereCompat.addGas(level, p, GasRegistry.ENDER_PARTICULATE, 5f);
         });
     }
 
     // ── Helper ────────────────────────────────────────────────────────────────
 
-    @FunctionalInterface interface AtmlAction { void apply(AtmosphereBlockEntity atm); }
-
-    private static void injectAt(ServerLevel level, BlockPos pos, AtmlAction action) {
+    // Inject helper — replaced with direct grid calls below
+    private static void injectAt(ServerLevel level, BlockPos pos,
+                                  java.util.function.Consumer<BlockPos> action) {
         if (!level.isLoaded(pos)) return;
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-        action.apply(atm);
-        Mge.getScheduler(level).enqueue(pos);
+        action.accept(pos);
+        EnvironmentGrid.enqueue(level, pos);
     }
 }

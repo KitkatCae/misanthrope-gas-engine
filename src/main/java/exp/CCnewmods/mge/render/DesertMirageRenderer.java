@@ -1,7 +1,7 @@
 package exp.CCnewmods.mge.render;
 
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.biome.Biome;
@@ -64,7 +64,7 @@ public final class DesertMirageRenderer {
         BlockPos playerPos = mc.player.blockPosition();
         Biome biome = mc.level.getBiome(playerPos).value();
         float temp = biome.getBaseTemperature();
-        float downfall = biome.climateSettings.downfall();
+        float downfall = biome.getModifiedClimateSettings().downfall();
         if (temp < 0.8f || downfall > 0.2f) { mirageStrength = 0; return; }
 
         // Surface proximity — within 5 blocks of surface
@@ -75,12 +75,10 @@ public final class DesertMirageRenderer {
 
         // Atmosphere water vapour check
         BlockPos eyePos = BlockPos.containing(mc.player.getEyePosition());
-        BlockEntity be = mc.level.getBlockEntity(eyePos);
-        float vapor = 25f; // default
-        if (be instanceof AtmosphereBlockEntity atm) {
-            vapor = atm.getComposition().get(
-                    exp.CCnewmods.mge.gas.GasRegistry.WATER_VAPOR);
-        }
+        float vapor;
+        float gridVapor = EnvironmentGrid.getGas(mc.level, eyePos,
+                exp.CCnewmods.mge.gas.GasRegistry.WATER_VAPOR);
+        vapor = gridVapor > 0f ? gridVapor : 25f; // default if no grid data
         if (vapor > 40f) { mirageStrength = 0; return; } // too humid for mirage
 
         // Compute strength — stronger when hotter and drier

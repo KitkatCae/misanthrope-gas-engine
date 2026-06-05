@@ -1,7 +1,9 @@
 package exp.CCnewmods.mge.event;
 
 import exp.CCnewmods.mge.Mge;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
+
 import exp.CCnewmods.mge.breathing.EntityBreathingLoader;
 import exp.CCnewmods.mge.breathing.EntityBreathingProfile;
 import exp.CCnewmods.mge.gas.*;
@@ -15,7 +17,6 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -56,18 +57,15 @@ public final class PlayerGasEffectHandler {
         if (entity.tickCount % CHECK_INTERVAL_TICKS != 0) return;
 
         BlockPos eyePos = BlockPos.containing(entity.getEyePosition());
-        BlockEntity be  = level.getBlockEntity(eyePos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-
-        GasComposition gases = atm.getComposition();
-        ParticulateComposition particulates = atm.getParticulates();
+        GasComposition gases = GridAtmosphereCompat.getComposition(level, eyePos);
+        ParticulateComposition particulates = GridAtmosphereCompat.getParticulates(level, eyePos);
 
         // Resolve this entity's breathing profile — drives all gas effect checks
         EntityBreathingProfile profile = EntityBreathingLoader.get(entity);
 
         if (profile.needsToBreathe) applyBreathingEffects(entity, gases, profile);
         if (profile.toxicSensitivity > 0f) applyToxicGasEffects(entity, gases, profile);
-        applyFlammabilityIgnition(entity, level, eyePos, gases, atm);
+        applyFlammabilityIgnition(entity, level, eyePos, gases);
         applyParticulateEffects(entity, particulates);
     }
 
@@ -131,7 +129,7 @@ public final class PlayerGasEffectHandler {
 
     private static void applyFlammabilityIgnition(
             LivingEntity entity, ServerLevel level, BlockPos pos,
-            GasComposition comp, AtmosphereBlockEntity atm) {
+            GasComposition comp) {
         if (!entity.isOnFire()) return;
         if (entity instanceof Player p && p.isCreative()) return;
 
@@ -161,7 +159,7 @@ public final class PlayerGasEffectHandler {
             if (fraction > gas.properties().upperExplosiveLimit()) continue;
 
             // Combustion event — products depend on what oxidiser is dominant
-            GasComposition c = atm.getComposition();
+            GasComposition c = GridAtmosphereCompat.getComposition(level, pos);
             float available = comp.get(key);
             float consumed  = Math.min(available, 50f);
             c.add(gas, -consumed);
@@ -180,15 +178,10 @@ public final class PlayerGasEffectHandler {
                 c.add(GasRegistry.CARBON_MONOXIDE,  5f);
             }
 
-            atm.setComposition(c);
-
-            // Inject smoke particulates
-            var parts = atm.getParticulates();
-            parts.add(ParticulateType.SMOKE_AEROSOL, 60f);
-            parts.add(ParticulateType.SOOT,           20f);
-            atm.setParticulates(parts);
-
-            Mge.getScheduler(level).enqueueWithNeighbours(pos);
+            GridAtmosphereCompat.setComposition(level, pos, c);
+            GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SMOKE_AEROSOL, 60f);
+            GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SOOT, 20f);
+            EnvironmentGrid.enqueueWithNeighbours(level, pos);
             entity.hurt(entity.damageSources().explosion(null, null), 4.0f);
             entity.setSecondsOnFire(5);
             return; // one combustion event per check interval

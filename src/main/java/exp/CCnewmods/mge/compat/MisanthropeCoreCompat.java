@@ -1,14 +1,14 @@
 package exp.CCnewmods.mge.compat;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.util.ChunkIterator;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -66,19 +66,15 @@ public final class MisanthropeCoreCompat {
             BlockPos samplePos = new BlockPos(cx, surfY - 1, cz);
 
             if (!level.isLoaded(samplePos)) return;
-            BlockEntity be = level.getBlockEntity(samplePos);
-            if (!(be instanceof AtmosphereBlockEntity atm)) return;
-
-            applyAmbientChemistry(level, samplePos, atm);
+            applyAmbientChemistry(level, samplePos);
         });
     }
 
-    private static void applyAmbientChemistry(ServerLevel level, BlockPos pos,
-                                               AtmosphereBlockEntity atm) {
+    private static void applyAmbientChemistry(ServerLevel level, BlockPos pos) {
         double celsius = getAmbientCelsius(level, pos);
         if (Double.isNaN(celsius)) return;
 
-        var comp = atm.getComposition();
+        var comp = GridAtmosphereCompat.getComposition(level, pos);
         boolean changed = false;
 
         if (celsius > 80.0) {
@@ -100,8 +96,8 @@ public final class MisanthropeCoreCompat {
         }
 
         if (changed) {
-            atm.setComposition(comp);
-            Mge.getScheduler(level).enqueue(pos);
+            GridAtmosphereCompat.setComposition(level, pos, comp);
+            EnvironmentGrid.enqueue(level, pos);
         }
     }
 

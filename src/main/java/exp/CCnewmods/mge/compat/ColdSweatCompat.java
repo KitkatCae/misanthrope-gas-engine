@@ -1,13 +1,13 @@
 package exp.CCnewmods.mge.compat;
 
 import exp.CCnewmods.mge.Mge;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
@@ -72,12 +72,10 @@ public final class ColdSweatCompat {
         if (Math.abs(delta) < 0.01) return; // ignore trivial changes
 
         BlockPos eyePos = BlockPos.containing(entity.getEyePosition());
-        BlockEntity be  = level.getBlockEntity(eyePos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
 
         switch (trait) {
-            case WORLD -> applyWorldTemp(level, eyePos, atm, newTemp, delta);
-            case BODY  -> applyBodyTemp(level, eyePos, atm, newTemp, delta);
+            case WORLD -> applyWorldTemp(level, eyePos, newTemp, delta);
+            case BODY  -> applyBodyTemp(level, eyePos, newTemp, delta);
             default    -> {} // FREEZING_POINT, BURNING_POINT, BASE, etc. — ignore
         }
     }
@@ -92,9 +90,9 @@ public final class ColdSweatCompat {
      * Values outside [0, 2] are possible in extreme biomes.</p>
      */
     private static void applyWorldTemp(ServerLevel level, BlockPos pos,
-                                        AtmosphereBlockEntity atm, double worldTemp, double delta) {
-        var comp  = atm.getComposition();
-        var parts = atm.getParticulates();
+                                        double worldTemp, double delta) {
+        var comp  = GridAtmosphereCompat.getComposition(level, pos);
+        var parts = GridAtmosphereCompat.getParticulates(level, pos);
         boolean changed = false;
 
         if (worldTemp > 1.5 && delta > 0) {
@@ -121,9 +119,8 @@ public final class ColdSweatCompat {
         }
 
         if (changed) {
-            atm.setComposition(comp);
-            atm.setParticulates(parts);
-            Mge.getScheduler(level).enqueue(pos);
+            GridAtmosphereCompat.setComposition(level, pos, comp);
+            EnvironmentGrid.enqueue(level, pos);
         }
     }
 
@@ -137,8 +134,8 @@ public final class ColdSweatCompat {
      * Normal range is approximately -0.5 to +0.5.</p>
      */
     private static void applyBodyTemp(ServerLevel level, BlockPos pos,
-                                       AtmosphereBlockEntity atm, double bodyTemp, double delta) {
-        var comp = atm.getComposition();
+                                       double bodyTemp, double delta) {
+        var comp = GridAtmosphereCompat.getComposition(level, pos);
         boolean changed = false;
 
         // Hyperventilation from cold (hypothermia) — rapid shallow breathing
@@ -169,8 +166,8 @@ public final class ColdSweatCompat {
         }
 
         if (changed) {
-            atm.setComposition(comp);
-            Mge.getScheduler(level).enqueue(pos);
+            GridAtmosphereCompat.setComposition(level, pos, comp);
+            EnvironmentGrid.enqueue(level, pos);
         }
     }
 }

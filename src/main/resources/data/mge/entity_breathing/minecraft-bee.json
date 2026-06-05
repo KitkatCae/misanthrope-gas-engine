@@ -1,0 +1,12 @@
+{
+  "entity": "minecraft:bee",
+  "needs_to_breathe": true,
+  "required_gas": "mge:oxygen",
+  "minimum_partial_pressure_mbar": 120.0,
+  "tolerance_ticks": 20,
+  "toxic_sensitivity": 1.8,
+  "min_flight_pressure_mbar": 600.0,
+  "max_flight_pressure_mbar": 1250.0,
+  "flight_pressure_tolerance_ticks": 40,
+  "wind_sensitivity": 2.0
+}

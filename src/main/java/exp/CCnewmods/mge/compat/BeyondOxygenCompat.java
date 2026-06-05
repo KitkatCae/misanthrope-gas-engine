@@ -1,12 +1,12 @@
 package exp.CCnewmods.mge.compat;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.event.entity.living.LivingBreatheEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -94,16 +94,11 @@ public final class BeyondOxygenCompat {
 
         // Sample atmosphere at eye position
         BlockPos eyePos = BlockPos.containing(entity.getEyePosition());
-        BlockEntity be = entity.level().getBlockEntity(eyePos);
-
-        if (!(be instanceof AtmosphereBlockEntity atm)) {
-            // Not in an atmosphere block — fall through to BO's logic
-            return;
-        }
-
-        float o2 = atm.getComposition().get(GasRegistry.OXYGEN);
+        float o2 = GridAtmosphereCompat.getO2Mbar(entity.level(), eyePos);
         boolean mgeBreathable = o2 >= MgeConfig.o2BreathableThresholdMbar;
         boolean boDimensionUnbreathable = BODimensions.isUnbreathable(entity.level());
+        // If o2 == 0 and no grid data exists, fall through to BO
+        if (o2 == 0f && !mgeBreathable && !boDimensionUnbreathable) return;
 
         if (mgeBreathable) {
             // Local O₂ is sufficient — override BO's dimension-wide block

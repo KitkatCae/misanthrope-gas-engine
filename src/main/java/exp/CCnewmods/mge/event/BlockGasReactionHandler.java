@@ -1,15 +1,16 @@
 package exp.CCnewmods.mge.event;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
+
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import exp.CCnewmods.mge.util.ChunkIterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.level.BlockEvent;
@@ -51,10 +52,14 @@ public final class BlockGasReactionHandler {
             ChunkIterator.forEach(level, holder -> {
                 var chunk = holder.getTickingChunk();
                 if (chunk == null || level.getRandom().nextInt(4) != 0) return;
-                chunk.getBlockEntities().forEach((pos, be) -> {
-                    if (!(be instanceof AtmosphereBlockEntity atm)) return;
-                    reactWithNeighbours(level, pos, atm, 0.05f);
-                });
+                // Sample one position per section in the chunk
+                var cp = chunk.getPos();
+                int midX = cp.getMiddleBlockX(), midZ = cp.getMiddleBlockZ();
+                for (int dy = 0; dy < level.getSectionsCount(); dy++) {
+                    int sampleY = level.getMinBuildHeight() + dy * 16 + 8;
+                    var sPos = new BlockPos(midX, sampleY, midZ);
+                    reactWithNeighbours(level, sPos, 0.05f);
+                }
             });
         }
     }
@@ -68,25 +73,22 @@ public final class BlockGasReactionHandler {
         for (BlockPos n : new BlockPos[]{
                 pos.above(), pos.below(), pos.north(), pos.south(), pos.east(), pos.west()}) {
             if (!level.isLoaded(n)) continue;
-            BlockEntity be = level.getBlockEntity(n);
-            if (!(be instanceof AtmosphereBlockEntity atm)) continue;
-            reactBlock(level, pos, changed, n, atm, 1.0f);
+            reactBlock(level, pos, changed, n, 1.0f);
         }
     }
 
-    private static void reactWithNeighbours(ServerLevel level, BlockPos atmPos,
-                                             AtmosphereBlockEntity atm, float rate) {
+    private static void reactWithNeighbours(ServerLevel level, BlockPos atmPos, float rate) {
         for (BlockPos n : new BlockPos[]{
                 atmPos.above(), atmPos.below(),
                 atmPos.north(), atmPos.south(), atmPos.east(), atmPos.west()}) {
             if (!level.isLoaded(n)) continue;
-            reactBlock(level, n, level.getBlockState(n), atmPos, atm, rate);
+            reactBlock(level, n, level.getBlockState(n), atmPos, rate);
         }
     }
 
     private static void reactBlock(ServerLevel level, BlockPos blockPos, BlockState state,
-                                    BlockPos atmPos, AtmosphereBlockEntity atm, float rate) {
-        var comp = atm.getComposition();
+                                    BlockPos atmPos, float rate) {
+        var comp = GridAtmosphereCompat.getComposition(level, atmPos);
         boolean changed = false;
 
         if (state.is(Blocks.LAVA)) {
@@ -97,7 +99,7 @@ public final class BlockGasReactionHandler {
                 comp.add(GasRegistry.FLUORINE, -c);
                 comp.add(GasRegistry.HYDROGEN_FLUORIDE, c * 0.8f);
                 comp.add(GasRegistry.SULFUR_DIOXIDE, rate * 2f);
-                atm.getParticulates().add(ParticulateType.SOOT, rate * 5f);
+                GridAtmosphereCompat.addParticulate(level, atmPos, ParticulateType.SOOT, rate * 5f);
                 changed = true;
             }
             // CH₄ ignites near lava
@@ -166,8 +168,7 @@ public final class BlockGasReactionHandler {
         }
 
         if (changed) {
-            atm.setComposition(comp);
-            Mge.getScheduler(level).enqueue(atmPos);
+            GridAtmosphereCompat.setComposition(level, atmPos, comp);
         }
     }
 }

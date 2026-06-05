@@ -1,9 +1,9 @@
 package exp.CCnewmods.mge;
 
 import com.mojang.logging.LogUtils;
-import exp.CCnewmods.mge.block.AtmosphereBlock;
-import exp.CCnewmods.mge.block.MgeBlockEntities;
 import exp.CCnewmods.mge.compat.BeyondOxygenCompat;
+import exp.CCnewmods.mge.compat.ProjectAtmosphereCompat;
+import exp.CCnewmods.mge.compat.ThermodynamicaCompat;
 import exp.CCnewmods.mge.compat.ColdSweatCompat;
 import exp.CCnewmods.mge.compat.WitherStormCompat;
 import exp.CCnewmods.mge.compat.SupplementariesCompat;
@@ -14,6 +14,41 @@ import exp.CCnewmods.mge.compat.OreganizedCompat;
 import exp.CCnewmods.mge.compat.ChemicaCompat;
 import exp.CCnewmods.mge.compat.MisanthropeCoreCompat;
 import exp.CCnewmods.mge.compat.PneumaticCraftCompat;
+import exp.CCnewmods.mge.compat.IceAndFireCompat;
+import exp.CCnewmods.mge.compat.TwilightForestCompat;
+import exp.CCnewmods.mge.compat.MowziesCompat;
+import exp.CCnewmods.mge.compat.AlexsCavesCompat;
+import exp.CCnewmods.mge.compat.AlexsMobsCompat;
+import exp.CCnewmods.mge.compat.BetterNetherEndCompat;
+import exp.CCnewmods.mge.compat.BornInChaosCompat;
+import exp.CCnewmods.mge.compat.BossesMassDestructionCompat;
+import exp.CCnewmods.mge.compat.BossesRiseCompat;
+import exp.CCnewmods.mge.compat.CrazinessAwakenedCompat;
+import exp.CCnewmods.mge.compat.MonsterExpansionCompat;
+import exp.CCnewmods.mge.compat.WitherStormMobCompat;
+import exp.CCnewmods.mge.compat.LegendaryMonstersCompat;
+import exp.CCnewmods.mge.compat.BoxOfHorrorsCompat;
+import exp.CCnewmods.mge.compat.IntenseHorrorCompat;
+import exp.CCnewmods.mge.compat.RediscoveredCompat;
+import exp.CCnewmods.mge.compat.MutantMonstersCompat;
+import exp.CCnewmods.mge.compat.NethersExorcismCompat;
+import exp.CCnewmods.mge.compat.FDBossesCompat;
+import exp.CCnewmods.mge.compat.MoreCrittersCompat;
+import exp.CCnewmods.mge.compat.DragonMountsCompat;
+import exp.CCnewmods.mge.compat.SandwormModCompat;
+import exp.CCnewmods.mge.compat.SaintsDragonsCompat;
+import exp.CCnewmods.mge.compat.DrakvyrnCompat;
+import exp.CCnewmods.mge.compat.BlueSkiesCompat;
+import exp.CCnewmods.mge.compat.TheRavenousCompat;
+import exp.CCnewmods.mge.compat.ThreateninglyMobsCompat;
+import exp.CCnewmods.mge.compat.RatsCompat;
+import exp.CCnewmods.mge.compat.CataclysmCompat;
+import exp.CCnewmods.mge.compat.RealmsOfRedemptionCompat;
+import exp.CCnewmods.mge.compat.MutantMoreCompat;
+import exp.CCnewmods.mge.compat.TerramityCompat;
+import exp.CCnewmods.mge.compat.OpposingForceCompat;
+import exp.CCnewmods.mge.compat.GliderCompatRegistry;
+import exp.CCnewmods.mge.compat.SlimePressureCompat;
 import exp.CCnewmods.mge.fluid.GasFluidRegistry;
 import exp.CCnewmods.mge.cave.CaveGasAccumulator;
 import exp.CCnewmods.mge.permeability.BlockPermeabilityLoader;
@@ -23,10 +58,10 @@ import exp.CCnewmods.mge.shockwave.ShockwaveDataPacket;
 import exp.CCnewmods.mge.breathing.ActiveBreathingHandler;
 import exp.CCnewmods.mge.breathing.EntityBreathingLoader;
 import exp.CCnewmods.mge.dimension.DimensionAtmosphereLoader;
-import exp.CCnewmods.mge.compat.ProjectAtmosphereCompat;
-import exp.CCnewmods.mge.compat.ThermodynamicaCompat;
 import exp.CCnewmods.mge.gas.GasRegistry;
-import exp.CCnewmods.mge.propagation.AtmosphereTickScheduler;
+import exp.CCnewmods.mge.grid.SectionLoadManager;
+import exp.CCnewmods.mge.grid.GridCapabilityHandler;
+import exp.CCnewmods.mge.grid.tick.SectionDiffusionTicker;
 import exp.CCnewmods.mge.render.AtmosphereRenderer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
@@ -61,20 +96,10 @@ public class Mge {
     public static final DeferredRegister<Block> BLOCKS =
             DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
 
-    public static final RegistryObject<AtmosphereBlock> ATMOSPHERE_BLOCK =
-            BLOCKS.register("atmosphere", AtmosphereBlock::new);
-
-    private static final Map<ServerLevel, AtmosphereTickScheduler> SCHEDULERS = new HashMap<>();
-
-    public static AtmosphereTickScheduler getScheduler(ServerLevel level) {
-        return SCHEDULERS.computeIfAbsent(level, AtmosphereTickScheduler::new);
-    }
-
     public Mge() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         BLOCKS.register(modBus);
-        MgeBlockEntities.BLOCK_ENTITIES.register(modBus);
         GasFluidRegistry.registerAll(modBus);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, MgeConfig.SPEC);
 
@@ -82,6 +107,8 @@ public class Mge {
         modBus.addListener(this::loadComplete);
         modBus.addListener(this::clientSetup);
         MinecraftForge.EVENT_BUS.register(this);
+        MinecraftForge.EVENT_BUS.register(GridCapabilityHandler.class);
+        MinecraftForge.EVENT_BUS.register(SectionLoadManager.class);
         ShockwaveDataPacket.register();
 
         // Force gas registry init
@@ -94,6 +121,9 @@ public class Mge {
             // then CS (listens to entity temperatures and calls into Thermo optionally)
             DimensionAtmosphereLoader.INSTANCE.getClass(); // ensure class loads
             EntityBreathingLoader.INSTANCE.getClass();    // ensure class loads
+            exp.CCnewmods.mge.event.VanillaMobAtmosphereHandler.class.getName();
+            exp.CCnewmods.mge.event.MobDeathAtmosphereHandler.class.getName();
+            exp.CCnewmods.mge.spore.SporeGrowthHandler.class.getName();
             CaveGasAccumulator.class.getName();           // ensure class loads
             VacuumHandler.class.getName();
             BlockPermeabilityLoader.INSTANCE.getClass();
@@ -115,6 +145,40 @@ public class Mge {
                 exp.CCnewmods.mge.photon.MgePhotonEffects.tryLoad();
             PneumaticCraftCompat.tryLoad();
             ChemicaCompat.tryLoad();
+            IceAndFireCompat.tryLoad();
+            TwilightForestCompat.tryLoad();
+            MowziesCompat.tryLoad();
+            AlexsCavesCompat.tryLoad();
+            AlexsMobsCompat.tryLoad();
+            BetterNetherEndCompat.tryLoad();
+            SlimePressureCompat.tryLoad();
+            BornInChaosCompat.tryLoad();
+            BossesMassDestructionCompat.tryLoad();
+            BossesRiseCompat.tryLoad();
+            CrazinessAwakenedCompat.tryLoad();
+            MonsterExpansionCompat.tryLoad();
+            WitherStormMobCompat.tryLoad();
+            LegendaryMonstersCompat.tryLoad();
+            BoxOfHorrorsCompat.tryLoad();
+            IntenseHorrorCompat.tryLoad();
+            RediscoveredCompat.tryLoad();
+            MutantMonstersCompat.tryLoad();
+            NethersExorcismCompat.tryLoad();
+            FDBossesCompat.tryLoad();
+            MoreCrittersCompat.tryLoad();
+            DragonMountsCompat.tryLoad();
+            SandwormModCompat.tryLoad();
+            SaintsDragonsCompat.tryLoad();
+            DrakvyrnCompat.tryLoad();
+            BlueSkiesCompat.tryLoad();
+            TheRavenousCompat.tryLoad();
+            ThreateninglyMobsCompat.tryLoad();
+            RatsCompat.tryLoad();
+            CataclysmCompat.tryLoad();
+            RealmsOfRedemptionCompat.tryLoad();
+            TerramityCompat.tryLoad();
+            OpposingForceCompat.tryLoad();
+            GliderCompatRegistry.tryLoad();
             LOGGER.info("[MGE] Common setup complete.");
         });
     }
@@ -128,11 +192,11 @@ public class Mge {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             MinecraftForge.EVENT_BUS.addListener(Mge::onClientTick);
             MinecraftForge.EVENT_BUS.register(
-                exp.CCnewmods.mge.shockwave.ShockwaveDistortionRenderer.class);
+                    exp.CCnewmods.mge.shockwave.ShockwaveDistortionRenderer.class);
             MinecraftForge.EVENT_BUS.register(
-                exp.CCnewmods.mge.render.DesertMirageRenderer.class);
+                    exp.CCnewmods.mge.render.DesertMirageRenderer.class);
             MinecraftForge.EVENT_BUS.register(
-                exp.CCnewmods.mge.mirage.MirageRenderer.class);
+                    exp.CCnewmods.mge.mirage.MirageRenderer.class);
             LOGGER.info("[MGE] Client setup complete.");
         });
     }
@@ -144,7 +208,6 @@ public class Mge {
 
     @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
-        SCHEDULERS.clear();
         exp.CCnewmods.mge.breathing.BreathingTracker.clear();
         event.getServer().getAllLevels().forEach(ShockwaveHandler::onLevelUnload);
         LOGGER.info("[MGE] Server stopping — schedulers cleared.");
@@ -154,7 +217,9 @@ public class Mge {
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         for (ServerLevel level : event.getServer().getAllLevels()) {
-            getScheduler(level).tick();
+            // Set thread-local so SectionDiffusionTicker knows which level it is ticking
+            SectionDiffusionTicker.currentLevel.set(level);
+            SectionDiffusionTicker.currentLevel.remove();
         }
         ActiveBreathingHandler.onServerTick(event, event.getServer());
     }

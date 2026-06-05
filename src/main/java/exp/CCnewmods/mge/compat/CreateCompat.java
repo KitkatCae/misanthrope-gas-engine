@@ -1,15 +1,15 @@
 package exp.CCnewmods.mge.compat;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.gas.GasComposition;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import exp.CCnewmods.mge.util.ChunkIterator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -106,32 +106,25 @@ public final class CreateCompat {
 
         for (BlockPos pos : column) {
             if (!level.isLoaded(pos)) continue;
-            BlockEntity src = level.getBlockEntity(pos);
-            if (!(src instanceof AtmosphereBlockEntity srcAtm)) continue;
-
             BlockPos dst = pos.relative(flowDir);
             if (!level.isLoaded(dst)) continue;
-            BlockEntity dstBE = level.getBlockEntity(dst);
-            if (!(dstBE instanceof AtmosphereBlockEntity dstAtm)) continue;
-
-            transferGas(srcAtm.getComposition(), dstAtm.getComposition(), intensity);
-            srcAtm.setComposition(srcAtm.getComposition());
-            dstAtm.setComposition(dstAtm.getComposition());
-
-            var srcParts = srcAtm.getParticulates();
-            var dstParts = dstAtm.getParticulates();
+            // Transfer gas between grid cells
+            var srcComp = GridAtmosphereCompat.getComposition(level, pos);
+            var dstComp = GridAtmosphereCompat.getComposition(level, dst);
+            transferGas(srcComp, dstComp, intensity);
+            GridAtmosphereCompat.setComposition(level, pos, srcComp);
+            GridAtmosphereCompat.setComposition(level, dst, dstComp);
+            // Particulates via legacy
             for (ParticulateType type : ParticulateType.values()) {
+                var srcParts = GridAtmosphereCompat.getParticulates(level, pos);
                 float amt = srcParts.get(type);
                 if (amt <= 0f) continue;
                 float t = amt * intensity;
-                srcParts.add(type, -t);
-                dstParts.add(type, t);
+                GridAtmosphereCompat.addParticulate(level, pos, type, -t);
+                GridAtmosphereCompat.addParticulate(level, dst, type, t);
             }
-            srcAtm.setParticulates(srcParts);
-            dstAtm.setParticulates(dstParts);
-
-            Mge.getScheduler(level).enqueue(pos);
-            Mge.getScheduler(level).enqueue(dst);
+            EnvironmentGrid.enqueue(level, pos);
+            EnvironmentGrid.enqueue(level, dst);
         }
     }
 

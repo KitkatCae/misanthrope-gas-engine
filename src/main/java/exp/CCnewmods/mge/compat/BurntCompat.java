@@ -1,14 +1,14 @@
 package exp.CCnewmods.mge.compat;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.event.WorldEventHandler;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -95,29 +95,19 @@ public final class BurntCompat {
 
     static void injectBurntFireSmoke(ServerLevel level, BlockPos pos,
                                       float smokeAmount, float sootAmount) {
-        // Inject into the block at pos and the one above — smoke rises
         for (BlockPos target : new BlockPos[]{ pos, pos.above(), pos.above(2) }) {
             if (!level.isLoaded(target)) continue;
-            BlockEntity be = level.getBlockEntity(target);
-            if (!(be instanceof AtmosphereBlockEntity atm)) continue;
-
-            var comp = atm.getComposition();
-            float o2 = comp.get(GasRegistry.OXYGEN);
-            float consumed = Math.min(o2, smokeAmount * 0.05f);
-            comp.add(GasRegistry.OXYGEN,         -consumed);
-            comp.add(GasRegistry.CARBON_DIOXIDE,  consumed * 0.8f);
-            comp.add(GasRegistry.CARBON_MONOXIDE, consumed * 0.15f);
-            atm.setComposition(comp);
-
-            var parts = atm.getParticulates();
-            // Distribute smoke across height — most at pos, less higher up
             float heightFactor = 1.0f / (target.getY() - pos.getY() + 1);
-            parts.add(ParticulateType.SMOKE_AEROSOL, smokeAmount * heightFactor);
-            parts.add(ParticulateType.SOOT,          sootAmount  * heightFactor);
-            parts.add(ParticulateType.ASH_CLOUD,     sootAmount * 0.3f * heightFactor);
-            atm.setParticulates(parts);
-
-            Mge.getScheduler(level).enqueue(target);
+            float o2 = GridAtmosphereCompat.getGas(level, target, GasRegistry.OXYGEN);
+            float consumed = Math.min(o2, smokeAmount * 0.05f);
+            GridAtmosphereCompat.addGas(level, target, GasRegistry.OXYGEN,         -consumed);
+            GridAtmosphereCompat.addGas(level, target, GasRegistry.CARBON_DIOXIDE,  consumed * 0.8f);
+            GridAtmosphereCompat.addGas(level, target, GasRegistry.CARBON_MONOXIDE, consumed * 0.15f);
+            // Particulates still via legacy atm
+            GridAtmosphereCompat.addParticulate(level, target, ParticulateType.SMOKE_AEROSOL, smokeAmount * heightFactor);
+            GridAtmosphereCompat.addParticulate(level, target, ParticulateType.SOOT,          sootAmount  * heightFactor);
+            GridAtmosphereCompat.addParticulate(level, target, ParticulateType.ASH_CLOUD,     sootAmount * 0.3f * heightFactor);
+            EnvironmentGrid.enqueue(level, target);
         }
     }
 }

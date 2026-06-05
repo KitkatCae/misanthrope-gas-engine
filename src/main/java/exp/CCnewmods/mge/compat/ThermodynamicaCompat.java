@@ -1,14 +1,14 @@
 package exp.CCnewmods.mge.compat;
 
 import exp.CCnewmods.mge.Mge;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import exp.CCnewmods.mge.particulate.ParticulateComposition;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.fml.ModList;
 
 import com.Tribulla.thermodynamica.api.HeatAPI;
@@ -70,20 +70,16 @@ public final class ThermodynamicaCompat {
         double oldC  = event.getOldCelsius();
         HeatTier newTier = event.getNewTier();
 
-        // Check the atmosphere block at this position and the one directly above
+        // Apply to this position and the one directly above
         for (BlockPos target : new BlockPos[]{ pos, pos.above() }) {
-            BlockEntity be = level.getBlockEntity(target);
-            if (!(be instanceof AtmosphereBlockEntity atm)) continue;
-
-            applyTemperatureEffects(sl, target, atm, oldC, newC, newTier);
+            applyTemperatureEffects(sl, target, oldC, newC, newTier);
         }
     }
 
     private static void applyTemperatureEffects(ServerLevel level, BlockPos pos,
-                                                  AtmosphereBlockEntity atm,
                                                   double oldC, double newC, HeatTier tier) {
-        var comp = atm.getComposition();
-        var parts = atm.getParticulates();
+        var comp = GridAtmosphereCompat.getComposition(level, pos);
+        var parts = GridAtmosphereCompat.getParticulates(level, pos);
         boolean gasChanged = false;
         boolean partChanged = false;
 
@@ -131,9 +127,8 @@ public final class ThermodynamicaCompat {
             }
         }
 
-        if (gasChanged) atm.setComposition(comp);
-        if (partChanged) atm.setParticulates(parts);
-        if (gasChanged || partChanged) Mge.getScheduler(level).enqueue(pos);
+        if (gasChanged) GridAtmosphereCompat.setComposition(level, pos, comp);
+        if (gasChanged || partChanged) EnvironmentGrid.enqueue(level, pos);
     }
 
     // =========================================================================

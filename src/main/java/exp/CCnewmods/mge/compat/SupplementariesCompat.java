@@ -1,15 +1,15 @@
 package exp.CCnewmods.mge.compat;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.util.ChunkIterator;
 import exp.CCnewmods.mge.gas.GasComposition;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -71,38 +71,28 @@ public final class SupplementariesCompat {
         BlockPos sourcePos = bePos.relative(dir.getOpposite());
 
         if (!level.isLoaded(outputPos) || !level.isLoaded(pushPos)) return;
-        BlockEntity outBE  = level.getBlockEntity(outputPos);
-        BlockEntity pushBE = level.getBlockEntity(pushPos);
-        if (!(outBE  instanceof AtmosphereBlockEntity outAtm))  return;
-        if (!(pushBE instanceof AtmosphereBlockEntity pushAtm)) return;
-
-        // Push output → pushPos
-        transferGas(outAtm.getComposition(), pushAtm.getComposition(), fraction);
-        outAtm.setComposition(outAtm.getComposition());
-        pushAtm.setComposition(pushAtm.getComposition());
-
-        // Displace particulates
+        var outComp  = GridAtmosphereCompat.getComposition(level, outputPos);
+        var pushComp = GridAtmosphereCompat.getComposition(level, pushPos);
+        transferGas(outComp, pushComp, fraction);
+        GridAtmosphereCompat.setComposition(level, outputPos, outComp);
+        GridAtmosphereCompat.setComposition(level, pushPos,   pushComp);
         for (ParticulateType type : ParticulateType.values()) {
-            float amt = outAtm.getParticulates().get(type);
+            var outParts = GridAtmosphereCompat.getParticulates(level, outputPos);
+            float amt = outParts.get(type);
             if (amt <= 0f) continue;
             float t = amt * fraction;
-            outAtm.getParticulates().add(type, -t);
-            pushAtm.getParticulates().add(type, t);
+            GridAtmosphereCompat.addParticulate(level, outputPos, type, -t);
+            GridAtmosphereCompat.addParticulate(level, pushPos,   type,  t);
         }
-        outAtm.setParticulates(outAtm.getParticulates());
-        pushAtm.setParticulates(pushAtm.getParticulates());
-
-        // Pull source → output
-        BlockEntity srcBE = level.getBlockEntity(sourcePos);
-        if (srcBE instanceof AtmosphereBlockEntity srcAtm && level.isLoaded(sourcePos)) {
-            transferGas(srcAtm.getComposition(), outAtm.getComposition(), fraction * 0.5f);
-            srcAtm.setComposition(srcAtm.getComposition());
-            outAtm.setComposition(outAtm.getComposition());
-            Mge.getScheduler(level).enqueue(sourcePos);
+        if (level.isLoaded(sourcePos)) {
+            var srcComp = GridAtmosphereCompat.getComposition(level, sourcePos);
+            transferGas(srcComp, outComp, fraction * 0.5f);
+            GridAtmosphereCompat.setComposition(level, sourcePos, srcComp);
+            GridAtmosphereCompat.setComposition(level, outputPos, outComp);
+            EnvironmentGrid.enqueue(level, sourcePos);
         }
-
-        Mge.getScheduler(level).enqueue(outputPos);
-        Mge.getScheduler(level).enqueue(pushPos);
+        EnvironmentGrid.enqueue(level, outputPos);
+        EnvironmentGrid.enqueue(level, pushPos);
     }
 
     /** Transfer {@code fraction} of each gas in src into dst using raw NBT operations. */

@@ -1,7 +1,9 @@
 package exp.CCnewmods.mge.compat;
 
 import exp.CCnewmods.mge.Mge;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.SectionLoadManager;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import exp.CCnewmods.mge.particulate.ParticulateComposition;
 import exp.CCnewmods.mge.particulate.ParticulateType;
@@ -10,7 +12,6 @@ import exp.CCnewmods.mge.wind.WindProviderManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -93,33 +94,24 @@ public final class ProjectAtmosphereCompat implements IWindProvider {
     // Humidity → water vapour mbar (Magnus formula for saturation vapour pressure)
     private static void applyHumidity(ServerLevel level, BlockPos pos,
                                        float humidityPct, float tempC) {
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-
         double satHpa = 6.1078 * Math.exp(17.27 * tempC / (tempC + 237.3));
         float targetMbar = (float) (satHpa * (humidityPct / 100.0) * 10.0);
-        float current = atm.getComposition().get(GasRegistry.WATER_VAPOR);
+        float current = GridAtmosphereCompat.getGas(level, pos, GasRegistry.WATER_VAPOR);
         float delta = (targetMbar - current) * 0.1f;
         if (Math.abs(delta) > 0.1f) {
-            atm.getComposition().add(GasRegistry.WATER_VAPOR, delta);
-            atm.setComposition(atm.getComposition());
-            Mge.getScheduler(level).enqueueWithNeighbours(pos);
+            GridAtmosphereCompat.addGas(level, pos, GasRegistry.WATER_VAPOR, delta);
+            EnvironmentGrid.enqueueWithNeighbours(level, pos);
         }
-        // High humidity → water droplet particulates
         if (humidityPct > 95f || (tempC < 10f && humidityPct > 80f)) {
-            var parts = atm.getParticulates();
-            parts.add(ParticulateType.WATER_DROPLETS, humidityPct * 0.05f);
-            atm.setParticulates(parts);
+            GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.WATER_DROPLETS, humidityPct * 0.05f);
         }
     }
 
     // Rain scrubs water-soluble gases, washes out particulates
     private static void applyRain(ServerLevel level, BlockPos pos, WeatherSnapshot snap) {
         if (snap.rainIntensity() <= 0.01f) return;
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
         float scrub = snap.rainIntensity() * 2f;
-        var comp = atm.getComposition();
+        var comp = GridAtmosphereCompat.getComposition(level, pos);
 
         // Acid rain: when SO₂ or NO₂ is elevated, rain becomes acidic
         float so2Before = comp.get(GasRegistry.SULFUR_DIOXIDE);
@@ -131,13 +123,12 @@ public final class ProjectAtmosphereCompat implements IWindProvider {
         comp.add(GasRegistry.HYDROGEN_CHLORIDE, -Math.min(comp.get(GasRegistry.HYDROGEN_CHLORIDE), scrub));
         comp.add(GasRegistry.NITROGEN_DIOXIDE,  -Math.min(no2Before, scrub * 0.5f));
         comp.add(GasRegistry.WATER_VAPOR, snap.rainIntensity() * 5f);
-        atm.setComposition(comp);
+        GridAtmosphereCompat.setComposition(level, pos, comp);
 
-        var parts = atm.getParticulates();
+        var parts = GridAtmosphereCompat.getParticulates(level, pos);
         parts.add(ParticulateType.DUST,         -Math.min(parts.get(ParticulateType.DUST), scrub * 5f));
         parts.add(ParticulateType.POLLEN,       -Math.min(parts.get(ParticulateType.POLLEN), scrub * 8f));
         parts.add(ParticulateType.SMOKE_AEROSOL,-Math.min(parts.get(ParticulateType.SMOKE_AEROSOL), scrub * 3f));
-        atm.setParticulates(parts);
 
         // Apply acid rain damage to exposed entities if acid potential is significant
         if (acidPotential > 0.05f) {
@@ -145,42 +136,35 @@ public final class ProjectAtmosphereCompat implements IWindProvider {
             level.getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
                     new net.minecraft.world.phys.AABB(pos).inflate(0.5))
                 .forEach(entity -> {
-                    if (entity.isUnderWater() || !entity.isInRain()) return;
+                    if (entity.isUnderWater() || !entity.level().isRainingAt(entity.blockPosition())) return;
                     entity.hurt(entity.damageSources().generic(), damage);
                 });
         }
 
-        Mge.getScheduler(level).enqueueWithNeighbours(pos);
+        SectionLoadManager.getScheduler(level).enqueueWithNeighbours(pos);
     }
 
     // Snow → ice crystal particulates, freeze-out water vapour
     private static void applySnow(ServerLevel level, BlockPos pos,
                                    WeatherSnapshot snap, float tempC) {
         if (!snap.isSnowing()) return;
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-        var parts = atm.getParticulates();
-        parts.add(ParticulateType.ICE_CRYSTALS, Math.max(0f, -tempC) * 0.5f + 5f);
-        atm.setParticulates(parts);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.ICE_CRYSTALS, Math.max(0f, -tempC) * 0.5f + 5f);
         if (tempC < 0f) {
-            var comp = atm.getComposition();
-            comp.add(GasRegistry.WATER_VAPOR, -Math.min(comp.get(GasRegistry.WATER_VAPOR), 2f));
-            atm.setComposition(comp);
+            float vapor = GridAtmosphereCompat.getGas(level, pos, GasRegistry.WATER_VAPOR);
+            GridAtmosphereCompat.addGas(level, pos, GasRegistry.WATER_VAPOR, -Math.min(vapor, 2f));
         }
-        Mge.getScheduler(level).enqueue(pos);
+        EnvironmentGrid.enqueue(level, pos);
     }
 
     // Barometric pressure → O₂ density effect
     private static void applyPressure(ServerLevel level, BlockPos pos, float pressureHpa) {
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-        var comp = atm.getComposition();
         if (pressureHpa < 990f) {
             float deficit = (990f - pressureHpa) * 0.05f;
-            comp.add(GasRegistry.OXYGEN, -Math.min(comp.get(GasRegistry.OXYGEN), deficit));
+            float o2 = GridAtmosphereCompat.getGas(level, pos, GasRegistry.OXYGEN);
+            GridAtmosphereCompat.addGas(level, pos, GasRegistry.OXYGEN, -Math.min(o2, deficit));
         } else if (pressureHpa > 1020f) {
-            comp.add(GasRegistry.OXYGEN, Math.min(1f, (pressureHpa - 1020f) * 0.02f));
+            GridAtmosphereCompat.addGas(level, pos, GasRegistry.OXYGEN,
+                    Math.min(1f, (pressureHpa - 1020f) * 0.02f));
         }
-        atm.setComposition(comp);
     }
 }

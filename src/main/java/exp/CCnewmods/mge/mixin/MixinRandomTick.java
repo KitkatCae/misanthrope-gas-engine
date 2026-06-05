@@ -24,11 +24,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class MixinRandomTick {
 
     @Inject(
-            method = "randomTick(Lnet/minecraft/world/level/block/state/BlockState;"
+            method = "m_213897_(Lnet/minecraft/world/level/block/state/BlockState;"
                     + "Lnet/minecraft/server/level/ServerLevel;"
                     + "Lnet/minecraft/core/BlockPos;"
                     + "Lnet/minecraft/util/RandomSource;)V",
-            at = @At("HEAD")
+            at = @At("HEAD"),
+            remap = false
     )
     private void mge$onRandomTick(BlockState state, ServerLevel level,
                                    BlockPos pos, RandomSource random,
@@ -36,5 +37,7 @@ public abstract class MixinRandomTick {
         ActiveBreathingHandler.onPlantRandomTick(state, level, pos);
         // Oreganized ore continuous emission
         exp.CCnewmods.mge.compat.OreganizedCompat.onOreRandomTick(state, level, pos);
+        // Fungal spore emission and growth
+        exp.CCnewmods.mge.spore.SporeGrowthHandler.onMushroomRandomTick(state, level, pos);
     }
 }

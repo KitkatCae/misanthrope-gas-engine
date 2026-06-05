@@ -3,7 +3,6 @@ package exp.CCnewmods.mge.mirage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
@@ -27,6 +26,7 @@ import net.minecraftforge.fml.common.Mod;
 import org.joml.Matrix4f;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,17 +101,17 @@ public final class MirageRenderer {
 
         BlockPos playerBlock = BlockPos.containing(playerPos);
         Biome biome = mc.level.getBiome(playerBlock).value();
-        if (biome.getBaseTemperature() < 0.8f || biome.climateSettings.downfall() > 0.2f) return;
+        if (biome.getBaseTemperature() < 0.8f || biome.getModifiedClimateSettings().downfall() > 0.2f) return;
 
         int surfaceY = mc.level.getHeight(Heightmap.Types.MOTION_BLOCKING,
                 playerBlock.getX(), playerBlock.getZ());
         if (Math.abs(playerBlock.getY() - surfaceY) > 5) return;
 
         // Check low water vapour
-        BlockEntity be = mc.level.getBlockEntity(BlockPos.containing(mc.player.getEyePosition()));
-        if (be instanceof AtmosphereBlockEntity atm) {
-            if (atm.getComposition().get(GasRegistry.WATER_VAPOR) > 40f) return;
-        }
+        float eyeVapor = EnvironmentGrid.getGas(mc.level,
+                BlockPos.containing(mc.player.getEyePosition()),
+                GasRegistry.WATER_VAPOR);
+        if (eyeVapor > 40f) return;
 
         // Pick a compatible definition
         ResourceLocation biomeId = mc.level.registryAccess()
@@ -199,7 +199,6 @@ public final class MirageRenderer {
 
         BlockRenderDispatcher dispatcher = mc.getBlockRenderer();
         var bufferSource = mc.renderBuffers().bufferSource();
-        var random = new com.mojang.blaze3d.vertex.VertexSorting();
 
         // Horizontal distortion offset for shimmer — varies per block row for wave effect
         // Render each block info in the template

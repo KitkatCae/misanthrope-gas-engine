@@ -57,6 +57,39 @@ public final class MgeConfig {
                     + "convert CO₂ to O₂ when they have sky access. Requires enableActiveBreathing.")
                    .define("enablePlantPhotosynthesis", true);
 
+    private static final ForgeConfigSpec.BooleanValue ENABLE_PLANT_RESPIRATION_SPEC =
+            BUILDER.comment("Enable plant respiration: all photosynthetic plants continuously consume a "
+                    + "small amount of O₂ and release CO₂, regardless of light level. During daylight "
+                    + "this is largely offset by photosynthesis, so the effect is only significant at "
+                    + "night or in sealed / underground spaces. Requires enableActiveBreathing. Default: true.")
+                   .define("enablePlantRespiration", true);
+
+    private static final ForgeConfigSpec.DoubleValue PLANT_RESPIRATION_RATE_SPEC =
+            BUILDER.comment("Multiplier on plant respiration O₂ consumption and CO₂ production rates. "
+                    + "1.0 = realistic (~0.05 mbar O₂ per plant block per 10 s). Raise for faster "
+                    + "atmosphere depletion in sealed rooms; lower for a near-cosmetic effect. Default: 1.0.")
+                   .defineInRange("plantRespirationRateMultiplier", 1.0, 0.0, 10.0);
+
+    private static final ForgeConfigSpec.BooleanValue ENABLE_FLIGHT_PRESSURE_SPEC =
+            BUILDER.comment("Enable atmospheric pressure constraints on flying mobs. When enabled, entities "
+                    + "with min_flight_pressure_mbar or max_flight_pressure_mbar set in their breathing "
+                    + "profile will be weakened and eventually grounded when pressure is out of range. "
+                    + "Default: true.")
+                   .define("enableFlightPressureConstraints", true);
+
+    private static final ForgeConfigSpec.BooleanValue ENABLE_ATMOSPHERIC_FLIGHT_PHYSICS_SPEC =
+            BUILDER.comment("Enable atmospheric density and wind effects on gliders (elytra, ornithopter, "
+                    + "VCGliders) and airborne flying mobs. Thin atmospheres reduce glide ratio; dense "
+                    + "atmospheres increase drag. Wind vectors from Project Atmosphere (if loaded) push "
+                    + "gliders and mobs in the wind direction. Default: true.")
+                   .define("enableAtmosphericFlightPhysics", true);
+
+    private static final ForgeConfigSpec.DoubleValue GLIDER_WIND_SENSITIVITY_SPEC =
+            BUILDER.comment("How strongly atmospheric wind currents affect gliding players. "
+                    + "1.0 = realistic wind push (~1 block/s at 20 m/s wind). "
+                    + "0 = gliders completely unaffected by wind. Default: 0.6.")
+                   .defineInRange("gliderWindSensitivity", 0.6, 0.0, 5.0);
+
     private static final ForgeConfigSpec.BooleanValue ENABLE_PARTICULATES_SPEC =
             BUILDER.comment("If false, particulate tracking is disabled entirely (saves NBT space).")
                    .define("enableParticulates", true);
@@ -90,6 +123,11 @@ public final class MgeConfig {
     public static boolean enableGasEffects;
     public static boolean enableActiveBreathing;
     public static boolean enablePlantPhotosynthesis;
+    public static boolean enablePlantRespiration;
+    public static float   plantRespirationRateMultiplier;
+    public static boolean enableFlightPressureConstraints;
+    public static boolean enableAtmosphericFlightPhysics;
+    public static float   gliderWindSensitivity;
     public static boolean enableParticulates;
     public static boolean enableAtmosphereRenderer;
     public static boolean standardAirOnGeneration;
@@ -106,6 +144,11 @@ public final class MgeConfig {
         enableGasEffects               = ENABLE_GAS_EFFECTS_SPEC.get();
         enableActiveBreathing          = ENABLE_ACTIVE_BREATHING_SPEC.get();
         enablePlantPhotosynthesis      = ENABLE_PLANT_PHOTOSYNTHESIS_SPEC.get();
+        enablePlantRespiration         = ENABLE_PLANT_RESPIRATION_SPEC.get();
+        plantRespirationRateMultiplier = PLANT_RESPIRATION_RATE_SPEC.get().floatValue();
+        enableFlightPressureConstraints  = ENABLE_FLIGHT_PRESSURE_SPEC.get();
+        enableAtmosphericFlightPhysics   = ENABLE_ATMOSPHERIC_FLIGHT_PHYSICS_SPEC.get();
+        gliderWindSensitivity            = GLIDER_WIND_SENSITIVITY_SPEC.get().floatValue();
         enableParticulates             = ENABLE_PARTICULATES_SPEC.get();
         enableAtmosphereRenderer       = ENABLE_RENDERER_SPEC.get();
         standardAirOnGeneration        = STANDARD_AIR_ON_GENERATION_SPEC.get();

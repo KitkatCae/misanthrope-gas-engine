@@ -1,7 +1,0 @@
-Java Launcher: C:\Program Files\Java\jdk-17\bin\java.exe
-Arguments: '--inJar, C:\Users\proto\Modmakinggg\Misanthrope Gas Engine\build\fg_cache\net\minecraftforge\forge\1.20.1-47.4.18\forge-1.20.1-47.4.18-injected.jar, --outJar, C:\Users\proto\Modmakinggg\Misanthrope Gas Engine\build\fg_cache\net\minecraftforge\forge\1.20.1-47.4.18_mapped_parchment_2023.09.03-1.20.1\forge-1.20.1-47.4.18_mapped_parchment_2023.09.03-1.20.1.jar, --logFile, accesstransform.log, --atFile, C:\Users\proto\Modmakinggg\Misanthrope Gas Engine\src\main\resources\META-INF\accesstransformer.cfg, --atFile, C:\Users\proto\Modmakinggg\Misanthrope Gas Engine\build\_atJar_4\parent_at.cfg'
-Classpath:
- - C:\Users\proto\.gradle\caches\forge_gradle\maven_downloader\net\minecraftforge\accesstransformers\8.2.14\accesstransformers-8.2.14-fatjar.jar
-Working directory: C:\Users\proto\Modmakinggg\Misanthrope Gas Engine\build\_atJar_4
-Main class: net.minecraftforge.accesstransformer.TransformerProcessor
-====================================

@@ -1,16 +1,15 @@
 package exp.CCnewmods.mge.compat;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
-import exp.CCnewmods.mge.particulate.ParticulateComposition;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -164,11 +163,7 @@ public final class OreganizedCompat {
     private static void injectParticulate(ServerLevel level, BlockPos pos,
                                            ParticulateType type, float amount) {
         if (!level.isLoaded(pos)) return;
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-        ParticulateComposition parts = atm.getParticulates();
-        parts.add(type, amount);
-        atm.setParticulates(parts);
-        Mge.getScheduler(level).enqueue(pos);
+        GridAtmosphereCompat.addParticulate(level, pos, type, amount);
+        EnvironmentGrid.enqueue(level, pos);
     }
 }

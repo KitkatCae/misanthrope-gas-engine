@@ -1,8 +1,10 @@
 package exp.CCnewmods.mge.breathing;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
+
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.gas.Gas;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import net.minecraft.core.BlockPos;
@@ -12,9 +14,12 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.LightLayer;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
@@ -46,6 +51,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * the block's atmosphere dirty (which would cascade through the scheduler), we
  * accumulate deltas in a per-chunk staging map and flush once per second.
  * Net effect: surface plant life slowly scrubs CO₂ and produces O₂ over time.</p>
+ *
+ * <h3>Tier 4 — Plant respiration (always-on, darkness-gated)</h3>
+ * <p>All living plants respire continuously: they consume O₂ and release CO₂ regardless
+ * of light. During the day, photosynthesis (Tier 3) more than offsets this, so the net
+ * effect is still O₂ gain. At night — or indoors / underground where sky light is absent —
+ * only respiration runs, slowly drawing down O₂ and raising CO₂ in sealed spaces.
+ * Rather than scanning every block every tick, we walk loaded chunks once per
+ * {@link #RESPIRATION_SAMPLE_INTERVAL_TICKS} and count photosynthetic blocks via the
+ * chunk's heightmap, then apply a per-chunk aggregate delta. The rate is intentionally
+ * much smaller than photosynthesis so a well-ventilated outdoor area stays balanced.</p>
  */
 @Mod.EventBusSubscriber(modid = Mge.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ActiveBreathingHandler {
@@ -76,6 +91,34 @@ public final class ActiveBreathingHandler {
     // ── Plant staging: ChunkPos.asLong → accumulated O₂ delta (positive = gain) ──
     private static final Map<Long, Float> PLANT_O2_STAGING  = new ConcurrentHashMap<>();
     private static final Map<Long, Float> PLANT_CO2_STAGING = new ConcurrentHashMap<>();
+
+    // ── Tier 4: Plant respiration ─────────────────────────────────────────────
+
+    /**
+     * How often the per-level plant-respiration scan runs. Every 10 s (200 ticks).
+     * Kept infrequent because it walks all loaded chunks in each level.
+     */
+    private static final int RESPIRATION_SAMPLE_INTERVAL_TICKS = 200;
+
+    /**
+     * O₂ consumed and CO₂ produced per plant-block count unit per sample interval.
+     * Intentionally much smaller than {@link #PLANT_O2_PER_TICK} so that daytime
+     * photosynthesis dominates and only sealed/night environments see net depletion.
+     *
+     * <p>Effective rate ≈ 0.05 mbar O₂ per photosynthetic block per 10 s, which for
+     * a ~16×16 chunk with ~50 surface plants equals ~2.5 mbar/10 s — noticeable over
+     * minutes in a sealed room, negligible outdoors where diffusion replenishes it.</p>
+     */
+    private static final float RESPIRATION_O2_PER_BLOCK  = 0.05f;
+    private static final float RESPIRATION_CO2_PER_BLOCK = 0.04f;
+
+    /**
+     * Sky-light level at or below which a block is considered to be in darkness for
+     * respiration purposes. During a clear day at the surface this is 15; at night it
+     * drops to ~4. We treat ≤ {@value} as "not photosynthesising", so plants indoors,
+     * underground, and on the night side all respire without offsetting photosynthesis.
+     */
+    private static final int DARK_SKY_LIGHT_THRESHOLD = 7;
 
     private static int globalTick = 0;
 
@@ -114,6 +157,14 @@ public final class ActiveBreathingHandler {
         if (globalTick % PLANT_FLUSH_INTERVAL_TICKS == 0) {
             flushPlantDeltas(server);
         }
+
+        // Tier 4: plant respiration — always-on O₂ drain / CO₂ release
+        if (MgeConfig.enablePlantRespiration
+                && globalTick % RESPIRATION_SAMPLE_INTERVAL_TICKS == 0) {
+            for (ServerLevel level : server.getAllLevels()) {
+                samplePlantRespiration(level);
+            }
+        }
     }
 
     // =========================================================================
@@ -128,10 +179,7 @@ public final class ActiveBreathingHandler {
 
         BlockPos eyePos = BlockPos.containing(player.getEyePosition());
         if (!level.isLoaded(eyePos)) return;
-        var be = level.getBlockEntity(eyePos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-
-        var comp = atm.getComposition();
+        var comp = GridAtmosphereCompat.getComposition(level, eyePos);
 
         if (profile.needsToBreathe) {
             Gas required = profile.resolvedRequiredGas();
@@ -165,8 +213,7 @@ public final class ActiveBreathingHandler {
             }
         }
 
-        atm.setComposition(comp);
-        Mge.getScheduler(level).enqueue(eyePos);
+        GridAtmosphereCompat.setComposition(level, eyePos, comp);
     }
 
     // =========================================================================
@@ -181,7 +228,6 @@ public final class ActiveBreathingHandler {
             if (living instanceof Player) return;
 
             EntityBreathingProfile profile = EntityBreathingLoader.get(living);
-            if (!profile.needsToBreathe) return;
 
             // Only sample a fraction each interval to avoid doing this for every entity
             // every 400 ticks — use entity ID mod to spread the work
@@ -189,15 +235,33 @@ public final class ActiveBreathingHandler {
 
             BlockPos pos = living.blockPosition();
             if (!level.isLoaded(pos)) return;
-            var be = level.getBlockEntity(pos);
-            if (!(be instanceof AtmosphereBlockEntity atm)) return;
 
-            var comp = atm.getComposition();
-            float o2 = comp.get(GasRegistry.OXYGEN);
-            comp.add(GasRegistry.OXYGEN,         -Math.min(o2, MOB_O2_CONSUMPTION_PER_SAMPLE));
-            comp.add(GasRegistry.CARBON_DIOXIDE,  MOB_CO2_PRODUCTION_PER_SAMPLE);
-            atm.setComposition(comp);
-            Mge.getScheduler(level).enqueue(pos);
+            // ── Standard O₂ consumption ──────────────────────────────────────
+            if (profile.needsToBreathe) {
+                GridAtmosphereCompat.addGas(level, pos, GasRegistry.OXYGEN,
+                        -Math.min(GridAtmosphereCompat.getGas(level, pos, GasRegistry.OXYGEN),
+                                  MOB_O2_CONSUMPTION_PER_SAMPLE));
+                GridAtmosphereCompat.addGas(level, pos, GasRegistry.CARBON_DIOXIDE, MOB_CO2_PRODUCTION_PER_SAMPLE);
+            }
+
+            // ── Flight pressure constraint ────────────────────────────────────
+            if (MgeConfig.enableFlightPressureConstraints && profile.hasFlightPressureConstraint()) {
+                float totalPressure = GridAtmosphereCompat.getComposition(level, pos).totalPressure();
+                if (!profile.isFlightPressureValid(totalPressure)) {
+                    // Outside valid range — tick down the tolerance counter.
+                    // Actual movement suppression happens every tick in onFlyingMobTick()
+                    // so we don't need to touch effects or velocity here.
+                    FlightPressureTracker.decrementCountdown(living, MOB_SAMPLE_INTERVAL_TICKS);
+
+                    // Apply Weakness as a gameplay signal that the mob is struggling.
+                    // Duration slightly longer than the sample interval so it doesn't flicker.
+                    int effectDuration = MOB_SAMPLE_INTERVAL_TICKS + 20;
+                    living.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, effectDuration, 0, false, false));
+                } else {
+                    // Back in valid range — reset so the mob can fly freely again
+                    FlightPressureTracker.resetCountdown(living, profile);
+                }
+            }
         });
     }
 
@@ -274,34 +338,153 @@ public final class ActiveBreathingHandler {
                         .below();
 
                 if (!level.isLoaded(centre)) continue;
-                var be = level.getBlockEntity(centre);
-                if (!(be instanceof AtmosphereBlockEntity atm)) continue;
-
-                var comp = atm.getComposition();
                 // Plants consume CO₂ and produce O₂ during photosynthesis
-                comp.add(GasRegistry.OXYGEN,        o2Delta);
-                float co2 = comp.get(GasRegistry.CARBON_DIOXIDE);
-                comp.add(GasRegistry.CARBON_DIOXIDE, -Math.min(co2, co2Delta));
-                atm.setComposition(comp);
-                Mge.getScheduler(level).enqueue(centre);
+                GridAtmosphereCompat.addGas(level, centre, GasRegistry.OXYGEN, o2Delta);
+                float existingCo2 = GridAtmosphereCompat.getGas(level, centre, GasRegistry.CARBON_DIOXIDE);
+                GridAtmosphereCompat.addGas(level, centre, GasRegistry.CARBON_DIOXIDE,
+                        -Math.min(existingCo2, co2Delta));
             }
         }
     }
 
     // =========================================================================
-    // Lifecycle
+    // Tier 4: Plant respiration — always-on, darkness-gated
     // =========================================================================
+
+    /**
+     * Scans every loaded chunk in {@code level}, counts photosynthetic blocks near
+     * the surface, and applies a small O₂ drain / CO₂ gain to the chunk's
+     * representative atmosphere block.
+     *
+     * <p>The drain is applied unconditionally — respiration never stops — but
+     * {@link #onPlantRandomTick} (Tier 3) produces roughly 10× more O₂ per second
+     * when plants are photosynthesising, so the net daytime/outdoor effect is still
+     * strongly positive. Only in darkness (night, underground, sealed rooms) does
+     * respiration outpace photosynthesis and produce a net CO₂ rise.</p>
+     *
+     * <p>To avoid scanning every block in the chunk we sample a 5×5 column grid
+     * centred on the chunk's middle, checking the surface block at each column via
+     * the MOTION_BLOCKING heightmap. This gives a cheap, representative plant-density
+     * estimate without iterating the full 16×16×256 volume.</p>
+     */
+    private static void samplePlantRespiration(ServerLevel level) {
+        // Use SectionLoadManager's own loaded-chunk registry instead of ChunkMap.getChunks()
+        // (which has protected access). MGE already tracks every loaded chunk; this set is
+        // always a subset of the truly-ticking chunks so it's safe to sample without guards.
+        for (net.minecraft.world.level.ChunkPos chunkPos
+                : exp.CCnewmods.mge.grid.SectionLoadManager.getLoadedChunkPositions(level)) {
+
+            // Sample a 5×5 grid of columns within the chunk (every ~3 blocks).
+            int plantCount = 0;
+            for (int sx = 0; sx < 5; sx++) {
+                for (int sz = 0; sz < 5; sz++) {
+                    int worldX = chunkPos.getMinBlockX() + 1 + sx * 3;
+                    int worldZ = chunkPos.getMinBlockZ() + 1 + sz * 3;
+
+                    BlockPos surface = level.getHeightmapPos(
+                            net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
+                            new BlockPos(worldX, 0, worldZ)).below();
+
+                    if (!level.isLoaded(surface)) continue;
+                    BlockState state = level.getBlockState(surface);
+                    if (isPhotosyntheticBlock(state)) {
+                        plantCount++;
+                    }
+                }
+            }
+
+            if (plantCount == 0) continue;
+
+            // Use the chunk centre surface block as the atmosphere representative.
+            BlockPos centre = level.getHeightmapPos(
+                    net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
+                    new BlockPos(chunkPos.getMiddleBlockX(), 0, chunkPos.getMiddleBlockZ()))
+                    .below();
+            if (!level.isLoaded(centre)) continue;
+
+            float o2Loss  = plantCount * RESPIRATION_O2_PER_BLOCK * MgeConfig.plantRespirationRateMultiplier;
+            float co2Gain = plantCount * RESPIRATION_CO2_PER_BLOCK * MgeConfig.plantRespirationRateMultiplier;
+
+            // If plants can see sky AND sky light is above the dark threshold, they are
+            // actively photosynthesising — Tier 3 already handles that side.  We still
+            // apply respiration here, but at a reduced rate (photosynthesis dominates).
+            // In true darkness (night / underground / sealed) the full rate applies.
+            int skyLight = level.getBrightness(
+                    net.minecraft.world.level.LightLayer.SKY, centre);
+            if (skyLight > DARK_SKY_LIGHT_THRESHOLD) {
+                // Daytime / well-lit: respiration is real but partially masked by
+                // ongoing photosynthesis — apply at 20 % to avoid double-counting.
+                o2Loss  *= 0.2f;
+                co2Gain *= 0.2f;
+            }
+
+            float existingO2 = GridAtmosphereCompat.getGas(level, centre, GasRegistry.OXYGEN);
+            GridAtmosphereCompat.addGas(level, centre, GasRegistry.OXYGEN,
+                    -Math.min(existingO2, o2Loss));
+            GridAtmosphereCompat.addGas(level, centre, GasRegistry.CARBON_DIOXIDE, co2Gain);
+        }
+    }
+
+    // =========================================================================
+    // Flight grounding — per-tick movement suppression
+    // =========================================================================
+
+    /**
+     * Called every server tick for every living entity via {@link LivingEvent.LivingTickEvent}.
+     *
+     * <p>When {@link FlightPressureTracker} reports that an entity's tolerance has
+     * expired (countdown ≤ 0), this handler overrides whatever vertical thrust the
+     * mob's AI produced this tick:</p>
+     *
+     * <ul>
+     *   <li><b>Pre-tolerance (warning phase):</b> the countdown is ticking down but
+     *       hasn't hit zero yet. We don't interfere — the Weakness effect from the
+     *       sample loop is the only signal. The mob can still fly, just weakly.</li>
+     *   <li><b>Post-tolerance (grounded phase):</b> we clamp {@code deltaMovement.y}
+     *       to ≤ 0 and apply a small downward pull each tick. This fights the AI's
+     *       upward thrust without teleporting or stunning the mob — producing a
+     *       natural stall-and-glide descent. Horizontal movement is untouched.</li>
+     *   <li><b>Recovery:</b> once the sample loop resets the countdown (pressure
+     *       returns to valid range), this handler stops interfering entirely.</li>
+     * </ul>
+     *
+     * <p>Deliberately avoids swapping navigation, potion effects, or
+     * {@code setNoGravity} — pure velocity clamping is the smallest intervention.</p>
+     */
+    @SubscribeEvent
+    public static void onFlyingMobTick(LivingEvent.LivingTickEvent event) {
+        if (!MgeConfig.enableFlightPressureConstraints) return;
+        if (!(event.getEntity().level() instanceof ServerLevel)) return;
+
+        LivingEntity living = event.getEntity();
+        if (living instanceof Player) return;
+
+        // Only act once the tolerance countdown has fully expired
+        if (!FlightPressureTracker.isGrounded(living)) return;
+
+        EntityBreathingProfile profile = EntityBreathingLoader.get(living);
+        if (!profile.hasFlightPressureConstraint()) return;
+
+        // Stall: cancel any upward velocity the AI just assigned this tick and apply
+        // a gentle downward pull. GLIDE_GRAVITY is intentionally small so the mob
+        // drifts down like a stalling glider rather than dropping like a stone.
+        final double GLIDE_GRAVITY = 0.04;
+        var mv = living.getDeltaMovement();
+        living.setDeltaMovement(mv.x, Math.min(mv.y, 0) - GLIDE_GRAVITY, mv.z);
+    }
 
     @SubscribeEvent
     public static void onEntityLeave(EntityLeaveLevelEvent event) {
         if (event.getEntity() instanceof LivingEntity living) {
             BreathingTracker.remove(living);
+            FlightPressureTracker.remove(living);
         }
     }
 
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
         BreathingTracker.clear();
+        FlightPressureTracker.clear();
         PLANT_O2_STAGING.clear();
         PLANT_CO2_STAGING.clear();
     }

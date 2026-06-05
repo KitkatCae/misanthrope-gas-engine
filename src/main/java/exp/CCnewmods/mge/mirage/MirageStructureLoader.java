@@ -98,8 +98,7 @@ public final class MirageStructureLoader extends SimpleJsonResourceReloadListene
                     try (InputStream stream = resource.get().open()) {
                         CompoundTag tag = NbtIo.readCompressed(stream);
                         StructureTemplate template = new StructureTemplate();
-                        template.load(net.minecraftforge.registries.ForgeRegistries.BLOCKS,
-                                tag);
+                        template.load(net.minecraft.core.registries.BuiltInRegistries.BLOCK.asLookup(), tag);
                         TEMPLATES.put(nbtId, template);
                         DEFINITIONS.put(entry.getKey(), def);
                         loaded++;

@@ -1,8 +1,10 @@
 package exp.CCnewmods.mge.vacuum;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
+
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import net.minecraft.core.BlockPos;
@@ -13,7 +15,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
@@ -84,29 +85,21 @@ public final class VacuumHandler {
             var chunk = holder.getTickingChunk();
             if (chunk == null) return;
 
-            chunk.getBlockEntities().forEach((pos, be) -> {
-                if (!(be instanceof AtmosphereBlockEntity atm)) return;
-                float pressure = atm.getComposition().totalPressure();
-                if (pressure >= VACUUM_THRESHOLD_MBAR) return;
-
+            // Scan sampled positions in this chunk for vacuum sections
+            var cp = chunk.getPos();
+            int midX = cp.getMiddleBlockX(), midZ = cp.getMiddleBlockZ();
+            for (int dy = 0; dy < level.getSectionsCount(); dy++) {
+                int sampleY = level.getMinBuildHeight() + dy * 16 + 8;
+                net.minecraft.core.BlockPos sPos = new net.minecraft.core.BlockPos(midX, sampleY, midZ);
+                float pressure = GridAtmosphereCompat.getTotalPressure(level, sPos);
+                if (pressure >= VACUUM_THRESHOLD_MBAR) continue;
                 float strength = (STD_PRESSURE - pressure) / STD_PRESSURE;
-                Vec3 centre    = Vec3.atCenterOf(pos);
-
-                // Pull entities
-                AABB box = new AABB(pos).inflate(SUCTION_RADIUS);
-                level.getEntitiesOfClass(LivingEntity.class, box).forEach(entity -> {
-                    applyPull(entity, centre, strength);
-                });
-                // Pull item entities
-                level.getEntitiesOfClass(ItemEntity.class, box).forEach(item -> {
-                    applyPull(item, centre, strength);
-                });
-
-                // Pull weak adjacent blocks into vacuum
-                if (pressure < HARD_VACUUM_THRESHOLD_MBAR) {
-                    tryPullBlocks(level, pos, strength);
-                }
-            });
+                Vec3 centre = Vec3.atCenterOf(sPos);
+                AABB box = new AABB(sPos).inflate(SUCTION_RADIUS + 8);
+                level.getEntitiesOfClass(LivingEntity.class, box).forEach(entity -> applyPull(entity, centre, strength));
+                level.getEntitiesOfClass(ItemEntity.class,   box).forEach(item   -> applyPull(item,   centre, strength));
+                if (pressure < HARD_VACUUM_THRESHOLD_MBAR) tryPullBlocks(level, sPos, strength);
+            }
         });
     }
 
@@ -152,20 +145,18 @@ public final class VacuumHandler {
             var chunk = holder.getTickingChunk();
             if (chunk == null) return;
 
-            chunk.getBlockEntities().forEach((pos, be) -> {
-                if (!(be instanceof AtmosphereBlockEntity atm)) return;
-                float pressure = atm.getComposition().totalPressure();
-                if (pressure >= VACUUM_THRESHOLD_MBAR) return;
-
+            var cp2 = chunk.getPos();
+            int midX2 = cp2.getMiddleBlockX(), midZ2 = cp2.getMiddleBlockZ();
+            for (int dy = 0; dy < level.getSectionsCount(); dy++) {
+                int sampleY = level.getMinBuildHeight() + dy * 16 + 8;
+                net.minecraft.core.BlockPos sPos = new net.minecraft.core.BlockPos(midX2, sampleY, midZ2);
+                float pressure = GridAtmosphereCompat.getTotalPressure(level, sPos);
+                if (pressure >= VACUUM_THRESHOLD_MBAR) continue;
                 boolean hard = pressure < HARD_VACUUM_THRESHOLD_MBAR;
-
-                // Entities inside this block
-                level.getEntitiesOfClass(LivingEntity.class, new AABB(pos))
-                     .forEach(entity -> applyVacuumEffects(level, pos, entity, hard));
-
-                // Water boiling
-                boilAdjacentFluids(level, pos, atm, pressure);
-            });
+                level.getEntitiesOfClass(LivingEntity.class, new AABB(sPos).inflate(8))
+                     .forEach(entity -> applyVacuumEffects(level, sPos, entity, hard));
+                boilAdjacentFluids(level, sPos, pressure);
+            }
         });
     }
 
@@ -196,8 +187,7 @@ public final class VacuumHandler {
         }
     }
 
-    private static void boilAdjacentFluids(ServerLevel level, BlockPos pos,
-                                            AtmosphereBlockEntity atm, float pressure) {
+    private static void boilAdjacentFluids(ServerLevel level, BlockPos pos, float pressure) {
         if (pressure > VACUUM_THRESHOLD_MBAR * 0.5f) return;
         float boilChance = (1f - pressure / VACUUM_THRESHOLD_MBAR) * 0.02f;
         for (BlockPos n : new BlockPos[]{
@@ -207,9 +197,7 @@ public final class VacuumHandler {
             if (state.is(Blocks.WATER) && state.getFluidState().isSource()) {
                 if (level.getRandom().nextFloat() < boilChance) {
                     level.setBlock(n, Blocks.AIR.defaultBlockState(), 3);
-                    atm.getComposition().add(GasRegistry.WATER_VAPOR, 15f);
-                    atm.setComposition(atm.getComposition());
-                    Mge.getScheduler(level).enqueue(pos);
+                    GridAtmosphereCompat.addGas(level, pos, GasRegistry.WATER_VAPOR, 15f);
                 }
             }
         }
@@ -220,14 +208,10 @@ public final class VacuumHandler {
     // ─────────────────────────────────────────────────────────────────────────
 
     public static boolean isVacuum(ServerLevel level, BlockPos pos) {
-        BlockEntity be = level.getBlockEntity(pos);
-        return be instanceof AtmosphereBlockEntity atm
-                && atm.getComposition().totalPressure() < VACUUM_THRESHOLD_MBAR;
+        return GridAtmosphereCompat.getTotalPressure(level, pos) < VACUUM_THRESHOLD_MBAR;
     }
 
     public static float getPressureRatio(ServerLevel level, BlockPos pos) {
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return 1.0f;
-        return atm.getComposition().totalPressure() / STD_PRESSURE;
+        return GridAtmosphereCompat.getTotalPressure(level, pos) / STD_PRESSURE;
     }
 }

@@ -1,6 +1,5 @@
 package exp.CCnewmods.mge.mixin;
 
-import exp.CCnewmods.mge.util.AtmosphereUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -24,34 +23,30 @@ public abstract class MixinChunkAccess {
     @Mixin(LevelChunk.class)
     public abstract static class MixinLevelChunk {
         @Inject(
-                method = "setBlockState(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;",
+                method = "m_6978_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;",
                 at = @At("HEAD"),
-                cancellable = true
+                cancellable = true,
+                remap = false
         )
         private void mge$replaceAir(BlockPos pPos, BlockState pState, boolean pIsMoving,
-                                     CallbackInfoReturnable<BlockState> cir) {
-            BlockState replacement = AtmosphereUtil.replaceIfAir(pState);
-            if (replacement != pState) {
-                LevelChunk self = (LevelChunk) (Object) this;
-                cir.setReturnValue(self.setBlockState(pPos, replacement, pIsMoving));
-            }
+                                    CallbackInfoReturnable<BlockState> cir) {
+            // Disabled: air replacement is no longer needed with the grid-based
+            // EnvironmentSection system.  The mixin class is retained so the mixin
+            // config file doesn't need changes, but the body is intentionally empty.
         }
     }
 
     @Mixin(ProtoChunk.class)
     public abstract static class MixinProtoChunk {
         @Inject(
-                method = "setBlockState(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;",
+                method = "m_6978_(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;",
                 at = @At("HEAD"),
-                cancellable = true
+                cancellable = true,
+                remap = false
         )
         private void mge$replaceAir(BlockPos pPos, BlockState pState, boolean pIsMoving,
-                                     CallbackInfoReturnable<BlockState> cir) {
-            BlockState replacement = AtmosphereUtil.replaceIfAir(pState);
-            if (replacement != pState) {
-                ProtoChunk self = (ProtoChunk) (Object) this;
-                cir.setReturnValue(self.setBlockState(pPos, replacement, pIsMoving));
-            }
+                                    CallbackInfoReturnable<BlockState> cir) {
+            // Disabled: see LevelChunk variant above.
         }
     }
 }

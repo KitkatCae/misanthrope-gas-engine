@@ -1,9 +1,9 @@
 package exp.CCnewmods.mge.compat;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
-import exp.CCnewmods.mge.gas.GasComposition;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import exp.CCnewmods.mge.util.ChunkIterator;
@@ -81,7 +81,7 @@ public final class PneumaticCraftCompat {
     }
 
     private static void processMachine(ServerLevel level, BlockPos pos,
-                                        BlockEntity be, IAirHandlerMachine handler) {
+                                       BlockEntity be, IAirHandlerMachine handler) {
         float pressure = handler.getPressure();
         float critical = handler.getCriticalPressure();
         float danger   = handler.getDangerPressure();
@@ -102,21 +102,13 @@ public final class PneumaticCraftCompat {
 
         BlockPos targetPos = pos.relative(leakFace);
         if (!level.isLoaded(targetPos)) return;
-        BlockEntity targetBE = level.getBlockEntity(targetPos);
-        if (!(targetBE instanceof AtmosphereBlockEntity atm)) return;
 
-        // Inject air as N₂/O₂ mixture (78/21 ratio)
-        GasComposition comp = atm.getComposition();
-        comp.add(GasRegistry.NITROGEN, injectAmount * 0.78f);
-        comp.add(GasRegistry.OXYGEN,   injectAmount * 0.21f);
-        atm.setComposition(comp);
-        Mge.getScheduler(level).enqueue(targetPos);
+        GridAtmosphereCompat.addGas(level, targetPos, GasRegistry.NITROGEN, injectAmount * 0.78f);
+        GridAtmosphereCompat.addGas(level, targetPos, GasRegistry.OXYGEN,   injectAmount * 0.21f);
+        EnvironmentGrid.enqueue(level, targetPos);
 
-        // Danger pressure — also add some oil mist / aerosol from compressor
         if (pressure >= danger) {
-            var parts = atm.getParticulates();
-            parts.add(ParticulateType.SMOKE_AEROSOL, injectAmount * 0.5f);
-            atm.setParticulates(parts);
+            GridAtmosphereCompat.addParticulate(level, targetPos, ParticulateType.SMOKE_AEROSOL, injectAmount * 0.5f);
         }
     }
 
@@ -126,18 +118,10 @@ public final class PneumaticCraftCompat {
         for (Direction dir : Direction.values()) {
             BlockPos neighbour = pos.relative(dir);
             if (!level.isLoaded(neighbour)) continue;
-            BlockEntity be = level.getBlockEntity(neighbour);
-            if (!(be instanceof AtmosphereBlockEntity atm)) continue;
-
-            GasComposition comp = atm.getComposition();
-            comp.add(GasRegistry.NITROGEN, BURST_NITROGEN);
-            comp.add(GasRegistry.OXYGEN,   BURST_OXYGEN);
-            atm.setComposition(comp);
-
-            var parts = atm.getParticulates();
-            parts.add(ParticulateType.SMOKE_AEROSOL, 80f);
-            atm.setParticulates(parts);
-            Mge.getScheduler(level).enqueue(neighbour);
+            GridAtmosphereCompat.addGas(level, neighbour, GasRegistry.NITROGEN, BURST_NITROGEN);
+            GridAtmosphereCompat.addGas(level, neighbour, GasRegistry.OXYGEN,   BURST_OXYGEN);
+            GridAtmosphereCompat.addParticulate(level, neighbour, ParticulateType.SMOKE_AEROSOL, 80f);
+            EnvironmentGrid.enqueue(level, neighbour);
         }
 
         // Small explosion for the decompression event

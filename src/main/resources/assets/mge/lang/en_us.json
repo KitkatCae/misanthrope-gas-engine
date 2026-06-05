@@ -1,6 +1,5 @@
 {
   "block.mge.atmosphere": "Atmosphere",
-
   "gas.mge.nitrogen": "Nitrogen",
   "gas.mge.oxygen": "Oxygen",
   "gas.mge.argon": "Argon",
@@ -45,11 +44,23 @@
   "gas.mge.mind_flayer_spore_gas": "Mind Flayer Spore Gas",
   "gas.mge.smoke_particulate": "Smoke Particulate",
   "gas.mge.ash_cloud": "Ash Cloud",
-
   "particulate.mge.coal_dust": "Coal Dust",
   "particulate.mge.asbestos_fiber": "Asbestos Fibres",
   "particulate.mge.lead_dust": "Lead Dust",
   "particulate.mge.organic_aerosol": "Organic Aerosol",
-
+  "gas.mge.soul_essence": "Soul Essence",
+  "gas.mge.dragon_ice_cloud": "Dragon Ice Cloud",
+  "gas.mge.ionised_air": "Ionised Air",
+  "particulate.mge.ice_crystal_shards": "Ice Crystal Shards",
+  "particulate.mge.spore_cluster": "Spore Cluster",
+  "particulate.mge.ionised_particles": "Ionised Particles",
+  "particulate.mge.pyrotheum_dust": "Pyrotheum Dust",
+  "particulate.mge.ophiocordyceps_humanus": "Ophiocordyceps Humanus",
+  "particulate.mge.brown_mushroom_spores": "Brown Mushroom Spores",
+  "particulate.mge.red_mushroom_spores": "Red Mushroom Spores",
+  "particulate.mge.crimson_spores": "Crimson Spores",
+  "particulate.mge.warped_spores": "Warped Spores",
+  "particulate.mge.chorus_spores": "Chorus Spores",
+  "particulate.mge.soul_wisps": "Soul Wisps",
   "itemGroup.mge.tab": "Misanthrope Gas Engine"
 }

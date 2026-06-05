@@ -18,7 +18,10 @@ import net.minecraft.resources.ResourceLocation;
  *   "tolerance_ticks": 20,
  *   "toxic_sensitivity": 1.0,
  *   "exhale_gas": "mge:carbon_dioxide",
- *   "exhale_rate_mbar_per_tick": 0.04
+ *   "exhale_rate_mbar_per_tick": 0.04,
+ *   "min_flight_pressure_mbar": 0.0,
+ *   "max_flight_pressure_mbar": -1.0,
+ *   "flight_pressure_tolerance_ticks": 60
  * }
  * }</pre>
  *
@@ -40,6 +43,14 @@ import net.minecraft.resources.ResourceLocation;
  *       to {@code "none"} to disable active exhalation (performance-safe default).</li>
  *   <li>{@code exhale_rate_mbar_per_tick} — mbar of exhale_gas produced per tick.
  *       Only relevant when exhale_gas is set. Default 0.04 (≈ 2.4 mbar/minute).</li>
+ *   <li>{@code min_flight_pressure_mbar} — minimum total atmospheric pressure (mbar) at
+ *       which this entity can sustain flight. Below this it loses flight ability and is
+ *       grounded after {@code flight_pressure_tolerance_ticks}. 0 = no minimum (default).</li>
+ *   <li>{@code max_flight_pressure_mbar} — maximum total atmospheric pressure (mbar) at
+ *       which this entity can sustain flight. Above this it is too dense to fly and is
+ *       grounded. ≤ 0 = no maximum (default).</li>
+ *   <li>{@code flight_pressure_tolerance_ticks} — how many ticks the entity can be outside
+ *       its flight pressure window before being grounded. Default 60 (3 seconds).</li>
  * </ul>
  */
 public final class EntityBreathingProfile {
@@ -53,6 +64,38 @@ public final class EntityBreathingProfile {
     public final ResourceLocation exhaleGasId;     // null = no active exhalation
     public final float            exhaleRateMbarPerTick;
 
+    /**
+     * Minimum total atmospheric pressure (mbar) required for flight.
+     * 0 = no lower bound. Below this value the entity is grounded after
+     * {@link #flightPressureToleranceTicks}.
+     */
+    public final float minFlightPressureMbar;
+
+    /**
+     * Maximum total atmospheric pressure (mbar) at which flight is possible.
+     * ≤ 0 = no upper bound (most entities). Above this value the atmosphere is
+     * too dense and the entity is grounded after {@link #flightPressureToleranceTicks}.
+     */
+    public final float maxFlightPressureMbar;
+
+    /**
+     * How strongly atmospheric wind currents push this entity when it is airborne.
+     * Scaled against the wind vector from {@link exp.CCnewmods.mge.wind.WindProviderManager}.
+     * <ul>
+     *   <li>0.0 = completely unaffected by wind (golems, wither, etc.)</li>
+     *   <li>1.0 = standard sensitivity (most flying mobs)</li>
+     *   <li>2.0+ = highly sensitive (small/light creatures like bats, bees)</li>
+     * </ul>
+     * Default: 1.0. JSON key: {@code wind_sensitivity}.
+     */
+    public final float windSensitivity;
+
+    /**
+     * How many ticks the entity can remain outside its flight-pressure window before
+     * being grounded. Resets as soon as pressure returns to the valid range.
+     */
+    public final int flightPressureToleranceTicks;
+
     private EntityBreathingProfile(ResourceLocation entityType,
                                     boolean needsToBreathe,
                                     ResourceLocation requiredGasId,
@@ -60,15 +103,42 @@ public final class EntityBreathingProfile {
                                     int toleranceTicks,
                                     float toxicSensitivity,
                                     ResourceLocation exhaleGasId,
-                                    float exhaleRateMbarPerTick) {
-        this.entityType            = entityType;
-        this.needsToBreathe        = needsToBreathe;
-        this.requiredGasId         = requiredGasId;
-        this.minimumPressureMbar   = minimumPressureMbar;
-        this.toleranceTicks        = toleranceTicks;
-        this.toxicSensitivity      = toxicSensitivity;
-        this.exhaleGasId           = exhaleGasId;
-        this.exhaleRateMbarPerTick = exhaleRateMbarPerTick;
+                                    float exhaleRateMbarPerTick,
+                                    float minFlightPressureMbar,
+                                    float maxFlightPressureMbar,
+                                    int flightPressureToleranceTicks,
+                                    float windSensitivity) {
+        this.entityType                   = entityType;
+        this.needsToBreathe               = needsToBreathe;
+        this.requiredGasId                = requiredGasId;
+        this.minimumPressureMbar          = minimumPressureMbar;
+        this.toleranceTicks               = toleranceTicks;
+        this.toxicSensitivity             = toxicSensitivity;
+        this.exhaleGasId                  = exhaleGasId;
+        this.exhaleRateMbarPerTick        = exhaleRateMbarPerTick;
+        this.minFlightPressureMbar        = minFlightPressureMbar;
+        this.maxFlightPressureMbar        = maxFlightPressureMbar;
+        this.flightPressureToleranceTicks = flightPressureToleranceTicks;
+        this.windSensitivity              = windSensitivity;
+    }
+
+    // -------------------------------------------------------------------------
+    // Flight pressure helpers
+    // -------------------------------------------------------------------------
+
+    /** Returns true if this profile imposes any flight-pressure constraints. */
+    public boolean hasFlightPressureConstraint() {
+        return minFlightPressureMbar > 0f || maxFlightPressureMbar > 0f;
+    }
+
+    /**
+     * Returns true if {@code totalPressureMbar} is within this profile's valid flight range.
+     * Always returns true when {@link #hasFlightPressureConstraint()} is false.
+     */
+    public boolean isFlightPressureValid(float totalPressureMbar) {
+        if (minFlightPressureMbar > 0f && totalPressureMbar < minFlightPressureMbar) return false;
+        if (maxFlightPressureMbar > 0f && totalPressureMbar > maxFlightPressureMbar) return false;
+        return true;
     }
 
     // -------------------------------------------------------------------------
@@ -131,8 +201,26 @@ public final class EntityBreathingProfile {
                 ? json.get("exhale_rate_mbar_per_tick").getAsFloat()
                 : 0.04f;
 
+        float minFlightPressure = json.has("min_flight_pressure_mbar")
+                ? json.get("min_flight_pressure_mbar").getAsFloat()
+                : 0f;
+
+        float maxFlightPressure = json.has("max_flight_pressure_mbar")
+                ? json.get("max_flight_pressure_mbar").getAsFloat()
+                : 0f; // 0 = no upper bound
+
+        int flightTolerance = json.has("flight_pressure_tolerance_ticks")
+                ? json.get("flight_pressure_tolerance_ticks").getAsInt()
+                : 60;
+
+        float windSensitivity = json.has("wind_sensitivity")
+                ? json.get("wind_sensitivity").getAsFloat()
+                : 1.0f;
+
         return new EntityBreathingProfile(entityType, needsToBreathe, requiredGasId,
-                minPressure, tolerance, toxicSens, exhaleGasId, exhaleRate);
+                minPressure, tolerance, toxicSens, exhaleGasId, exhaleRate,
+                minFlightPressure, maxFlightPressure, flightTolerance,
+                windSensitivity);
     }
 
     // -------------------------------------------------------------------------
@@ -146,7 +234,9 @@ public final class EntityBreathingProfile {
                     true,
                     new ResourceLocation("mge", "oxygen"),
                     160.0f, 20, 1.0f,
-                    null, 0f   // no active exhalation by default — population sampling handles mobs
+                    null, 0f,
+                    0f, 0f, 60,
+                    1.0f  // standard wind sensitivity
             );
 
     /** Profile for entities that do not need to breathe (undead, constructs, fish in water). */
@@ -156,6 +246,8 @@ public final class EntityBreathingProfile {
                     false,
                     new ResourceLocation("mge", "oxygen"),
                     0f, 0, 0f,
-                    null, 0f
+                    null, 0f,
+                    0f, 0f, 60,
+                    0.0f  // non-breathers unaffected by wind by default
             );
 }

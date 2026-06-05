@@ -1,8 +1,9 @@
 package exp.CCnewmods.mge.event;
 
 import exp.CCnewmods.mge.Mge;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.gas.GasComposition;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.gas.GasRegistry;
 import exp.CCnewmods.mge.particulate.ParticulateComposition;
 import exp.CCnewmods.mge.particulate.ParticulateType;
@@ -10,7 +11,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.FireBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.event.level.ExplosionEvent;
@@ -40,7 +40,7 @@ public final class WorldEventHandler {
             mutateFire(level, event.getPos(), 10f);
         }
 
-        Mge.getScheduler(level).enqueueWithNeighbours(event.getPos());
+        EnvironmentGrid.enqueueWithNeighbours(level, event.getPos());
     }
 
     @SubscribeEvent
@@ -49,32 +49,21 @@ public final class WorldEventHandler {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
 
         BlockPos pos = event.getPos();
-        BlockEntity be = level.getBlockEntity(pos);
-        if (be instanceof AtmosphereBlockEntity atm) {
-            var parts = atm.getParticulates();
-            parts.add(ParticulateType.DUST, 20f);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.DUST, 20f);
 
-            // Coal ore and coal blocks emit coal dust when mined
-            var blockId = net.minecraftforge.registries.ForgeRegistries.BLOCKS
-                    .getKey(event.getState().getBlock());
-            if (blockId != null) {
-                String path = blockId.getPath();
-                if (path.contains("coal") && (path.contains("ore") || path.equals("coal_block")
-                        || path.equals("coal"))) {
-                    parts.add(ParticulateType.COAL_DUST, 80f);
-                    // Also inject above
-                    BlockEntity above = level.getBlockEntity(pos.above());
-                    if (above instanceof AtmosphereBlockEntity aboveAtm) {
-                        var ap = aboveAtm.getParticulates();
-                        ap.add(ParticulateType.COAL_DUST, 40f);
-                        aboveAtm.setParticulates(ap);
-                        Mge.getScheduler(level).enqueue(pos.above());
-                    }
-                }
+        // Coal ore and coal blocks emit coal dust when mined
+        var blockId = net.minecraftforge.registries.ForgeRegistries.BLOCKS
+                .getKey(event.getState().getBlock());
+        if (blockId != null) {
+            String blockPath = blockId.getPath();
+            if (blockPath.contains("coal") && (blockPath.contains("ore")
+                    || blockPath.equals("coal_block") || blockPath.equals("coal"))) {
+                GridAtmosphereCompat.addParticulate(level, pos,         ParticulateType.COAL_DUST, 80f);
+                GridAtmosphereCompat.addParticulate(level, pos.above(), ParticulateType.COAL_DUST, 40f);
+                EnvironmentGrid.enqueue(level, pos.above());
             }
-            atm.setParticulates(parts);
         }
-        Mge.getScheduler(level).enqueueWithNeighbours(pos);
+        EnvironmentGrid.enqueueWithNeighbours(level, pos);
     }
 
     // ── Explosions ────────────────────────────────────────────────────────────
@@ -89,19 +78,21 @@ public final class WorldEventHandler {
 
         net.minecraft.world.phys.Vec3 centre = event.getExplosion().getPosition();
         BlockPos centrePos = BlockPos.containing(centre);
-        float baseRadius = event.getExplosion().radius;
+        float baseRadius;
+        try {
+            java.lang.reflect.Field f = net.minecraft.world.level.Explosion.class.getDeclaredField("radius");
+            f.setAccessible(true);
+            baseRadius = f.getFloat(event.getExplosion());
+        } catch (Exception e) { baseRadius = 4f; }
 
         // Check atmosphere at centre for amplification / vacuum suppression
-        BlockEntity centreBE = level.getBlockEntity(centrePos);
-        if (centreBE instanceof AtmosphereBlockEntity centreAtm) {
-            float pressure = centreAtm.getComposition().totalPressure();
-
-            // Vacuum: suppress explosion (no medium to carry blast)
+        {
+            var centreComp = GridAtmosphereCompat.getComposition(level, centrePos);
+            float pressure = centreComp.totalPressure();
             if (pressure < exp.CCnewmods.mge.vacuum.VacuumHandler.VACUUM_THRESHOLD_MBAR) {
                 affected.subList(affected.size() / 2, affected.size()).clear();
             } else {
-                // Atmospheric amplification from flammable gas
-                float amp = checkAtmosphericAmplification(centreAtm);
+                float amp = checkAtmosphericAmplification(centreComp);
                 if (amp > 1f) {
                     exp.CCnewmods.mge.shockwave.ShockwaveHandler.spawn(
                             level, centrePos, baseRadius * amp * 2f);
@@ -113,23 +104,15 @@ public final class WorldEventHandler {
 
         // Mutate atmosphere in all affected blocks
         for (BlockPos pos : affected) {
-            BlockEntity be = level.getBlockEntity(pos);
-            if (!(be instanceof AtmosphereBlockEntity atm)) continue;
-
-            GasComposition comp = atm.getComposition();
-            float o2 = comp.get(GasRegistry.OXYGEN);
+            float o2 = GridAtmosphereCompat.getGas(level, pos, GasRegistry.OXYGEN);
             float consumed = Math.min(o2, 50f);
-            comp.add(GasRegistry.OXYGEN,         -consumed);
-            comp.add(GasRegistry.CARBON_DIOXIDE,  consumed * 0.6f);
-            comp.add(GasRegistry.CARBON_MONOXIDE, consumed * 0.2f);
-            atm.setComposition(comp);
-
-            var parts = atm.getParticulates();
-            parts.add(ParticulateType.SMOKE_AEROSOL, 120f);
-            parts.add(ParticulateType.SOOT,           40f);
-            parts.add(ParticulateType.DUST,            30f);
-            atm.setParticulates(parts);
-            Mge.getScheduler(level).enqueue(pos);
+            GridAtmosphereCompat.addGas(level, pos, GasRegistry.OXYGEN,         -consumed);
+            GridAtmosphereCompat.addGas(level, pos, GasRegistry.CARBON_DIOXIDE,  consumed * 0.6f);
+            GridAtmosphereCompat.addGas(level, pos, GasRegistry.CARBON_MONOXIDE, consumed * 0.2f);
+            GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SMOKE_AEROSOL, 120f);
+            GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SOOT,           40f);
+            GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.DUST,            30f);
+            EnvironmentGrid.enqueue(level, pos);
         }
 
         // Shockwave from every explosion
@@ -138,8 +121,7 @@ public final class WorldEventHandler {
                 level, centre, baseRadius * 1.5f, baseRadius * 24f);
     }
 
-    private static float checkAtmosphericAmplification(AtmosphereBlockEntity atm) {
-        GasComposition comp = atm.getComposition();
+    private static float checkAtmosphericAmplification(GasComposition comp) {
         float total = comp.totalPressure();
         if (total <= 0) return 1f;
         float oxidiser = comp.get(GasRegistry.OXYGEN);
@@ -177,10 +159,7 @@ public final class WorldEventHandler {
 
     /** Fire combustion: consumes the dominant oxidiser, produces appropriate products. */
     public static void mutateFire(ServerLevel level, BlockPos pos, float intensity) {
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-
-        GasComposition comp = atm.getComposition();
+        var comp = GridAtmosphereCompat.getComposition(level, pos);
         float totalPressure = Math.max(1f, comp.totalPressure());
         float fluorineFraction = comp.get(GasRegistry.FLUORINE) / totalPressure;
         float consumed;
@@ -198,62 +177,38 @@ public final class WorldEventHandler {
             comp.add(GasRegistry.CARBON_DIOXIDE,  consumed * 0.7f);
             comp.add(GasRegistry.CARBON_MONOXIDE, consumed * 0.15f);
         }
-        atm.setComposition(comp);
-
-        var parts = atm.getParticulates();
-        parts.add(ParticulateType.SOOT,        consumed * 1.5f);
-        parts.add(ParticulateType.SMOKE_AEROSOL, consumed * 3f);
-        atm.setParticulates(parts);
-
-        Mge.getScheduler(level).enqueue(pos);
+        GridAtmosphereCompat.setComposition(level, pos, comp);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SOOT,          consumed * 1.5f);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SMOKE_AEROSOL, consumed * 3f);
+        EnvironmentGrid.enqueue(level, pos);
     }
 
     /** Inject Nether-characteristic gases and soul dust near a portal. */
     public static void injectNetherGases(ServerLevel level, BlockPos pos) {
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-
-        GasComposition comp = atm.getComposition();
-        comp.add(GasRegistry.SULFUR_DIOXIDE,   15f);
-        comp.add(GasRegistry.BLAZE_FUME,        8f);
-        comp.add(GasRegistry.SOUL_SMOKE,        5f);
-        comp.add(GasRegistry.CARBON_MONOXIDE,  10f);
-        atm.setComposition(comp);
-
-        var parts = atm.getParticulates();
-        parts.add(ParticulateType.SOUL_DUST,         8f);
-        parts.add(ParticulateType.NETHER_QUARTZ_DUST, 5f);
-        atm.setParticulates(parts);
-
-        Mge.getScheduler(level).enqueue(pos);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.SULFUR_DIOXIDE,  15f);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.BLAZE_FUME,       8f);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.SOUL_SMOKE,       5f);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.CARBON_MONOXIDE, 10f);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SOUL_DUST,          8f);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.NETHER_QUARTZ_DUST, 5f);
+        EnvironmentGrid.enqueue(level, pos);
     }
 
     /** Water vapour injection (called by compat layers on lava/water contact, etc.). */
     public static void injectWaterVapour(ServerLevel level, BlockPos pos, float mbar) {
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-        atm.getComposition().add(GasRegistry.WATER_VAPOR, mbar);
-        atm.setComposition(atm.getComposition());
-        Mge.getScheduler(level).enqueue(pos);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.WATER_VAPOR, mbar);
     }
 
     /** General gas injection — for compat layers and future extensions. */
     public static void injectGas(ServerLevel level, BlockPos pos,
-                                  exp.CCnewmods.mge.gas.Gas gas, float mbar) {
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-        atm.getComposition().add(gas, mbar);
-        atm.setComposition(atm.getComposition());
-        Mge.getScheduler(level).enqueue(pos);
+                                 exp.CCnewmods.mge.gas.Gas gas, float mbar) {
+        GridAtmosphereCompat.addGas(level, pos, gas, mbar);
     }
 
     /** General particulate injection — for compat layers and future extensions. */
     public static void injectParticulate(ServerLevel level, BlockPos pos,
-                                          ParticulateType type, float mgM3) {
-        BlockEntity be = level.getBlockEntity(pos);
-        if (!(be instanceof AtmosphereBlockEntity atm)) return;
-        atm.getParticulates().add(type, mgM3);
-        atm.setParticulates(atm.getParticulates());
-        Mge.getScheduler(level).enqueue(pos);
+                                         ParticulateType type, float mgM3) {
+        GridAtmosphereCompat.addParticulate(level, pos, type, mgM3);
+        EnvironmentGrid.enqueue(level, pos);
     }
 }

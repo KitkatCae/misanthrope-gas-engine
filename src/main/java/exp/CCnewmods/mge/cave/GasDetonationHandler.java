@@ -1,8 +1,9 @@
 package exp.CCnewmods.mge.cave;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.grid.EnvironmentGrid;
+import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
 import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.block.AtmosphereBlockEntity;
 import exp.CCnewmods.mge.gas.Gas;
 import exp.CCnewmods.mge.gas.GasComposition;
 import exp.CCnewmods.mge.gas.GasRegistry;
@@ -13,7 +14,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.FireBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -62,11 +62,10 @@ public final class GasDetonationHandler {
      * Called from AtmosphereTickScheduler during the dirty queue processing pass.
      * Returns true if a detonation occurred (block was consumed).
      */
-    public static boolean checkDetonation(ServerLevel level, BlockPos pos,
-                                           AtmosphereBlockEntity atm) {
+    public static boolean checkDetonation(ServerLevel level, BlockPos pos) {
         if (!MgeConfig.enableGasEffects) return false;
 
-        GasComposition comp = atm.getComposition();
+        GasComposition comp = GridAtmosphereCompat.getComposition(level, pos);
         float totalPressure = comp.totalPressure();
         if (totalPressure <= 0f) return false;
 
@@ -97,18 +96,18 @@ public final class GasDetonationHandler {
                 // Detonate!
                 float mbar = comp.get(key);
                 float strength = calculateBlastStrength(gas, mbar);
-                triggerGasDetonation(level, pos, atm, gas, strength);
+                triggerGasDetonation(level, pos, gas, strength);
                 return true;
             }
         }
 
         // ── Coal dust explosion check ─────────────────────────────────────────
-        ParticulateComposition parts = atm.getParticulates();
+        ParticulateComposition parts = GridAtmosphereCompat.getParticulates(level, pos);
         float coalDust = parts.get(ParticulateType.COAL_DUST);
         if (coalDust >= COAL_DUST_LEL_MG_M3
                 && comp.get(GasRegistry.OXYGEN) >= MIN_O2_MBAR
                 && hasIgnitionSource(level, pos, COAL_DUST_IGNITION_RADIUS)) {
-            triggerCoalDustExplosion(level, pos, atm, coalDust);
+            triggerCoalDustExplosion(level, pos, coalDust);
             return true;
         }
 
@@ -120,24 +119,18 @@ public final class GasDetonationHandler {
     // -------------------------------------------------------------------------
 
     private static void triggerGasDetonation(ServerLevel level, BlockPos pos,
-                                              AtmosphereBlockEntity atm,
                                               Gas gas, float strength) {
-        // Consume the flammable gas and oxidiser
-        GasComposition comp = atm.getComposition();
+        var comp = GridAtmosphereCompat.getComposition(level, pos);
         float mbar = comp.get(gas);
         comp.add(gas, -mbar);
         float o2 = comp.get(GasRegistry.OXYGEN);
-        comp.add(GasRegistry.OXYGEN, -Math.min(o2, mbar * 2f));
-        comp.add(GasRegistry.CARBON_DIOXIDE, mbar * 0.6f);
+        comp.add(GasRegistry.OXYGEN,         -Math.min(o2, mbar * 2f));
+        comp.add(GasRegistry.CARBON_DIOXIDE,  mbar * 0.6f);
         comp.add(GasRegistry.CARBON_MONOXIDE, mbar * 0.2f);
-        atm.setComposition(comp);
-
-        // Inject explosion products
-        ParticulateComposition parts = atm.getParticulates();
-        parts.add(ParticulateType.SMOKE_AEROSOL, mbar * 5f);
-        parts.add(ParticulateType.SOOT, mbar * 2f);
-        parts.add(ParticulateType.ASH_CLOUD, mbar * 1f);
-        atm.setParticulates(parts);
+        GridAtmosphereCompat.setComposition(level, pos, comp);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SMOKE_AEROSOL, mbar * 5f);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SOOT,          mbar * 2f);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.ASH_CLOUD,     mbar * 1f);
 
         // Trigger world explosion
         Vec3 centre = Vec3.atCenterOf(pos);
@@ -150,20 +143,13 @@ public final class GasDetonationHandler {
     }
 
     private static void triggerCoalDustExplosion(ServerLevel level, BlockPos pos,
-                                                   AtmosphereBlockEntity atm,
                                                    float dustAmount) {
-        // Consume coal dust and O₂
-        ParticulateComposition parts = atm.getParticulates();
-        parts.add(ParticulateType.COAL_DUST, -Math.min(dustAmount, COAL_DUST_LEL_MG_M3 * 2f));
-        parts.add(ParticulateType.ASH_CLOUD, dustAmount * 0.5f);
-        parts.add(ParticulateType.SOOT,      dustAmount * 0.3f);
-        atm.setParticulates(parts);
-
-        GasComposition comp = atm.getComposition();
-        float o2 = comp.get(GasRegistry.OXYGEN);
-        comp.add(GasRegistry.OXYGEN, -Math.min(o2, dustAmount * 0.1f));
-        comp.add(GasRegistry.CARBON_DIOXIDE, dustAmount * 0.05f);
-        atm.setComposition(comp);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.COAL_DUST, -Math.min(dustAmount, COAL_DUST_LEL_MG_M3 * 2f));
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.ASH_CLOUD,  dustAmount * 0.5f);
+        GridAtmosphereCompat.addParticulate(level, pos, ParticulateType.SOOT,       dustAmount * 0.3f);
+        float o2 = GridAtmosphereCompat.getGas(level, pos, GasRegistry.OXYGEN);
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.OXYGEN,         -Math.min(o2, dustAmount * 0.1f));
+        GridAtmosphereCompat.addGas(level, pos, GasRegistry.CARBON_DIOXIDE,  dustAmount * 0.05f);
 
         float strength = Math.min(4f, dustAmount / COAL_DUST_LEL_MG_M3 * 2.5f);
         Vec3 centre = Vec3.atCenterOf(pos);

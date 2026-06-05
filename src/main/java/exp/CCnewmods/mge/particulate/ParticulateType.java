@@ -101,19 +101,63 @@ public enum ParticulateType {
 
     // ── Biological / organic ─────────────────────────────────────────────────
 
-    /** Fungal spores — irritant, potentially hallucinogenic at high dose. */
-    SPORES("spores",
-            0x88AA8833,
+    /**
+     * Ophiocordyceps humanus — the zombie-ant fungus adapted to human hosts.
+     * Microscopic spores released by infected corpses and fungal blooms.
+     * At low concentration: nausea, disorientation. At high concentration:
+     * wither (CNS invasion). Spores are near-invisible individually but form
+     * a faint sickly-green haze in dense clouds. Extremely slow to settle —
+     * they remain suspended for minutes in still air.
+     */
+    OPHIOCORDYCEPS_HUMANUS("ophiocordyceps_humanus",
+            0x7722AA44,   // faint sickly green
+            SettleBehaviour.VERY_SLOW,
+            40f, ToxicEffect.NAUSEA,
+            1.5f),
+
+    /**
+     * Brown mushroom spores — emitted by Blocks.BROWN_MUSHROOM and
+     * BROWN_MUSHROOM_BLOCK on random tick. Mildly disorienting; contributes to
+     * fungal growth in the atmosphere grid at sufficient concentration.
+     * Warm earthy-brown tint.
+     */
+    BROWN_MUSHROOM_SPORES("brown_mushroom_spores",
+            0x88996633,
             SettleBehaviour.VERY_SLOW,
             80f, ToxicEffect.NAUSEA,
-            1.3f),
-
-    /** Mushroom cloud spores (from giant fungi in Nether/mushroom biomes). */
-    MUSHROOM_SPORES("mushroom_spores",
-            0x99DD7733,
-            SettleBehaviour.VERY_SLOW,
-            60f, ToxicEffect.LEVITATION,   // disorienting at high dose
             1.4f),
+
+    /**
+     * Red mushroom spores — emitted by Blocks.RED_MUSHROOM and RED_MUSHROOM_BLOCK.
+     * Slightly more toxic than brown; high concentration causes poison.
+     */
+    RED_MUSHROOM_SPORES("red_mushroom_spores",
+            0x88CC3322,
+            SettleBehaviour.VERY_SLOW,
+            50f, ToxicEffect.NAUSEA,
+            1.4f),
+
+    /**
+     * Crimson spores — emitted by Crimson Fungus and Crimson Nylium in the Nether.
+     * Denser and heavier than Overworld spores; deep red-orange haze.
+     * Contributes to crimson fungus growth in the grid.
+     */
+    CRIMSON_SPORES("crimson_spores",
+            0xAA992222,
+            SettleBehaviour.SLOW,           // heavier nether spores settle faster
+            60f, ToxicEffect.NAUSEA,
+            1.1f),
+
+    /**
+     * Warped spores — emitted by Warped Fungus and Warped Nylium.
+     * Mildly disorienting, faint cyan-teal haze. Lighter than crimson spores.
+     * Contributes to warped fungus growth in the grid.
+     */
+    WARPED_SPORES("warped_spores",
+            0x8822CCAA,
+            SettleBehaviour.VERY_SLOW,
+            70f, ToxicEffect.NAUSEA,
+            1.3f),
 
     /** Pollen from flowering plants. Seasonal, mild irritant. */
     POLLEN("pollen",
@@ -222,7 +266,68 @@ public enum ParticulateType {
             0x66886644,
             SettleBehaviour.VERY_SLOW,
             200f, ToxicEffect.NAUSEA,
-            1.0f);
+            1.0f),
+
+    // ── Magical / combat ──────────────────────────────────────────────────────
+
+    /**
+     * Ice Crystal Shards — jagged macro-scale ice fragments expelled by ice dragon
+     * breath and Frostmaw attacks. Larger than ICE_CRYSTALS; settles faster and
+     * causes direct laceration damage at high concentration. Very cold to the touch.
+     */
+    ICE_CRYSTAL_SHARDS("ice_crystal_shards",
+            0xBBAADDFF,
+            SettleBehaviour.FAST,
+            50f, ToxicEffect.SUFFOCATION,  // direct impact damage handled in compat
+            0.7f),
+
+    /**
+     * Soul Wisps — luminescent spectral particulate released by the death or
+     * corruption of undead and ghost-type entities. Mildly disorienting.
+     * Extremely buoyant — rises rather than settles; treated as VERY_SLOW settle
+     * but with upward bias in the diffusion ticker.
+     */
+    SOUL_WISPS("soul_wisps",
+            0x8844CCDD,
+            SettleBehaviour.VERY_SLOW,
+            80f, ToxicEffect.WITHER,
+            1.3f),
+
+    /**
+     * Ionised Particles — energised charged particulates produced alongside
+     * IONISED_AIR by lightning, sonic booms, and plasma events. Faint blue-white
+     * luminescence. Settles slowly; mildly disrupts electronics (compat flavour).
+     */
+    IONISED_PARTICLES("ionised_particles",
+            0x7777AAFF,
+            SettleBehaviour.SLOW,
+            120f, ToxicEffect.WEAKNESS,
+            1.1f),
+
+    /**
+     * Spore Cluster — a dense clump of mixed fungal spores, larger than individual
+     * spore gases. Produced when large mushroom blocks break or spore gas
+     * concentration reaches saturation. Settles at medium rate.
+     */
+    SPORE_CLUSTER("spore_cluster",
+            0x88AAAA44,
+            SettleBehaviour.MEDIUM,
+            100f, ToxicEffect.NAUSEA,
+            0.9f),
+
+    /**
+     * Pyrotheum Dust — radioactive superheavy Group 14 element in fine dust form.
+     * Gold-to-sulfur coloured. Radioactive decay continuously ionises surrounding
+     * air into plasma, heating the environment to ~2200°C ambient output.
+     * The ecological foundation of blaze biology (blazing blood is pyrotheum-buffered).
+     * At high concentration causes fire damage and radiation sickness (Wither).
+     * Thermally buoyant — settle is very slow. Co-emits IONISED_AIR as secondary effect.
+     */
+    PYROTHEUM_DUST("pyrotheum_dust",
+            0xCCFFAA00,
+            SettleBehaviour.VERY_SLOW,
+            30f, ToxicEffect.WITHER,
+            1.5f);
 
     // ── Data ──────────────────────────────────────────────────────────────────
 
@@ -285,6 +390,6 @@ public enum ParticulateType {
      * Imported as a standalone enum to avoid a cross-package dependency cycle.
      */
     public enum ToxicEffect {
-        NONE, MINING_FATIGUE, NAUSEA, WITHER, SUFFOCATION, LEVITATION, SLOWNESS
+        NONE, MINING_FATIGUE, NAUSEA, WITHER, SUFFOCATION, LEVITATION, SLOWNESS, WEAKNESS
     }
 }

@@ -57,6 +57,15 @@ public final class DimensionAtmosphereProfile {
     public final boolean breathable;
 
     /**
+     * Maximum BFS flood-fill radius for {@link exp.CCnewmods.misanthrope_core.thermal.structure.ThermalStructure}
+     * scans in this dimension.  -1 means unlimited (stop only at walls or vacuum).
+     *
+     * Overworld default: 64. Space/void dimensions: -1.
+     * Compact pocket dimensions (e.g. the Nether's enclosed geometry): 32.
+     */
+    public final int maxAirtightRadius;
+
+    /**
      * Whether Project Atmosphere weather sync should apply to surface blocks in this dimension.
      * True for outdoor dimensions (Overworld, Aether, Eden Ring).
      * False for enclosed/pocket dimensions (Nether, Undergarden, Limbo).
@@ -81,11 +90,13 @@ public final class DimensionAtmosphereProfile {
 
     private DimensionAtmosphereProfile(ResourceLocation dimension, boolean breathable,
                                         boolean hasSkyAccess, float basePressureMbar,
+                                        int maxAirtightRadius,
                                         Map<String, Float> gases, Map<String, Float> particulates) {
         this.dimension = dimension;
         this.breathable = breathable;
         this.hasSkyAccess = hasSkyAccess;
         this.basePressureMbar = basePressureMbar;
+        this.maxAirtightRadius = maxAirtightRadius;
         this.gases = Collections.unmodifiableMap(gases);
         this.particulates = Collections.unmodifiableMap(particulates);
     }
@@ -144,6 +155,9 @@ public final class DimensionAtmosphereProfile {
         boolean hasSkyAccess  = !json.has("has_sky_access") || json.get("has_sky_access").getAsBoolean();
         float basePressure    = json.has("base_pressure_mbar")
                 ? json.get("base_pressure_mbar").getAsFloat() : 1013.25f;
+        // -1 = unlimited (space, void). Default 64 blocks matches ThermalStructure.DEFAULT_MAX_RADIUS.
+        int maxAirtightRadius = json.has("max_airtight_radius")
+                ? json.get("max_airtight_radius").getAsInt() : 64;
 
         Map<String, Float> gases = new LinkedHashMap<>();
         if (json.has("gases")) {
@@ -158,7 +172,7 @@ public final class DimensionAtmosphereProfile {
         }
 
         return new DimensionAtmosphereProfile(dimension, breathable, hasSkyAccess,
-                basePressure, gases, particulates);
+                basePressure, maxAirtightRadius, gases, particulates);
     }
 
     @Override
