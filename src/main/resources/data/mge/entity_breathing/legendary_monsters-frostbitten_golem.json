@@ -1,0 +1,5 @@
+{
+  "entity": "legendary_monsters:frostbitten_golem",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}

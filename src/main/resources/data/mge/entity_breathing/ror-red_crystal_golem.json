@@ -1,0 +1,5 @@
+{
+  "entity": "ror:red_crystal_golem",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}

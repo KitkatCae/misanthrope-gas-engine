@@ -1,0 +1,12 @@
+{
+  "entity": "nethers_exorcism_reborn:indigo_scyphozoa",
+  "needs_to_breathe": true,
+  "required_gas": "mge:nitrogen",
+  "minimum_partial_pressure_mbar": 30.0,
+  "tolerance_ticks": 300,
+  "toxic_sensitivity": 0.5,
+  "min_flight_pressure_mbar": 300.0,
+  "max_flight_pressure_mbar": 0.0,
+  "flight_pressure_tolerance_ticks": 100,
+  "wind_sensitivity": 2.0
+}

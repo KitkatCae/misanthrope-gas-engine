@@ -1,0 +1,5 @@
+{
+  "entity": "boh:gray_alien",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.3
+}

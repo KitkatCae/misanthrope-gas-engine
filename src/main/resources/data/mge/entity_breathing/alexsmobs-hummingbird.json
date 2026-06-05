@@ -1,0 +1,14 @@
+{
+  "entity": "alexsmobs:hummingbird",
+  "needs_to_breathe": true,
+  "required_gas": "mge:oxygen",
+  "minimum_partial_pressure_mbar": 160.0,
+  "tolerance_ticks": 150,
+  "toxic_sensitivity": 1.2,
+  "exhale_gas": "mge:carbon_dioxide",
+  "exhale_rate_mbar_per_tick": 0.015,
+  "min_flight_pressure_mbar": 200.0,
+  "max_flight_pressure_mbar": 0.0,
+  "flight_pressure_tolerance_ticks": 80,
+  "wind_sensitivity": 2.5
+}

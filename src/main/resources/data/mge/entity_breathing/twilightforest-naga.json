@@ -1,0 +1,10 @@
+{
+  "entity": "twilightforest:naga",
+  "needs_to_breathe": true,
+  "required_gas": "mge:oxygen",
+  "minimum_partial_pressure_mbar": 160.0,
+  "tolerance_ticks": 2400,
+  "toxic_sensitivity": 0.2,
+  "exhale_gas": "mge:carbon_dioxide",
+  "exhale_rate_mbar_per_tick": 0.4
+}

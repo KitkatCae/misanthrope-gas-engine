@@ -1,0 +1,5 @@
+{
+  "entity": "rats:rat_mount_automaton",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}

@@ -1,0 +1,5 @@
+{
+  "entity": "witherstormmod:wither_storm_segment",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}

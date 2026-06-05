@@ -1,0 +1,10 @@
+{
+  "entity": "born_in_chaos_v1:mother_spider",
+  "needs_to_breathe": true,
+  "required_gas": "mge:oxygen",
+  "minimum_partial_pressure_mbar": 160.0,
+  "tolerance_ticks": 400,
+  "toxic_sensitivity": 0.5,
+  "exhale_gas": "mge:carbon_dioxide",
+  "exhale_rate_mbar_per_tick": 0.05
+}

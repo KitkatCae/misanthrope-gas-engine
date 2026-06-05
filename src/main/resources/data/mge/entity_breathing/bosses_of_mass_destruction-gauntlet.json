@@ -1,0 +1,5 @@
+{
+  "entity": "bosses_of_mass_destruction:gauntlet",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}

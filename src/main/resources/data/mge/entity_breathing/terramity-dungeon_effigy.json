@@ -1,0 +1,5 @@
+{
+  "entity": "terramity:dungeon_effigy",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}

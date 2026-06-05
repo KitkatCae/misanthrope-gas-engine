@@ -1,0 +1,12 @@
+{
+  "entity": "betterend:shadow_walker",
+  "needs_to_breathe": true,
+  "required_gas": "mge:ender_particulate",
+  "minimum_partial_pressure_mbar": 1.0,
+  "tolerance_ticks": 600,
+  "toxic_sensitivity": 0.1,
+  "min_flight_pressure_mbar": 0.0,
+  "max_flight_pressure_mbar": 600.0,
+  "flight_pressure_tolerance_ticks": 300,
+  "wind_sensitivity": 0.4
+}

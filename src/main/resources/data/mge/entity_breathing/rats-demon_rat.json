@@ -1,0 +1,5 @@
+{
+  "entity": "rats:demon_rat",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}

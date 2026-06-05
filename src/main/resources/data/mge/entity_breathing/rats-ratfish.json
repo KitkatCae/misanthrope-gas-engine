@@ -1,0 +1,10 @@
+{
+  "entity": "rats:ratfish",
+  "needs_to_breathe": true,
+  "required_gas": "mge:oxygen",
+  "minimum_partial_pressure_mbar": 50.0,
+  "tolerance_ticks": 600,
+  "toxic_sensitivity": 1.2,
+  "exhale_gas": "mge:carbon_dioxide",
+  "exhale_rate_mbar_per_tick": 0.02
+}

@@ -1,0 +1,10 @@
+{
+  "entity": "rats:neo_ratlantean",
+  "needs_to_breathe": true,
+  "required_gas": "mge:oxygen",
+  "minimum_partial_pressure_mbar": 130.0,
+  "tolerance_ticks": 120,
+  "toxic_sensitivity": 1.0,
+  "exhale_gas": "mge:carbon_dioxide",
+  "exhale_rate_mbar_per_tick": 0.03
+}

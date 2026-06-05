@@ -1,0 +1,14 @@
+{
+  "entity": "terramity:blue_fairy",
+  "needs_to_breathe": true,
+  "required_gas": "mge:oxygen",
+  "minimum_partial_pressure_mbar": 120.0,
+  "tolerance_ticks": 80,
+  "toxic_sensitivity": 2.0,
+  "exhale_gas": "mge:carbon_dioxide",
+  "exhale_rate_mbar_per_tick": 0.01,
+  "min_flight_pressure_mbar": 150.0,
+  "max_flight_pressure_mbar": 1800.0,
+  "flight_pressure_tolerance_ticks": 60,
+  "wind_sensitivity": 2.5
+}

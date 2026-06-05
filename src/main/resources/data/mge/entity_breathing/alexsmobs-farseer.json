@@ -1,0 +1,8 @@
+{
+  "entity": "alexsmobs:farseer",
+  "needs_to_breathe": true,
+  "required_gas": "mge:ender_particulate",
+  "minimum_partial_pressure_mbar": 2.0,
+  "tolerance_ticks": 600,
+  "toxic_sensitivity": 0.1
+}

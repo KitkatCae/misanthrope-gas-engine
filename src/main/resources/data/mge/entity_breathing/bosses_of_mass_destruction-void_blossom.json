@@ -1,0 +1,6 @@
+{
+  "entity": "bosses_of_mass_destruction:void_blossom",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0,
+  "wind_sensitivity": 0.0
+}

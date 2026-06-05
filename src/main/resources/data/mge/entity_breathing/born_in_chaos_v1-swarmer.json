@@ -1,0 +1,10 @@
+{
+  "entity": "born_in_chaos_v1:swarmer",
+  "needs_to_breathe": true,
+  "required_gas": "mge:oxygen",
+  "minimum_partial_pressure_mbar": 110.0,
+  "tolerance_ticks": 80,
+  "toxic_sensitivity": 0.7,
+  "exhale_gas": "mge:carbon_dioxide",
+  "exhale_rate_mbar_per_tick": 0.01
+}

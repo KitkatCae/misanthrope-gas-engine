@@ -1,0 +1,8 @@
+{
+  "entity": "mutantmore:mutant_blaze_part",
+  "needs_to_breathe": true,
+  "required_gas": "mge:sulfur_dioxide",
+  "minimum_partial_pressure_mbar": 8.0,
+  "tolerance_ticks": 1200,
+  "toxic_sensitivity": 0.0
+}

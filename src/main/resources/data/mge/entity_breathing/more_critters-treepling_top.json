@@ -1,0 +1,10 @@
+{
+  "entity": "more_critters:treepling_top",
+  "needs_to_breathe": true,
+  "required_gas": "mge:carbon_dioxide",
+  "minimum_partial_pressure_mbar": 3.0,
+  "tolerance_ticks": 800,
+  "toxic_sensitivity": 1.5,
+  "exhale_gas": "mge:oxygen",
+  "exhale_rate_mbar_per_tick": 0.01
+}

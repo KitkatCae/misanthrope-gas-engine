@@ -1,0 +1,5 @@
+{
+  "entity": "terramity:super_sniffer",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}

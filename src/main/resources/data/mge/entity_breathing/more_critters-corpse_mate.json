@@ -1,0 +1,5 @@
+{
+  "entity": "more_critters:corpse_mate",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}

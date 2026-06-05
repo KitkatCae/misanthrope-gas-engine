@@ -1,0 +1,12 @@
+{
+  "entity": "alexsmobs:enderiophage",
+  "needs_to_breathe": true,
+  "required_gas": "mge:ender_particulate",
+  "minimum_partial_pressure_mbar": 2.0,
+  "tolerance_ticks": 400,
+  "toxic_sensitivity": 0.3,
+  "min_flight_pressure_mbar": 100.0,
+  "max_flight_pressure_mbar": 1200.0,
+  "flight_pressure_tolerance_ticks": 200,
+  "wind_sensitivity": 0.6
+}

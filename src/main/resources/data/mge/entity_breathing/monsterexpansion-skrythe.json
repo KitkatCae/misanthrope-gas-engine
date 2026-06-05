@@ -1,0 +1,12 @@
+{
+  "entity": "monsterexpansion:skrythe",
+  "needs_to_breathe": true,
+  "required_gas": "mge:ender_particulate",
+  "minimum_partial_pressure_mbar": 3.0,
+  "tolerance_ticks": 800,
+  "toxic_sensitivity": 0.1,
+  "min_flight_pressure_mbar": 0.0,
+  "max_flight_pressure_mbar": 0.0,
+  "flight_pressure_tolerance_ticks": 600,
+  "wind_sensitivity": 0.0
+}

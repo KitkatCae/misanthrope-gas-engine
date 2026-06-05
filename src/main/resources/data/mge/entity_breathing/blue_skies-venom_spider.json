@@ -1,0 +1,10 @@
+{
+  "entity": "blue_skies:venom_spider",
+  "needs_to_breathe": true,
+  "required_gas": "mge:oxygen",
+  "minimum_partial_pressure_mbar": 100.0,
+  "tolerance_ticks": 150,
+  "toxic_sensitivity": 0.5,
+  "exhale_gas": "mge:carbon_dioxide",
+  "exhale_rate_mbar_per_tick": 0.02
+}

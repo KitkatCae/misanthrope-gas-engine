@@ -1,0 +1,6 @@
+{
+  "entity": "craziness_awakened:rotator",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0,
+  "wind_sensitivity": 0.0
+}

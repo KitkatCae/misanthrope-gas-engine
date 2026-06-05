@@ -1,0 +1,5 @@
+{
+  "entity": "block_factorys_bosses:frozen_skeleton",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}

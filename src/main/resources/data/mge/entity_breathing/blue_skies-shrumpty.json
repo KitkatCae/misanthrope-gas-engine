@@ -1,0 +1,10 @@
+{
+  "entity": "blue_skies:shrumpty",
+  "needs_to_breathe": true,
+  "required_gas": "mge:carbon_dioxide",
+  "minimum_partial_pressure_mbar": 3.0,
+  "tolerance_ticks": 400,
+  "toxic_sensitivity": 0.0,
+  "exhale_gas": "mge:oxygen",
+  "exhale_rate_mbar_per_tick": 0.02
+}

@@ -1,0 +1,5 @@
+{
+  "entity": "boh:martian_drone",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.3
+}

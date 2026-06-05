@@ -1,0 +1,14 @@
+{
+  "entity": "betternether:hydrogen_jellyfish",
+  "needs_to_breathe": true,
+  "required_gas": "mge:hydrogen",
+  "minimum_partial_pressure_mbar": 20.0,
+  "tolerance_ticks": 300,
+  "toxic_sensitivity": 1.5,
+  "exhale_gas": "mge:hydrogen",
+  "exhale_rate_mbar_per_tick": 0.12,
+  "min_flight_pressure_mbar": 200.0,
+  "max_flight_pressure_mbar": 0.0,
+  "flight_pressure_tolerance_ticks": 100,
+  "wind_sensitivity": 2.0
+}

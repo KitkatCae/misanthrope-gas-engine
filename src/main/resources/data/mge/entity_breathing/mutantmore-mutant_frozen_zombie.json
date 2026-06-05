@@ -1,0 +1,5 @@
+{
+  "entity": "mutantmore:mutant_frozen_zombie",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}

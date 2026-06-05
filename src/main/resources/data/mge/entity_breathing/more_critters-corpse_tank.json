@@ -1,0 +1,5 @@
+{
+  "entity": "more_critters:corpse_tank",
+  "needs_to_breathe": false,
+  "toxic_sensitivity": 0.0
+}
