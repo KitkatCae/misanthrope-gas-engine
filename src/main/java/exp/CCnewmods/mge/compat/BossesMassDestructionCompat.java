@@ -99,7 +99,6 @@ public final class BossesMassDestructionCompat {
         if (!type.startsWith("bosses_of_mass_destruction:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "bosses_of_mass_destruction:lich" -> {
@@ -107,25 +106,21 @@ public final class BossesMassDestructionCompat {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 40f, 5);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 80f, 6);
                 ShockwaveHandler.spawn(level, pos, 10f);
-                ShockwaveDataPacket.sendToNear(level, vec, 10f, 80f);
             }
             case "bosses_of_mass_destruction:obsidilith" -> {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 80f, 8);
                 gasRadius(level, pos, GasRegistry.SOUL_SMOKE,    50f, 6);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 100f, 7);
                 ShockwaveHandler.spawn(level, pos, 14f);
-                ShockwaveDataPacket.sendToNear(level, vec, 14f, 120f);
             }
             case "bosses_of_mass_destruction:void_blossom" -> {
                 gasRadius(level, pos, GasRegistry.ENDER_PARTICULATE, 50f, 5);
                 ShockwaveHandler.spawn(level, pos, 8f);
-                ShockwaveDataPacket.sendToNear(level, vec, 8f, 64f);
             }
             case "bosses_of_mass_destruction:gauntlet" -> {
                 gasRadius(level, pos, GasRegistry.BLAZE_FUME, 40f, 5);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD, 80f, 4);
                 ShockwaveHandler.spawn(level, pos, 10f);
-                ShockwaveDataPacket.sendToNear(level, vec, 10f, 80f);
             }
         }
     }
@@ -139,7 +134,6 @@ public final class BossesMassDestructionCompat {
         if (!type.startsWith("bosses_of_mass_destruction:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         // Confirmed projectile IDs from BMDEntities: comet, missile, petal_blade, spore_ball
         switch (type) {
@@ -148,19 +142,16 @@ public final class BossesMassDestructionCompat {
                 gasRadius(level, pos, GasRegistry.OZONE,         8f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 25f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "bosses_of_mass_destruction:missile" -> {
                 gasRadius(level, pos, GasRegistry.BLAZE_FUME,   30f, 3);
                 gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 12f, 2);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD, 60f, 3);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 56f);
             }
             case "bosses_of_mass_destruction:petal_blade" -> {
                 gasRadius(level, pos, GasRegistry.ENDER_PARTICULATE, 20f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "bosses_of_mass_destruction:spore_ball" -> {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 15f, 2);

@@ -103,7 +103,6 @@ public final class BetterNetherEndCompat {
 
         String type = proj.getType().toString();
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         // Registry IDs confirmed: betternether:skull, betternether:naga_projectile
         if (bnLoaded && type.startsWith("betternether:")) {
@@ -112,7 +111,6 @@ public final class BetterNetherEndCompat {
                 gasRadius(level, pos, GasRegistry.SOUL_SMOKE,   10f, 2);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 20f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
         }
     }
@@ -133,8 +131,6 @@ public final class BetterNetherEndCompat {
                 }
             }
         }
-        Vec3 vec = Vec3.atCenterOf(pos);
         ShockwaveHandler.spawn(level, pos, 3f);
-        ShockwaveDataPacket.sendToNear(level, vec, 3f, 32f);
     }
 }

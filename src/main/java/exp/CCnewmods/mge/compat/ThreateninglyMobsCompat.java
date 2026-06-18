@@ -118,19 +118,16 @@ public final class ThreateninglyMobsCompat {
         if (!type.startsWith("threateningly_mobs:")) return;
 
         BlockPos pos = entity.blockPosition();
-        Vec3 vec = entity.position();
 
         // Boss-scale variants get radius emissions
         if (type.equals("threateningly_mobs:the_regalhart")) {
             gasRadius(level, pos, GasRegistry.WATER_VAPOR,    12f, 3);
             gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE, 6f, 2);
             ShockwaveHandler.spawn(level, pos, 2f);
-            ShockwaveDataPacket.sendToNear(level, vec, 2f, 20f);
         } else if (type.equals("threateningly_mobs:the_earthloong")) {
             partRadius(level, pos, ParticulateType.DUST,        30f, 4);
             partRadius(level, pos, ParticulateType.GRAVEL_DUST, 20f, 3);
             ShockwaveHandler.spawn(level, pos, 3f);
-            ShockwaveDataPacket.sendToNear(level, vec, 3f, 32f);
         } else if (type.equals("threateningly_mobs:lich_re")) {
             gasRadius(level, pos, GasRegistry.SOUL_ESSENCE,  14f, 3);
             gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 10f, 2);
@@ -166,7 +163,6 @@ public final class ThreateninglyMobsCompat {
         if (!type.startsWith("threateningly_mobs:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "threateningly_mobs:lich_re" -> {
@@ -174,20 +170,17 @@ public final class ThreateninglyMobsCompat {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 40f, 5);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 80f, 6);
                 ShockwaveHandler.spawn(level, pos, 10f);
-                ShockwaveDataPacket.sendToNear(level, vec, 10f, 80f);
             }
             case "threateningly_mobs:the_regalhart" -> {
                 gasRadius(level, pos, GasRegistry.WATER_VAPOR,      50f, 7);
                 gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE, 30f, 5);
                 ShockwaveHandler.spawn(level, pos, 12f);
-                ShockwaveDataPacket.sendToNear(level, vec, 12f, 100f);
             }
             case "threateningly_mobs:the_earthloong" -> {
                 partRadius(level, pos, ParticulateType.DUST,        180f, 10);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 120f,  8);
                 gasRadius(level, pos, GasRegistry.WATER_VAPOR,      30f,  6);
                 ShockwaveHandler.spawn(level, pos, 18f);
-                ShockwaveDataPacket.sendToNear(level, vec, 18f, 160f);
             }
         }
     }
@@ -201,7 +194,6 @@ public final class ThreateninglyMobsCompat {
         if (!type.startsWith("threateningly_mobs:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "threateningly_mobs:inferno_projectile" -> {
@@ -209,7 +201,6 @@ public final class ThreateninglyMobsCompat {
                 gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 12f, 2);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  60f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "threateningly_mobs:ice_worm_acid",
                  "threateningly_mobs:red_worm_acid" -> {
@@ -222,12 +213,10 @@ public final class ThreateninglyMobsCompat {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR,    12f, 2);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 22f, 3);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             case "threateningly_mobs:slash_wave" -> {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 12f, 2);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             case "threateningly_mobs:posion_goo_bullet" -> {
                 gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE, 12f, 2);
@@ -244,7 +233,6 @@ public final class ThreateninglyMobsCompat {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 15f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 18f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
         }
     }

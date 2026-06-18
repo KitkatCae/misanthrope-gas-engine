@@ -108,7 +108,6 @@ public final class TheRavenousCompat {
         if (!type.startsWith("the_ravenous:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         if (MAIN_VARIANTS.contains(type)) {
             float scale = scaleForVariant(type);
@@ -118,7 +117,6 @@ public final class TheRavenousCompat {
             gasRadius(level, pos, GasRegistry.VOID_BREATH,      25f * scale, (int)(3 * scale));
             partRadius(level, pos, ParticulateType.ORGANIC_AEROSOL, 50f * scale, (int)(4 * scale));
             ShockwaveHandler.spawn(level, pos, 8f * scale);
-            ShockwaveDataPacket.sendToNear(level, vec, 8f * scale, 64f * scale);
         }
     }
 
@@ -131,14 +129,12 @@ public final class TheRavenousCompat {
         if (!type.startsWith("the_ravenous:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         if (type.equals("the_ravenous:rav_scream")) {
             gasRadius(level, pos, GasRegistry.IONISED_AIR, 20f, 3);
             gasRadius(level, pos, GasRegistry.OZONE,        8f, 2);
             partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 22f, 3);
             ShockwaveHandler.spawn(level, pos, 6f);
-            ShockwaveDataPacket.sendToNear(level, vec, 6f, 56f);
         }
     }
 

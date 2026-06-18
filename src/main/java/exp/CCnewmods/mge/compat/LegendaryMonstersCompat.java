@@ -72,7 +72,6 @@ public final class LegendaryMonstersCompat {
         if (!type.startsWith("legendary_monsters:")) return;
 
         BlockPos pos = entity.blockPosition();
-        Vec3 vec = entity.position();
 
         switch (type) {
             case "legendary_monsters:the_obliterator" -> {
@@ -81,7 +80,6 @@ public final class LegendaryMonstersCompat {
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 22f, 4);
                 drainRadius(level, pos, GasRegistry.OXYGEN, 10f, 3);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             case "legendary_monsters:withered_abomination" -> {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 14f, 3);
@@ -120,7 +118,6 @@ public final class LegendaryMonstersCompat {
                 part(level, pos, ParticulateType.DUST,        20f);
                 part(level, pos, ParticulateType.GRAVEL_DUST, 14f);
                 ShockwaveHandler.spawn(level, pos, 2f);
-                ShockwaveDataPacket.sendToNear(level, vec, 2f, 20f);
             }
             case "legendary_monsters:overgrown_colossus" -> {
                 partRadius(level, pos, ParticulateType.BROWN_MUSHROOM_SPORES, 8f, 3);
@@ -153,7 +150,6 @@ public final class LegendaryMonstersCompat {
         if (!type.startsWith("legendary_monsters:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "legendary_monsters:the_obliterator" -> {
@@ -161,21 +157,18 @@ public final class LegendaryMonstersCompat {
                 gasRadius(level, pos, GasRegistry.OZONE,       25f, 5);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 80f, 6);
                 ShockwaveHandler.spawn(level, pos, 14f);
-                ShockwaveDataPacket.sendToNear(level, vec, 14f, 120f);
             }
             case "legendary_monsters:withered_abomination" -> {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 50f, 5);
                 gasRadius(level, pos, GasRegistry.SOUL_SMOKE,    30f, 4);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 60f, 5);
                 ShockwaveHandler.spawn(level, pos, 8f);
-                ShockwaveDataPacket.sendToNear(level, vec, 8f, 64f);
             }
             case "legendary_monsters:overgrown_colossus" -> {
                 partRadius(level, pos, ParticulateType.BROWN_MUSHROOM_SPORES, 40f, 6);
                 partRadius(level, pos, ParticulateType.ORGANIC_AEROSOL, 60f, 5);
                 partRadius(level, pos, ParticulateType.SPORE_CLUSTER,   50f, 5);
                 ShockwaveHandler.spawn(level, pos, 10f);
-                ShockwaveDataPacket.sendToNear(level, vec, 10f, 80f);
             }
         }
     }
@@ -189,7 +182,6 @@ public final class LegendaryMonstersCompat {
         if (!type.startsWith("legendary_monsters:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "legendary_monsters:flame_rocket" -> {
@@ -197,14 +189,12 @@ public final class LegendaryMonstersCompat {
                 gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 12f, 2);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  60f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "legendary_monsters:annihilation_beam",
                  "legendary_monsters:annihilation_geyser" -> {
                 gasRadius(level, pos, GasRegistry.ENDER_PARTICULATE, 25f, 3);
                 drainRadius(level, pos, GasRegistry.OXYGEN,          20f, 2);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             case "legendary_monsters:energy_beam",
                  "legendary_monsters:energy_laser",
@@ -213,19 +203,16 @@ public final class LegendaryMonstersCompat {
                 gasRadius(level, pos, GasRegistry.OZONE,        8f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 25f, 3);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             case "legendary_monsters:poison_shockwave" -> {
                 gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE, 18f, 3);
                 partRadius(level, pos, ParticulateType.ORGANIC_AEROSOL, 30f, 3);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "legendary_monsters:chorus_breath",
                  "legendary_monsters:chorus_bomb" -> {
                 gasRadius(level, pos, GasRegistry.ENDER_PARTICULATE, 18f, 3);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
         }
     }

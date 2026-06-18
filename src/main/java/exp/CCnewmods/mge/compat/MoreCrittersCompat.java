@@ -148,7 +148,6 @@ public final class MoreCrittersCompat {
         if (!type.startsWith("more_critters:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "more_critters:amalgam" -> {
@@ -159,7 +158,6 @@ public final class MoreCrittersCompat {
                 partRadius(level, pos, ParticulateType.OPHIOCORDYCEPS_HUMANUS, 60f, 5);
                 partRadius(level, pos, ParticulateType.ORGANIC_AEROSOL,        50f, 5);
                 ShockwaveHandler.spawn(level, pos, 7f);
-                ShockwaveDataPacket.sendToNear(level, vec, 7f, 60f);
             }
             case "more_critters:bomb_jelly_large" -> {
                 // H₂ death burst — same pattern as BetterNether hydrogen jellyfish
@@ -173,12 +171,10 @@ public final class MoreCrittersCompat {
                     }
                 }
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 30f);
             }
             case "more_critters:bomb_jelly_medium" -> {
                 gasRadius(level, pos, GasRegistry.HYDROGEN, 30f, 2);
                 ShockwaveHandler.spawn(level, pos, 2f);
-                ShockwaveDataPacket.sendToNear(level, vec, 2f, 20f);
             }
             case "more_critters:bomb_jelly_small" ->
                 gasRadius(level, pos, GasRegistry.HYDROGEN, 12f, 1);
@@ -194,7 +190,6 @@ public final class MoreCrittersCompat {
         if (!type.startsWith("more_critters:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "more_critters:thunderball_projectile" -> {
@@ -203,21 +198,18 @@ public final class MoreCrittersCompat {
                 gasRadius(level, pos, GasRegistry.NITRIC_OXIDE,   5f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 30f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "more_critters:shriekbomb_projectile" -> {
                 // Sonic concussion — rapid overpressure then vacuum
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 18f, 3);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 20f, 2);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 56f);
             }
             case "more_critters:cannon_ball_projectile",
                  "more_critters:cold_cannon_ball_projectile" -> {
                 partRadius(level, pos, ParticulateType.DUST,        30f, 3);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 20f, 2);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
         }
     }

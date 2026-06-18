@@ -150,25 +150,21 @@ public final class DrakvyrnCompat {
         if (!type.startsWith("choups_drakvyrn_mod:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         if (VOID_VARIANTS.contains(type)) {
             gasRadius(level, pos, GasRegistry.VOID_BREATH,       50f, 5);
             gasRadius(level, pos, GasRegistry.ENDER_PARTICULATE, 30f, 4);
             drainRadius(level, pos, GasRegistry.OXYGEN,  30f, 4);
             ShockwaveHandler.spawn(level, pos, 8f);
-            ShockwaveDataPacket.sendToNear(level, vec, 8f, 64f);
         } else if (ICE_VARIANTS.contains(type)) {
             gasRadius(level, pos, GasRegistry.DRAGON_ICE_CLOUD, 60f, 6);
             partRadius(level, pos, ParticulateType.ICE_CRYSTAL_SHARDS, 80f, 5);
             ShockwaveHandler.spawn(level, pos, 7f);
-            ShockwaveDataPacket.sendToNear(level, vec, 7f, 56f);
         } else if (FIRE_VARIANTS.contains(type)) {
             gasRadius(level, pos, GasRegistry.CARBON_DIOXIDE, 40f, 5);
             gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 20f, 4);
             partRadius(level, pos, ParticulateType.ASH_CLOUD,  80f, 5);
             ShockwaveHandler.spawn(level, pos, 7f);
-            ShockwaveDataPacket.sendToNear(level, vec, 7f, 56f);
         }
     }
 
@@ -181,26 +177,22 @@ public final class DrakvyrnCompat {
         if (!type.startsWith("choups_drakvyrn_mod:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "choups_drakvyrn_mod:dragon_breath_ball_projectile" -> {
                 IceAndFireCompat.emitFireDragonBreath(level, pos, 1.0f);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             case "choups_drakvyrn_mod:drozen_spear_projectile" -> {
                 gasRadius(level, pos, GasRegistry.DRAGON_ICE_CLOUD,  30f, 3);
                 partRadius(level, pos, ParticulateType.ICE_CRYSTAL_SHARDS, 40f, 3);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "choups_drakvyrn_mod:frosted_drozen_spear_projectile" -> {
                 gasRadius(level, pos, GasRegistry.DRAGON_ICE_CLOUD,  50f, 4);
                 partRadius(level, pos, ParticulateType.ICE_CRYSTAL_SHARDS, 70f, 4);
                 partRadius(level, pos, ParticulateType.ICE_CRYSTALS,       35f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
         }
     }

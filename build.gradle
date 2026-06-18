@@ -134,6 +134,7 @@ dependencies {
     compileOnly files('libs/chemica-0.3.0.jar')
     compileOnly files('libs/sandworm_mod-1.2.0.jar')
     compileOnly files('libs/threateningly_mobs-1.1.1-forge-1.20.1.jar')
+    compileOnly files('libs/misanthrope_world-2.0.6.jar')
 }
 
 // Tell the Mixin AP which refmap filename to declare in the jar.

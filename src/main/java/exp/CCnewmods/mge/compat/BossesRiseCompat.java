@@ -64,7 +64,6 @@ public final class BossesRiseCompat {
 
         ++tick;
         BlockPos pos = entity.blockPosition();
-        Vec3 vec = entity.position();
 
         switch (type) {
             case "block_factorys_bosses:infernal_dragon" -> {
@@ -80,7 +79,6 @@ public final class BossesRiseCompat {
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 30f, 4);
                 partRadius(level, pos, ParticulateType.COAL_DUST,   10f, 3);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 48f);
             }
             case "block_factorys_bosses:soul_skeleton",
                  "block_factorys_bosses:soul_knight_wither_skeleton" -> {
@@ -111,7 +109,6 @@ public final class BossesRiseCompat {
         if (!type.startsWith("block_factorys_bosses:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "block_factorys_bosses:sandworm" -> {
@@ -121,20 +118,17 @@ public final class BossesRiseCompat {
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 100f, 6);
                 partRadius(level, pos, ParticulateType.COAL_DUST,    40f, 5);
                 ShockwaveHandler.spawn(level, pos, 16f);
-                ShockwaveDataPacket.sendToNear(level, vec, 16f, 140f);
             }
             case "block_factorys_bosses:infernal_dragon" -> {
                 gasRadius(level, pos, GasRegistry.CARBON_DIOXIDE, 50f, 5);
                 gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 25f, 4);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD, 100f, 5);
                 ShockwaveHandler.spawn(level, pos, 10f);
-                ShockwaveDataPacket.sendToNear(level, vec, 10f, 80f);
             }
             case "block_factorys_bosses:yeti" -> {
                 gasRadius(level, pos, GasRegistry.DRAGON_ICE_CLOUD, 60f, 6);
                 partRadius(level, pos, ParticulateType.ICE_CRYSTAL_SHARDS, 80f, 5);
                 ShockwaveHandler.spawn(level, pos, 8f);
-                ShockwaveDataPacket.sendToNear(level, vec, 8f, 64f);
             }
         }
     }
@@ -148,14 +142,12 @@ public final class BossesRiseCompat {
         if (!type.startsWith("block_factorys_bosses:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         if (type.equals("block_factorys_bosses:flaming_skeleton_guard_fireball")) {
             gasRadius(level, pos, GasRegistry.BLAZE_FUME,     25f, 3);
             gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 10f, 2);
             partRadius(level, pos, ParticulateType.ASH_CLOUD,  50f, 3);
             ShockwaveHandler.spawn(level, pos, 4f);
-            ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
         }
     }
 }

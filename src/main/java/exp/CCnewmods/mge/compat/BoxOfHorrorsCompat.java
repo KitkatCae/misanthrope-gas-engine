@@ -120,7 +120,6 @@ public final class BoxOfHorrorsCompat {
 
         ++tick;
         BlockPos pos = entity.blockPosition();
-        Vec3 vec = entity.position();
 
         if (KAIJU.contains(type)) {
             // Continuous seismic dust
@@ -128,7 +127,6 @@ public final class BoxOfHorrorsCompat {
                 partRadius(level, pos, ParticulateType.DUST,        50f, 5);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 35f, 4);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 60f);
             }
             if (tick % TICK_INTERVAL == 0) {
                 gasRadius(level, pos, GasRegistry.WATER_VAPOR, 15f, 4);
@@ -170,20 +168,17 @@ public final class BoxOfHorrorsCompat {
         if (!type.startsWith("boh:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         if (KAIJU.contains(type)) {
             partRadius(level, pos, ParticulateType.DUST,        200f, 10);
             partRadius(level, pos, ParticulateType.GRAVEL_DUST, 140f,  8);
             gasRadius(level, pos, GasRegistry.WATER_VAPOR,      50f,  7);
             ShockwaveHandler.spawn(level, pos, 20f);
-            ShockwaveDataPacket.sendToNear(level, vec, 20f, 200f);
         } else if (DEMONIC.contains(type)) {
             gasRadius(level, pos, GasRegistry.SOUL_ESSENCE,  30f, 4);
             gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 20f, 3);
             partRadius(level, pos, ParticulateType.SOUL_WISPS, 40f, 4);
             ShockwaveHandler.spawn(level, pos, 5f);
-            ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
         } else if (SPECTRAL.contains(type)) {
             gasRadius(level, pos, GasRegistry.SOUL_ESSENCE, 20f, 3);
             partRadius(level, pos, ParticulateType.SOUL_WISPS, 28f, 3);
@@ -202,7 +197,6 @@ public final class BoxOfHorrorsCompat {
         if (!type.startsWith("boh:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "boh:gaster_blaster_projectile" -> {
@@ -210,7 +204,6 @@ public final class BoxOfHorrorsCompat {
                 gasRadius(level, pos, GasRegistry.OZONE,       10f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 30f, 3);
                 ShockwaveHandler.spawn(level, pos, 7f);
-                ShockwaveDataPacket.sendToNear(level, vec, 7f, 64f);
             }
             case "boh:hypno_shot_projectile" -> {
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE, 15f, 2);
@@ -224,7 +217,6 @@ public final class BoxOfHorrorsCompat {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 15f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 18f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
         }
     }

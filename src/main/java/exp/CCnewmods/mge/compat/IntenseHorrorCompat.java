@@ -142,7 +142,6 @@ public final class IntenseHorrorCompat {
         if (!type.startsWith("intensehorror:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "intensehorror:pumpking" -> {
@@ -151,7 +150,6 @@ public final class IntenseHorrorCompat {
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE,   25f, 4);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  80f, 5);
                 ShockwaveHandler.spawn(level, pos, 10f);
-                ShockwaveDataPacket.sendToNear(level, vec, 10f, 80f);
             }
             case "intensehorror:demon",
                  "intensehorror:reaper" -> {
@@ -159,7 +157,6 @@ public final class IntenseHorrorCompat {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 22f, 3);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 45f, 4);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
         }
     }
@@ -173,7 +170,6 @@ public final class IntenseHorrorCompat {
         if (!type.startsWith("intensehorror:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "intensehorror:projectile_demon_wave" -> {
@@ -181,7 +177,6 @@ public final class IntenseHorrorCompat {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA,  12f, 2);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 25f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "intensehorror:projectile_ectobomb_projectile" -> {
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE,   15f, 2);
@@ -192,7 +187,6 @@ public final class IntenseHorrorCompat {
                 gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE,  8f, 2);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  35f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "intensehorror:projectile_pumpkin_projectile" -> {
                 gasRadius(level, pos, GasRegistry.BLAZE_FUME,     15f, 2);

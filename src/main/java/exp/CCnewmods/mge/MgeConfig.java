@@ -110,6 +110,27 @@ public final class MgeConfig {
                           + "Lower = more responsive humidity/rain/snow effects. Default: 40.")
                    .defineInRange("paWeatherSyncIntervalTicks", 40, 5, 1200);
 
+    // ── Shockwave shader ─────────────────────────────────────────────────────
+
+    /**
+     * Hard upper bound on the desaturation-pass wave array. The GLSL uniform
+     * array in shockwave_desaturate.fsh is sized to exactly this constant —
+     * changing this value requires updating the shader source to match, it
+     * is NOT picked up automatically since GLSL array sizes must be a
+     * compile-time constant.
+     */
+    public static final int SHOCKWAVE_DESAT_HARD_CAP = 16;
+
+    private static final ForgeConfigSpec.IntValue SHOCKWAVE_MAX_DESAT_WAVES_SPEC =
+            BUILDER.comment("Max simultaneous shockwaves tracked by the shared desaturation/whitening "
+                          + "post-process pass. Waves beyond this cap still get their own additive "
+                          + "refraction+rim-glow pass — this only limits how many can contribute to "
+                          + "the one shared desaturation effect at once. Higher = more accurate with "
+                          + "many simultaneous explosions, at a small fragment-shader cost. "
+                          + "Hard-capped at " + SHOCKWAVE_DESAT_HARD_CAP + " by the shader's array size. "
+                          + "Default: 8.")
+                   .defineInRange("shockwaveMaxDesaturationWaves", 8, 1, SHOCKWAVE_DESAT_HARD_CAP);
+
     static final ForgeConfigSpec SPEC = BUILDER.build();
 
     // ── Resolved values ───────────────────────────────────────────────────────
@@ -132,6 +153,7 @@ public final class MgeConfig {
     public static boolean enableAtmosphereRenderer;
     public static boolean standardAirOnGeneration;
     public static int     paWeatherSyncIntervalTicks;
+    public static int     shockwaveMaxDesaturationWaves;
 
     @SubscribeEvent
     static void onLoad(ModConfigEvent event) {
@@ -153,6 +175,7 @@ public final class MgeConfig {
         enableAtmosphereRenderer       = ENABLE_RENDERER_SPEC.get();
         standardAirOnGeneration        = STANDARD_AIR_ON_GENERATION_SPEC.get();
         paWeatherSyncIntervalTicks     = PA_WEATHER_SYNC_INTERVAL_SPEC.get();
+        shockwaveMaxDesaturationWaves  = SHOCKWAVE_MAX_DESAT_WAVES_SPEC.get();
     }
 
     private MgeConfig() {}

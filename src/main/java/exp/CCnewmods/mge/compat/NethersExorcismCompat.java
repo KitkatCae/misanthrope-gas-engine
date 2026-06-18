@@ -99,7 +99,6 @@ public final class NethersExorcismCompat {
         if (!type.startsWith("nethers_exorcism_reborn:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         if (type.equals("nethers_exorcism_reborn:brogg")) {
             // Pyroclastic collapse
@@ -111,7 +110,6 @@ public final class NethersExorcismCompat {
             partRadius(level, pos, ParticulateType.ASH_CLOUD,  150f, 7);
             partRadius(level, pos, ParticulateType.DUST,        80f, 6);
             ShockwaveHandler.spawn(level, pos, 14f);
-            ShockwaveDataPacket.sendToNear(level, vec, 14f, 120f);
         }
     }
 }

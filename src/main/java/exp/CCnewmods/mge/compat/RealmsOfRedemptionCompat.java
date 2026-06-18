@@ -130,7 +130,6 @@ public final class RealmsOfRedemptionCompat {
         if (!type.startsWith("ror:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         if (type.equals("ror:titania")) {
             gasRadius(level, pos, GasRegistry.IONISED_AIR,  60f, 7);
@@ -138,7 +137,6 @@ public final class RealmsOfRedemptionCompat {
             gasRadius(level, pos, GasRegistry.SOUL_ESSENCE, 30f, 5);
             partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 80f, 7);
             ShockwaveHandler.spawn(level, pos, 12f);
-            ShockwaveDataPacket.sendToNear(level, vec, 12f, 100f);
         }
     }
 
@@ -151,14 +149,12 @@ public final class RealmsOfRedemptionCompat {
         if (!type.startsWith("ror:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "ror:laser", "ror:laser_blast", "ror:laserbeam" -> {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 18f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 20f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "ror:fairy_wand_projectile",
                  "ror:rainbow_wand_projectile",
@@ -176,7 +172,6 @@ public final class RealmsOfRedemptionCompat {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 12f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 14f, 2);
                 ShockwaveHandler.spawn(level, pos, 2f);
-                ShockwaveDataPacket.sendToNear(level, vec, 2f, 18f);
             }
             case "ror:blue_crystal_star",
                  "ror:green_crystal_star",

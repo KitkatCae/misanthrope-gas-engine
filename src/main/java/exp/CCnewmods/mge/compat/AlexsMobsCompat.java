@@ -113,14 +113,12 @@ public final class AlexsMobsCompat {
         if (!type.contains("alexsmobs:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         // Registry ID confirmed: alexsmobs:enderiophage_rocket
         if (type.equals("alexsmobs:enderiophage_rocket")) {
             // Enderiophage rocket — ender particulate burst + shockwave
             gasRadius(level, pos, GasRegistry.ENDER_PARTICULATE, 30f, 3);
             ShockwaveHandler.spawn(level, pos, 5f);
-            ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
         }
     }
 }

@@ -66,7 +66,6 @@ public final class CrazinessAwakenedCompat {
 
         ++tick;
         BlockPos pos = entity.blockPosition();
-        Vec3 vec = entity.position();
 
         switch (type) {
             case "craziness_awakened:mobzilla" -> {
@@ -76,7 +75,6 @@ public final class CrazinessAwakenedCompat {
                     partRadius(level, pos, ParticulateType.GRAVEL_DUST, 40f, 5);
                     partRadius(level, pos, ParticulateType.COAL_DUST,   20f, 4);
                     ShockwaveHandler.spawn(level, pos, 6f);
-                    ShockwaveDataPacket.sendToNear(level, vec, 6f, 80f);
                 }
                 if (tick % TICK_INTERVAL == 0) {
                     gasRadius(level, pos, GasRegistry.WATER_VAPOR,   20f, 5);
@@ -106,14 +104,12 @@ public final class CrazinessAwakenedCompat {
                 partRadius(level, pos, ParticulateType.DUST,        25f, 3);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 18f, 3);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 32f);
             }
             case "craziness_awakened:medium_worm" -> {
                 if (tick % FAST_TICK != 0) return;
                 partRadius(level, pos, ParticulateType.DUST,       14f, 2);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 10f, 2);
                 ShockwaveHandler.spawn(level, pos, 2f);
-                ShockwaveDataPacket.sendToNear(level, vec, 2f, 20f);
             }
             case "craziness_awakened:small_worm" -> {
                 if (tick % TICK_INTERVAL != 0) return;
@@ -139,7 +135,6 @@ public final class CrazinessAwakenedCompat {
         if (!type.startsWith("craziness_awakened:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         if (type.equals("craziness_awakened:mobzilla")) {
             // Cataclysmic death — city-levelling shockwave
@@ -148,7 +143,6 @@ public final class CrazinessAwakenedCompat {
             partRadius(level, pos, ParticulateType.GRAVEL_DUST, 200f, 10);
             partRadius(level, pos, ParticulateType.ASH_CLOUD,   150f, 8);
             ShockwaveHandler.spawn(level, pos, 24f);
-            ShockwaveDataPacket.sendToNear(level, vec, 24f, 250f);
         }
     }
 
@@ -161,21 +155,18 @@ public final class CrazinessAwakenedCompat {
         if (!type.startsWith("craziness_awakened:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         if (type.equals("craziness_awakened:mobzillaball")) {
             gasRadius(level, pos, GasRegistry.BLAZE_FUME,     60f, 5);
             gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 25f, 4);
             partRadius(level, pos, ParticulateType.ASH_CLOUD, 120f, 5);
             ShockwaveHandler.spawn(level, pos, 12f);
-            ShockwaveDataPacket.sendToNear(level, vec, 12f, 120f);
         } else if (type.equals("craziness_awakened:big_fireball")
                 || type.equals("craziness_awakened:huge_fireball")) {
             gasRadius(level, pos, GasRegistry.BLAZE_FUME,     35f, 4);
             gasRadius(level, pos, GasRegistry.CARBON_DIOXIDE, 15f, 3);
             partRadius(level, pos, ParticulateType.ASH_CLOUD,  70f, 4);
             ShockwaveHandler.spawn(level, pos, 7f);
-            ShockwaveDataPacket.sendToNear(level, vec, 7f, 64f);
         }
     }
 }

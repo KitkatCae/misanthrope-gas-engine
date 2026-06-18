@@ -166,7 +166,6 @@ public final class BornInChaosCompat {
         if (!type.startsWith("born_in_chaos_v1:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
         boolean boss = BOSS_UNDEAD.contains(type);
 
         float baseAmount = boss ? 40f : 8f;
@@ -178,7 +177,6 @@ public final class BornInChaosCompat {
 
         if (boss) {
             ShockwaveHandler.spawn(level, pos, 8f);
-            ShockwaveDataPacket.sendToNear(level, vec, 8f, 64f);
         }
     }
 }

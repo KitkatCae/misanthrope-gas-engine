@@ -1,11 +1,12 @@
 package exp.CCnewmods.mge.compat;
 
 import exp.CCnewmods.mge.Mge;
+import exp.CCnewmods.mge.MgeConfig;
 import exp.CCnewmods.mge.grid.EnvironmentGrid;
 import exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat;
-import exp.CCnewmods.mge.MgeConfig;
-import exp.CCnewmods.mge.util.ChunkIterator;
 import exp.CCnewmods.mge.gas.GasRegistry;
+import exp.CCnewmods.mge.util.ChunkIterator;
+import exp.CCnewmods.misanthrope_world.temperature.api.MisTemperatureAPI;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -16,30 +17,38 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * Misanthrope Core temperature system compat.
- * Reads MisTemperatureAPI.getAmbientCelsius() reflectively to drive
- * temperature-dependent gas chemistry on sampled chunk positions.
+ * Misanthrope World temperature system compat.
+ *
+ * <p><b>Migration note:</b> temperature and collapse physics were moved from
+ * Misanthrope Core to Misanthrope World (modid {@code misanthrope_world},
+ * package {@code exp.CCnewmods.misanthrope_world.*}) in pack version 2.0.6.
+ * This class replaces the old {@code MisanthropeCoreCompat}, which pointed at
+ * the retired {@code misanthrope_core} modid/package and is no longer valid.
+ *
+ * <p>Now that we have the real Misanthrope World jar to compile against,
+ * this calls {@link MisTemperatureAPI} directly instead of reflectively —
+ * reflection was only ever a hedge against not having the jar at compile
+ * time, which no longer applies.
+ *
+ * <p>Reads {@code MisTemperatureAPI.getAmbientCelsius()} to drive
+ * temperature-dependent gas chemistry on sampled chunk positions, and is
+ * also used by {@link SlimePressureCompat} (ice-cube melt check) and the
+ * shockwave system (thermal rim-glow gating).
  */
 @Mod.EventBusSubscriber(modid = Mge.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public final class MisanthropeCoreCompat {
+public final class MisanthropeWorldCompat {
 
-    public static final String MISCORE_MODID = "misanthrope_core";
+    public static final String MODID = "misanthrope_world";
     private static boolean loaded = false;
     private static final int SAMPLE_INTERVAL = 40;
     private static int tick = 0;
 
-    private MisanthropeCoreCompat() {}
+    private MisanthropeWorldCompat() {}
 
     public static void tryLoad() {
-        if (!ModList.get().isLoaded(MISCORE_MODID)) return;
-        try {
-            Class.forName("exp.CCnewmods.misanthrope_core.temperature.api.MisTemperatureAPI");
-        } catch (ClassNotFoundException e) {
-            Mge.LOGGER.warn("[MGE] misanthrope_core present but MisTemperatureAPI not found.");
-            return;
-        }
+        if (!ModList.get().isLoaded(MODID)) return;
         loaded = true;
-        Mge.LOGGER.info("[MGE] Misanthrope Core detected — ambient temperature gas chemistry active.");
+        Mge.LOGGER.info("[MGE] Misanthrope World detected — ambient temperature gas chemistry active.");
     }
 
     public static boolean isLoaded() { return loaded; }
@@ -101,15 +110,30 @@ public final class MisanthropeCoreCompat {
         }
     }
 
+    /**
+     * Returns the raw simulated ambient Celsius at {@code pos}, or
+     * {@code Double.NaN} if Misanthrope World isn't loaded or the call fails.
+     *
+     * <p>Uses {@code getAmbientCelsius} (the raw simulated value) rather than
+     * {@code getVisualCelsius} (the tint/display-adjusted value) — callers
+     * doing physics decisions (gas chemistry, ice melt, shockwave thermal
+     * gating) want the real simulated number, not the display one.
+     */
     public static double getAmbientCelsius(Level level, BlockPos pos) {
+        if (!loaded) return Double.NaN;
         try {
-            Class<?> api = Class.forName(
-                "exp.CCnewmods.misanthrope_core.temperature.api.MisTemperatureAPI");
-            java.lang.reflect.Method m = api.getMethod(
-                "getAmbientCelsius", Level.class, BlockPos.class);
-            return (double) m.invoke(null, level, pos);
+            return MisTemperatureAPI.getAmbientCelsius(level, pos);
         } catch (Exception e) {
             return Double.NaN;
         }
+    }
+
+    /**
+     * Convenience float overload with a fallback, for callers (like the
+     * shockwave renderer) that want a usable number rather than a NaN check.
+     */
+    public static float getCelsiusAt(Level level, BlockPos pos, float fallbackC) {
+        double c = getAmbientCelsius(level, pos);
+        return Double.isNaN(c) ? fallbackC : (float) c;
     }
 }

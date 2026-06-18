@@ -25,9 +25,9 @@ description    = '''A physically-simulated atmospheric gas engine. Replaces all 
     side        = "BOTH"
 
 [[dependencies."mge"]]
-    modId       = "misanthrope_core"
+    modId       = "misanthrope_world"
     mandatory   = false
-    versionRange = "[1.0,)"
+    versionRange = "[2.0,)"
     ordering    = "BEFORE"
     side        = "BOTH"
 

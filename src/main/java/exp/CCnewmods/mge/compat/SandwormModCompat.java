@@ -66,7 +66,6 @@ public final class SandwormModCompat {
 
         ++tick;
         BlockPos pos = entity.blockPosition();
-        Vec3 vec = entity.position();
 
         switch (type) {
             case "sandworm_mod:worm_head_segment" -> {
@@ -78,7 +77,6 @@ public final class SandwormModCompat {
                 gasRadius(level, pos,  GasRegistry.WATER_VAPOR,     12f, 4);
                 // Continuous ground shockwave
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 64f);
             }
             case "sandworm_mod:worm_segment" -> {
                 if (tick % SEGMENT_TICK != 0) return;
@@ -103,7 +101,6 @@ public final class SandwormModCompat {
         if (!type.equals("sandworm_mod:worm_head_segment")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         // Surface eruption — the worm's death causes ground collapse and gas escape
         gasRadius(level, pos,  GasRegistry.WATER_VAPOR,     50f, 8);
@@ -111,6 +108,5 @@ public final class SandwormModCompat {
         partRadius(level, pos, ParticulateType.GRAVEL_DUST, 180f, 10);
         partRadius(level, pos, ParticulateType.COAL_DUST,    60f,  8);
         ShockwaveHandler.spawn(level, pos, 20f);
-        ShockwaveDataPacket.sendToNear(level, vec, 20f, 200f);
     }
 }

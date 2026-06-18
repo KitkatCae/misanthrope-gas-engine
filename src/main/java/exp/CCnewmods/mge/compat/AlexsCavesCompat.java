@@ -60,7 +60,6 @@ public final class AlexsCavesCompat {
 
         ++tick;
         BlockPos pos = entity.blockPosition();
-        Vec3 vec = entity.position();
 
         // Footstep dust shockwave — every second
         if (tick % DUST_TICK_INTERVAL == 0) {
@@ -70,7 +69,6 @@ public final class AlexsCavesCompat {
             partRadius(level, pos, ParticulateType.GRAVEL_DUST, 15f, 3);
             // Ground shockwave from footsteps
             ShockwaveHandler.spawn(level, pos, 3.5f);
-            ShockwaveDataPacket.sendToNear(level, vec, 3.5f, 40f);
         }
 
         // EM/steam pulse — every 3 seconds
@@ -81,7 +79,6 @@ public final class AlexsCavesCompat {
             partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 30f, 4);
             // Larger EM shockwave ring
             ShockwaveHandler.spawn(level, pos, 7f);
-            ShockwaveDataPacket.sendToNear(level, vec, 7f, 80f);
         }
     }
 }

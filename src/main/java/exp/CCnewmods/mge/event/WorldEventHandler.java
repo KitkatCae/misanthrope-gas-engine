@@ -96,8 +96,6 @@ public final class WorldEventHandler {
                 if (amp > 1f) {
                     exp.CCnewmods.mge.shockwave.ShockwaveHandler.spawn(
                             level, centrePos, baseRadius * amp * 2f);
-                    exp.CCnewmods.mge.shockwave.ShockwaveDataPacket.sendToNear(
-                            level, centre, baseRadius * amp * 2f, baseRadius * 32f);
                 }
             }
         }
@@ -117,8 +115,6 @@ public final class WorldEventHandler {
 
         // Shockwave from every explosion
         exp.CCnewmods.mge.shockwave.ShockwaveHandler.spawn(level, centrePos, baseRadius * 1.5f);
-        exp.CCnewmods.mge.shockwave.ShockwaveDataPacket.sendToNear(
-                level, centre, baseRadius * 1.5f, baseRadius * 24f);
     }
 
     private static float checkAtmosphericAmplification(GasComposition comp) {

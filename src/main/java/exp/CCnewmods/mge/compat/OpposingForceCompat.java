@@ -83,7 +83,6 @@ public final class OpposingForceCompat {
 
         ++tick;
         BlockPos pos = entity.blockPosition();
-        Vec3 vec = entity.position();
 
         // Trembler on its own fast tick
         if (type.equals("opposing_force:trembler")) {
@@ -91,7 +90,6 @@ public final class OpposingForceCompat {
             partRadius(level, pos, ParticulateType.DUST,        30f, 4);
             partRadius(level, pos, ParticulateType.GRAVEL_DUST, 20f, 3);
             ShockwaveHandler.spawn(level, pos, 3f);
-            ShockwaveDataPacket.sendToNear(level, vec, 3f, 32f);
             return;
         }
 
@@ -154,7 +152,6 @@ public final class OpposingForceCompat {
         if (!type.startsWith("opposing_force:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "opposing_force:volt" -> {
@@ -162,13 +159,11 @@ public final class OpposingForceCompat {
                 gasRadius(level, pos, GasRegistry.OZONE,       18f, 4);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 50f, 5);
                 ShockwaveHandler.spawn(level, pos, 7f);
-                ShockwaveDataPacket.sendToNear(level, vec, 7f, 60f);
             }
             case "opposing_force:trembler" -> {
                 partRadius(level, pos, ParticulateType.DUST,        100f, 7);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST,  70f, 6);
                 ShockwaveHandler.spawn(level, pos, 12f);
-                ShockwaveDataPacket.sendToNear(level, vec, 12f, 100f);
             }
             case "opposing_force:frowzy" -> {
                 gasRadius(level, pos, GasRegistry.CADAVERINE,       25f, 4);
@@ -179,7 +174,6 @@ public final class OpposingForceCompat {
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE, 20f, 3);
                 partRadius(level, pos, ParticulateType.ORGANIC_AEROSOL, 25f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
         }
     }
@@ -193,7 +187,6 @@ public final class OpposingForceCompat {
         if (!type.startsWith("opposing_force:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             // Laser / electric projectiles
@@ -202,7 +195,6 @@ public final class OpposingForceCompat {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 20f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 22f, 2);
                 ShockwaveHandler.spawn(level, pos, 2f);
-                ShockwaveDataPacket.sendToNear(level, vec, 2f, 18f);
             }
             case "opposing_force:electric_charge",
                  "opposing_force:electric_explosion" -> {
@@ -219,20 +211,17 @@ public final class OpposingForceCompat {
                 GridAtmosphereCompat.setComposition(level, pos, comp);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 30f, 3);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 56f);
             }
             case "opposing_force:laser_bolt" -> {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 16f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 18f, 2);
                 ShockwaveHandler.spawn(level, pos, 2f);
-                ShockwaveDataPacket.sendToNear(level, vec, 2f, 18f);
             }
             case "opposing_force:skyvern_bolt" -> {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 20f, 3);
                 gasRadius(level, pos, GasRegistry.OZONE,        8f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 24f, 3);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             // Explosive projectiles
             case "opposing_force:whizz",
@@ -241,21 +230,18 @@ public final class OpposingForceCompat {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 22f, 3);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 25f, 3);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 56f);
             }
             case "opposing_force:fire_bomb" -> {
                 gasRadius(level, pos, GasRegistry.BLAZE_FUME,     30f, 3);
                 gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 12f, 2);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  60f, 3);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 56f);
             }
             case "opposing_force:kinetic_bomb" -> {
                 // Pure physical impact — max dust, max shockwave
                 partRadius(level, pos, ParticulateType.DUST,        80f, 5);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 55f, 4);
                 ShockwaveHandler.spawn(level, pos, 10f);
-                ShockwaveDataPacket.sendToNear(level, vec, 10f, 90f);
             }
             case "opposing_force:lightning_bomb" -> {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR,   35f, 4);
@@ -263,7 +249,6 @@ public final class OpposingForceCompat {
                 gasRadius(level, pos, GasRegistry.NITRIC_OXIDE,    7f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 40f, 4);
                 ShockwaveHandler.spawn(level, pos, 8f);
-                ShockwaveDataPacket.sendToNear(level, vec, 8f, 72f);
             }
             // Biological / chemical projectiles
             case "opposing_force:gloom_toxin" -> {
@@ -274,7 +259,6 @@ public final class OpposingForceCompat {
                  "opposing_force:acid_spit" -> {
                 gasRadius(level, pos, GasRegistry.SHULKER_ACID_MIST, 20f, 3);
                 ShockwaveHandler.spawn(level, pos, 2f);
-                ShockwaveDataPacket.sendToNear(level, vec, 2f, 18f);
             }
         }
     }

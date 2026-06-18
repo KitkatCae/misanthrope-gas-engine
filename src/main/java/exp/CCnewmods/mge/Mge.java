@@ -12,7 +12,7 @@ import exp.CCnewmods.mge.compat.TfmgCompat;
 import exp.CCnewmods.mge.compat.BurntCompat;
 import exp.CCnewmods.mge.compat.OreganizedCompat;
 import exp.CCnewmods.mge.compat.ChemicaCompat;
-import exp.CCnewmods.mge.compat.MisanthropeCoreCompat;
+import exp.CCnewmods.mge.compat.MisanthropeWorldCompat;
 import exp.CCnewmods.mge.compat.PneumaticCraftCompat;
 import exp.CCnewmods.mge.compat.IceAndFireCompat;
 import exp.CCnewmods.mge.compat.TwilightForestCompat;
@@ -140,7 +140,7 @@ public class Mge {
             TfmgCompat.tryLoad();
             BurntCompat.tryLoad();
             OreganizedCompat.tryLoad();
-            MisanthropeCoreCompat.tryLoad();
+            MisanthropeWorldCompat.tryLoad();
             if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient())
                 exp.CCnewmods.mge.photon.MgePhotonEffects.tryLoad();
             PneumaticCraftCompat.tryLoad();
@@ -191,8 +191,6 @@ public class Mge {
     private void clientSetup(FMLClientSetupEvent event) {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
             MinecraftForge.EVENT_BUS.addListener(Mge::onClientTick);
-            MinecraftForge.EVENT_BUS.register(
-                    exp.CCnewmods.mge.shockwave.ShockwaveDistortionRenderer.class);
             MinecraftForge.EVENT_BUS.register(
                     exp.CCnewmods.mge.render.DesertMirageRenderer.class);
             MinecraftForge.EVENT_BUS.register(

@@ -87,14 +87,12 @@ public final class DragonMountsCompat {
         if (!event.getEntity().getType().toString().equals("dragonmounts:dragon")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
         // Generic dragon death — breed-specific products depend on what breath they used;
         // use a neutral atmospheric disruption burst
         gasRadius(level, pos, GasRegistry.CARBON_DIOXIDE, 40f, 5);
         gasRadius(level, pos, GasRegistry.IONISED_AIR,    20f, 4);
         partRadius(level, pos, ParticulateType.ASH_CLOUD,  60f, 5);
         ShockwaveHandler.spawn(level, pos, 10f);
-        ShockwaveDataPacket.sendToNear(level, vec, 10f, 80f);
     }
 
     @SubscribeEvent
@@ -106,7 +104,6 @@ public final class DragonMountsCompat {
         if (!type.startsWith("dragonmounts:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "dragonmounts:black_fire_breath" -> {
@@ -121,7 +118,6 @@ public final class DragonMountsCompat {
                 exp.CCnewmods.mge.grid.compat.GridAtmosphereCompat.setComposition(level, pos, comp);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD, 30f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "dragonmounts:blue_fire_breath" -> {
                 // Hotter — more energetic combustion, ionisation
@@ -137,7 +133,6 @@ public final class DragonMountsCompat {
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,         35f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 15f, 2);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             case "dragonmounts:ice_breath" -> {
                 gasRadius(level, pos, GasRegistry.DRAGON_ICE_CLOUD,  35f, 3);
@@ -150,7 +145,6 @@ public final class DragonMountsCompat {
                 gasRadius(level, pos, GasRegistry.NITRIC_OXIDE,    6f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 35f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "dragonmounts:sculk_breath" -> {
                 gasRadius(level, pos, GasRegistry.VOID_BREATH,       20f, 3);

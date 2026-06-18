@@ -57,7 +57,7 @@ public final class DimensionAtmosphereProfile {
     public final boolean breathable;
 
     /**
-     * Maximum BFS flood-fill radius for {@link exp.CCnewmods.misanthrope_core.thermal.structure.ThermalStructure}
+     * Maximum BFS flood-fill radius for {@link exp.CCnewmods.misanthrope_world.physics.structure.ThermalStructure}
      * scans in this dimension.  -1 means unlimited (stop only at walls or vacuum).
      *
      * Overworld default: 64. Space/void dimensions: -1.

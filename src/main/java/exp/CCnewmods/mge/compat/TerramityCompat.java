@@ -81,7 +81,6 @@ public final class TerramityCompat {
         if (!type.startsWith("terramity:")) return;
 
         BlockPos pos = entity.blockPosition();
-        Vec3 vec = entity.position();
 
         switch (type) {
             case "terramity:gundalf", "terramity:bomb_flower_gundalf" -> {
@@ -93,7 +92,6 @@ public final class TerramityCompat {
                 part(level, pos, ParticulateType.DUST,         20f);
                 part(level, pos, ParticulateType.GRAVEL_DUST,  14f);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "terramity:hellrok", "terramity:duskrok" -> {
                 gas(level, pos, GasRegistry.BLAZE_FUME,       10f);
@@ -145,21 +143,18 @@ public final class TerramityCompat {
         if (!type.startsWith("terramity:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "terramity:thunker" -> {
                 partRadius(level, pos, ParticulateType.DUST,        60f, 5);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 40f, 4);
                 ShockwaveHandler.spawn(level, pos, 8f);
-                ShockwaveDataPacket.sendToNear(level, vec, 8f, 64f);
             }
             case "terramity:virtue" -> {
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE,   40f, 5);
                 gasRadius(level, pos, GasRegistry.IONISED_AIR,    20f, 4);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 50f, 5);
                 ShockwaveHandler.spawn(level, pos, 7f);
-                ShockwaveDataPacket.sendToNear(level, vec, 7f, 56f);
             }
         }
     }
@@ -173,7 +168,6 @@ public final class TerramityCompat {
         if (!type.startsWith("terramity:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "terramity:black_hole_bomb_entity",
@@ -192,7 +186,6 @@ public final class TerramityCompat {
                 drainRadius(level, pos, GasRegistry.NITROGEN, 50f, 5);
                 gasRadius(level, pos, GasRegistry.VOID_BREATH, 40f, 5);
                 ShockwaveHandler.spawn(level, pos, 10f);
-                ShockwaveDataPacket.sendToNear(level, vec, 10f, 90f);
             }
             case "terramity:antimatter_bomb_entity",
                  "terramity:antimatter_supernova",
@@ -201,7 +194,6 @@ public final class TerramityCompat {
                 drainRadius(level, pos, GasRegistry.OXYGEN,     30f, 4);
                 drainRadius(level, pos, GasRegistry.NITROGEN,   20f, 3);
                 ShockwaveHandler.spawn(level, pos, 8f);
-                ShockwaveDataPacket.sendToNear(level, vec, 8f, 72f);
             }
             case "terramity:laser_projectile",
                  "terramity:soul_laser_projectile",
@@ -209,7 +201,6 @@ public final class TerramityCompat {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 18f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 20f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "terramity:rocket_projectile",
                  "terramity:safe_rocket_projectile",
@@ -220,7 +211,6 @@ public final class TerramityCompat {
                 gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 15f, 3);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  70f, 4);
                 ShockwaveHandler.spawn(level, pos, 7f);
-                ShockwaveDataPacket.sendToNear(level, vec, 7f, 64f);
             }
             case "terramity:fireball_projectile_projectile",
                  "terramity:hellfire_pellet" -> {
@@ -228,7 +218,6 @@ public final class TerramityCompat {
                 gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE,  8f, 2);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  35f, 2);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 36f);
             }
             case "terramity:holy_beam", "terramity:holy_round_aoe",
                  "terramity:holy_round_projectile_no_gravity",
@@ -236,7 +225,6 @@ public final class TerramityCompat {
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE, 15f, 2);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 18f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "terramity:unholy_beam",
                  "terramity:unholy_lance_projectile" -> {
@@ -244,7 +232,6 @@ public final class TerramityCompat {
                 gasRadius(level, pos, GasRegistry.SOUL_SMOKE,    10f, 2);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 20f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "terramity:shock_bolt",
                  "terramity:lightning_bolt" -> {
@@ -252,7 +239,6 @@ public final class TerramityCompat {
                 gasRadius(level, pos, GasRegistry.OZONE,        8f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 22f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "terramity:plague_pellet" -> {
                 gasRadius(level, pos, GasRegistry.CADAVERINE,      12f, 2);
@@ -265,13 +251,11 @@ public final class TerramityCompat {
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,    50f, 5);
                 gasRadius(level, pos, GasRegistry.VOLCANIC_FUMES,   30f, 5);
                 ShockwaveHandler.spawn(level, pos, 14f);
-                ShockwaveDataPacket.sendToNear(level, vec, 14f, 130f);
             }
             case "terramity:spirit_bomb" -> {
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE, 30f, 4);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 40f, 4);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 56f);
             }
             case "terramity:shadowflame_bullet_projectile",
                  "terramity:shadowflame_ring" -> {

@@ -98,35 +98,30 @@ public final class MonsterExpansionCompat {
         if (!type.startsWith("monsterexpansion:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "monsterexpansion:leivekilth" -> {
                 gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE, 60f, 6);
                 partRadius(level, pos, ParticulateType.ORGANIC_AEROSOL, 80f, 6);
                 ShockwaveHandler.spawn(level, pos, 8f);
-                ShockwaveDataPacket.sendToNear(level, vec, 8f, 64f);
             }
             case "monsterexpansion:rakoth" -> {
                 gasRadius(level, pos, GasRegistry.BLAZE_FUME,     80f, 7);
                 gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 40f, 5);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD, 120f, 6);
                 ShockwaveHandler.spawn(level, pos, 12f);
-                ShockwaveDataPacket.sendToNear(level, vec, 12f, 100f);
             }
             case "monsterexpansion:skrythe" -> {
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE,      50f, 5);
                 gasRadius(level, pos, GasRegistry.ENDER_PARTICULATE, 30f, 4);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS,   60f, 5);
                 ShockwaveHandler.spawn(level, pos, 7f);
-                ShockwaveDataPacket.sendToNear(level, vec, 7f, 56f);
             }
             case "monsterexpansion:rhyza" -> {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 50f, 5);
                 gasRadius(level, pos, GasRegistry.SOUL_SMOKE,    30f, 4);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 60f, 5);
                 ShockwaveHandler.spawn(level, pos, 8f);
-                ShockwaveDataPacket.sendToNear(level, vec, 8f, 64f);
             }
         }
     }
@@ -140,26 +135,22 @@ public final class MonsterExpansionCompat {
         if (!type.startsWith("monsterexpansion:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "monsterexpansion:distortion_orb" -> {
                 gasRadius(level, pos, GasRegistry.ENDER_PARTICULATE, 25f, 3);
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE,      15f, 2);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             case "monsterexpansion:volatile_glob" -> {
                 gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE, 20f, 3);
                 partRadius(level, pos, ParticulateType.ORGANIC_AEROSOL, 35f, 3);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "monsterexpansion:supercooled_orb" -> {
                 gasRadius(level, pos, GasRegistry.DRAGON_ICE_CLOUD, 30f, 3);
                 partRadius(level, pos, ParticulateType.ICE_CRYSTAL_SHARDS, 40f, 3);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
         }
     }

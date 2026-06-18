@@ -100,14 +100,12 @@ public final class RediscoveredCompat {
         if (!type.startsWith("rediscovered:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         if (type.equals("rediscovered:red_dragon")) {
             gasRadius(level, pos, GasRegistry.CARBON_DIOXIDE, 40f, 5);
             gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 20f, 4);
             partRadius(level, pos, ParticulateType.ASH_CLOUD,  80f, 5);
             ShockwaveHandler.spawn(level, pos, 9f);
-            ShockwaveDataPacket.sendToNear(level, vec, 9f, 72f);
         }
     }
 
@@ -120,13 +118,11 @@ public final class RediscoveredCompat {
         if (!type.startsWith("rediscovered:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         if (type.equals("rediscovered:purple_arrow")) {
             gasRadius(level, pos, GasRegistry.SOUL_ESSENCE,   12f, 2);
             partRadius(level, pos, ParticulateType.SOUL_WISPS, 15f, 2);
             ShockwaveHandler.spawn(level, pos, 2f);
-            ShockwaveDataPacket.sendToNear(level, vec, 2f, 20f);
         }
     }
 }

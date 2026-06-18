@@ -126,7 +126,6 @@ public final class MutantMonstersCompat {
         if (!type.startsWith("mutantmonsters:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "mutantmonsters:mutant_creeper" -> {
@@ -146,7 +145,6 @@ public final class MutantMonstersCompat {
                 gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE,  25f, 4);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  120f, 6);
                 ShockwaveHandler.spawn(level, pos, 16f);
-                ShockwaveDataPacket.sendToNear(level, vec, 16f, 150f);
             }
             case "mutantmonsters:mutant_enderman" -> {
                 gasRadius(level, pos, GasRegistry.VOID_BREATH,       50f, 6);
@@ -154,7 +152,6 @@ public final class MutantMonstersCompat {
                 drainRadius(level, pos, GasRegistry.OXYGEN,   30f, 5);
                 drainRadius(level, pos, GasRegistry.NITROGEN, 20f, 4);
                 ShockwaveHandler.spawn(level, pos, 10f);
-                ShockwaveDataPacket.sendToNear(level, vec, 10f, 80f);
             }
             case "mutantmonsters:mutant_zombie" -> {
                 gasRadius(level, pos, GasRegistry.CADAVERINE,       30f, 4);
@@ -167,7 +164,6 @@ public final class MutantMonstersCompat {
                 partRadius(level, pos, ParticulateType.DUST,  40f, 4);
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE, 20f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
         }
     }
@@ -181,7 +177,6 @@ public final class MutantMonstersCompat {
         if (!type.startsWith("mutantmonsters:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "mutantmonsters:skull_spirit" -> {
@@ -189,19 +184,16 @@ public final class MutantMonstersCompat {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA,  10f, 2);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 25f, 3);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             case "mutantmonsters:endersoul_fragment" -> {
                 gasRadius(level, pos, GasRegistry.VOID_BREATH,       15f, 2);
                 gasRadius(level, pos, GasRegistry.ENDER_PARTICULATE, 12f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "mutantmonsters:throwable_block" -> {
                 partRadius(level, pos, ParticulateType.DUST,        30f, 3);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 20f, 2);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
         }
     }

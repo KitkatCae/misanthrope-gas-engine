@@ -166,7 +166,6 @@ public final class MutantMoreCompat {
         if (!type.startsWith("mutantmore:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "mutantmore:mutant_blaze" -> {
@@ -177,7 +176,6 @@ public final class MutantMoreCompat {
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,     100f, 7);
                 drainRadius(level, pos, GasRegistry.OXYGEN,           60f, 7);
                 ShockwaveHandler.spawn(level, pos, 14f);
-                ShockwaveDataPacket.sendToNear(level, vec, 14f, 120f);
             }
             case "mutantmore:mutant_wither_skeleton" -> {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA,      50f, 6);
@@ -185,7 +183,6 @@ public final class MutantMoreCompat {
                 partRadius(level, pos, ParticulateType.PYROTHEUM_DUST, 20f, 4);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS,    60f, 6);
                 ShockwaveHandler.spawn(level, pos, 7f);
-                ShockwaveDataPacket.sendToNear(level, vec, 7f, 56f);
             }
             case "mutantmore:mutant_frozen_zombie" -> {
                 gasRadius(level, pos, GasRegistry.DRAGON_ICE_CLOUD,   50f, 5);
@@ -193,14 +190,12 @@ public final class MutantMoreCompat {
                 gasRadius(level, pos, GasRegistry.CADAVERINE,         20f, 3);
                 gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE,   15f, 3);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 50f);
             }
             case "mutantmore:mutant_phantom" -> {
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE,       40f, 5);
                 gasRadius(level, pos, GasRegistry.ENDER_PARTICULATE,  25f, 4);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS,    50f, 5);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 50f);
             }
             case "mutantmore:mutant_jungle_zombie" -> {
                 gasRadius(level, pos, GasRegistry.CADAVERINE,         30f, 4);
@@ -220,7 +215,6 @@ public final class MutantMoreCompat {
         if (!type.startsWith("mutantmore:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "mutantmore:mutant_blaze_fireball" -> {
@@ -231,7 +225,6 @@ public final class MutantMoreCompat {
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,       55f, 4);
                 drainRadius(level, pos, GasRegistry.OXYGEN,            18f, 3);
                 ShockwaveHandler.spawn(level, pos, 8f);
-                ShockwaveDataPacket.sendToNear(level, vec, 8f, 72f);
             }
             case "mutantmore:mutant_blaze_rod_projectile",
                  "mutantmore:mutant_blaze_shields" -> {
@@ -239,21 +232,18 @@ public final class MutantMoreCompat {
                 partRadius(level, pos, ParticulateType.PYROTHEUM_DUST,  8f, 2);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,      25f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "mutantmore:rodling_fireball" -> {
                 gasRadius(level, pos, GasRegistry.BLAZE_FUME,          12f, 2);
                 partRadius(level, pos, ParticulateType.PYROTHEUM_DUST,  5f, 1);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,      15f, 2);
                 ShockwaveHandler.spawn(level, pos, 2f);
-                ShockwaveDataPacket.sendToNear(level, vec, 2f, 18f);
             }
             case "mutantmore:giant_snowball" -> {
                 gasRadius(level, pos, GasRegistry.DRAGON_ICE_CLOUD,    40f, 4);
                 partRadius(level, pos, ParticulateType.ICE_CRYSTAL_SHARDS, 60f, 4);
                 partRadius(level, pos, ParticulateType.ICE_CRYSTALS,   30f, 3);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 55f);
             }
             case "mutantmore:icicle_spike",
                  "mutantmore:thrown_icicle" -> {
@@ -268,14 +258,12 @@ public final class MutantMoreCompat {
                 gasRadius(level, pos, GasRegistry.SHULKER_ACID_MIST,   18f, 2);
                 gasRadius(level, pos, GasRegistry.VOID_BREATH,          10f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "mutantmore:wither_bomb" -> {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA,       35f, 4);
                 gasRadius(level, pos, GasRegistry.SOUL_SMOKE,          20f, 3);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS,     45f, 4);
                 ShockwaveHandler.spawn(level, pos, 7f);
-                ShockwaveDataPacket.sendToNear(level, vec, 7f, 64f);
             }
             case "mutantmore:wither_slash" -> {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA,       12f, 2);
@@ -293,7 +281,6 @@ public final class MutantMoreCompat {
                 partRadius(level, pos, ParticulateType.DUST,            50f, 4);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST,     35f, 3);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 55f);
             }
             case "mutantmore:zombie_resurrection",
                  "mutantmore:area_damage" -> {

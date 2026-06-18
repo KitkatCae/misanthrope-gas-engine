@@ -173,7 +173,6 @@ public final class VanillaMobAtmosphereHandler {
                 EnvironmentGrid.enqueue(level, p);
             });
             ShockwaveHandler.spawn(level, pos, 18f);
-            ShockwaveDataPacket.sendToNear(level, centre, 18f, 200f);
         }
 
         // Wither Skeleton death — moderate miasma puff
@@ -240,7 +239,6 @@ public final class VanillaMobAtmosphereHandler {
         // Shockwave ring at the target — the displaced air slams back
         BlockPos targetCell = BlockPos.containing(target);
         ShockwaveHandler.spawn(level, targetCell, 6f);
-        ShockwaveDataPacket.sendToNear(level, target, 6f, 60f);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -271,7 +269,6 @@ public final class VanillaMobAtmosphereHandler {
         EnvironmentGrid.enqueue(level, impactPos);
 
         ShockwaveHandler.spawn(level, impactPos, 4.5f);
-        ShockwaveDataPacket.sendToNear(level, impactVec, 4.5f, 48f);
     }
 
     /**
@@ -383,7 +380,6 @@ public final class VanillaMobAtmosphereHandler {
 
         // Shockwave — the thunder crack is the air rushing back into the vacuum
         ShockwaveHandler.spawn(level, strikePos, 5f);
-        ShockwaveDataPacket.sendToNear(level, strikeVec, 5f, 64f);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

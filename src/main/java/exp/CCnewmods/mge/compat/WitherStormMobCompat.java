@@ -151,7 +151,6 @@ public final class WitherStormMobCompat {
         if (!type.startsWith("witherstormmod:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         if (SICKENED.contains(type)) {
             gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 8f, 2);
@@ -166,7 +165,6 @@ public final class WitherStormMobCompat {
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 250f, 18);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  180f, 14);
                 ShockwaveHandler.spawn(level, pos, 30f);
-                ShockwaveDataPacket.sendToNear(level, vec, 30f, 320f);
             }
             case "witherstormmod:command_block" -> {
                 // Core destruction — all the wither energy concentrated in one point
@@ -176,7 +174,6 @@ public final class WitherStormMobCompat {
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 180f, 14);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  120f, 10);
                 ShockwaveHandler.spawn(level, pos, 22f);
-                ShockwaveDataPacket.sendToNear(level, vec, 22f, 240f);
             }
             case "witherstormmod:withered_symbiont" -> {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA,   20f, 3);
@@ -194,7 +191,6 @@ public final class WitherStormMobCompat {
         if (!type.startsWith("witherstormmod:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "witherstormmod:block_cluster" -> {
@@ -203,13 +199,11 @@ public final class WitherStormMobCompat {
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 35f, 3);
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA,    8f, 2);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "witherstormmod:tentacle_spike" -> {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA,  15f, 2);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 20f, 2);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             case "witherstormmod:formidibomb" -> {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA,  80f, 8);
@@ -217,21 +211,18 @@ public final class WitherStormMobCompat {
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 100f, 7);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,   60f, 5);
                 ShockwaveHandler.spawn(level, pos, 18f);
-                ShockwaveDataPacket.sendToNear(level, vec, 18f, 180f);
             }
             case "witherstormmod:flaming_wither_skull" -> {
                 gasRadius(level, pos, GasRegistry.SOUL_SMOKE,   20f, 3);
                 gasRadius(level, pos, GasRegistry.BLAZE_FUME,   15f, 2);
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 12f, 2);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             case "witherstormmod:blue_flaming_wither_skull" -> {
                 gasRadius(level, pos, GasRegistry.SOUL_SMOKE,   25f, 3);
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 20f, 3);
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE,  10f, 2);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
         }
     }

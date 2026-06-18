@@ -78,12 +78,10 @@ public final class MowziesCompat {
         if (!type.equals("mowziesmobs:ice_ball")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
         // Frostmaw ice breath impact — large crystal shard burst
         gasRadius(level, pos, GasRegistry.DRAGON_ICE_CLOUD, 50f, 4);
         partRadius(level, pos, ParticulateType.ICE_CRYSTAL_SHARDS, 80f, 4);
         partRadius(level, pos, ParticulateType.ICE_CRYSTALS, 40f, 3);
         ShockwaveHandler.spawn(level, pos, 4f);
-        ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
     }
 }

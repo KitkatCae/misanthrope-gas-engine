@@ -97,7 +97,6 @@ public final class CataclysmCompat {
         if (!type.startsWith("cataclysm:")) return;
 
         BlockPos pos = entity.blockPosition();
-        Vec3 vec = entity.position();
 
         switch (type) {
             case "cataclysm:ignis" -> {
@@ -122,7 +121,6 @@ public final class CataclysmCompat {
                 gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE,      8f, 4);
                 gasRadius(level, pos, GasRegistry.SHULKER_ACID_MIST,   10f, 4);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 32f);
             }
             case "cataclysm:maledictus" -> {
                 gas(level, pos, GasRegistry.WITHER_MIASMA,              10f);
@@ -183,7 +181,6 @@ public final class CataclysmCompat {
                     gasRadius(level, pos, GasRegistry.SHULKER_ACID_MIST,10f * scale, (int)(4 * scale + 1));
                     if (!type.contains("baby")) {
                         ShockwaveHandler.spawn(level, pos, 3f);
-                        ShockwaveDataPacket.sendToNear(level, vec, 3f, 32f);
                     }
                 }
             }
@@ -198,7 +195,6 @@ public final class CataclysmCompat {
         if (!type.startsWith("cataclysm:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "cataclysm:ignis" -> {
@@ -210,7 +206,6 @@ public final class CataclysmCompat {
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,      150f, 8);
                 drainRadius(level, pos, GasRegistry.OXYGEN,             80f, 8);
                 ShockwaveHandler.spawn(level, pos, 18f);
-                ShockwaveDataPacket.sendToNear(level, vec, 18f, 180f);
             }
             case "cataclysm:the_harbinger" -> {
                 gasRadius(level, pos, GasRegistry.VOID_BREATH,          80f, 10);
@@ -218,21 +213,18 @@ public final class CataclysmCompat {
                 drainRadius(level, pos, GasRegistry.NITROGEN,           60f,  8);
                 gasRadius(level, pos, GasRegistry.ENDER_PARTICULATE,    40f,  7);
                 ShockwaveHandler.spawn(level, pos, 20f);
-                ShockwaveDataPacket.sendToNear(level, vec, 20f, 200f);
             }
             case "cataclysm:the_leviathan" -> {
                 gasRadius(level, pos, GasRegistry.WATER_VAPOR,          80f, 10);
                 gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE,     50f,  8);
                 gasRadius(level, pos, GasRegistry.SHULKER_ACID_MIST,   40f,  7);
                 ShockwaveHandler.spawn(level, pos, 16f);
-                ShockwaveDataPacket.sendToNear(level, vec, 16f, 160f);
             }
             case "cataclysm:scylla" -> {
                 gasRadius(level, pos, GasRegistry.WATER_VAPOR,          50f, 7);
                 gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE,     30f, 5);
                 gasRadius(level, pos, GasRegistry.SHULKER_ACID_MIST,   25f, 5);
                 ShockwaveHandler.spawn(level, pos, 10f);
-                ShockwaveDataPacket.sendToNear(level, vec, 10f, 80f);
             }
             case "cataclysm:maledictus" -> {
                 gasRadius(level, pos, GasRegistry.WITHER_MIASMA,        50f, 6);
@@ -240,7 +232,6 @@ public final class CataclysmCompat {
                 gasRadius(level, pos, GasRegistry.CADAVERINE,           25f, 4);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS,      60f, 6);
                 ShockwaveHandler.spawn(level, pos, 8f);
-                ShockwaveDataPacket.sendToNear(level, vec, 8f, 64f);
             }
         }
     }
@@ -254,7 +245,6 @@ public final class CataclysmCompat {
         if (!type.startsWith("cataclysm:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "cataclysm:ignis_fireball" -> {
@@ -265,7 +255,6 @@ public final class CataclysmCompat {
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,       60f, 4);
                 drainRadius(level, pos, GasRegistry.OXYGEN,             20f, 3);
                 ShockwaveHandler.spawn(level, pos, 7f);
-                ShockwaveDataPacket.sendToNear(level, vec, 7f, 64f);
             }
             case "cataclysm:ignis_abyss_fireball",
                  "cataclysm:flame_strike" -> {
@@ -274,7 +263,6 @@ public final class CataclysmCompat {
                 gasRadius(level, pos, GasRegistry.BLAZE_FUME,           15f, 2);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,       35f, 3);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
             }
             case "cataclysm:abyss_blast",
                  "cataclysm:mini_abyss_blast",
@@ -284,7 +272,6 @@ public final class CataclysmCompat {
                 gasRadius(level, pos, GasRegistry.ENDER_PARTICULATE,    15f, 2);
                 drainRadius(level, pos, GasRegistry.OXYGEN,             20f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "cataclysm:void_shard",
                  "cataclysm:void_vortex",
@@ -293,7 +280,6 @@ public final class CataclysmCompat {
                 gasRadius(level, pos, GasRegistry.VOID_BREATH,          15f, 2);
                 drainRadius(level, pos, GasRegistry.OXYGEN,             12f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "cataclysm:lightning_spear",
                  "cataclysm:lightning_storm",
@@ -304,7 +290,6 @@ public final class CataclysmCompat {
                 gasRadius(level, pos, GasRegistry.NITRIC_OXIDE,          5f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES,30f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "cataclysm:water_spear",
                  "cataclysm:wave" ->
@@ -324,7 +309,6 @@ public final class CataclysmCompat {
                 partRadius(level, pos, ParticulateType.DUST,            60f, 5);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST,     40f, 4);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "cataclysm:wither_missile",
                  "cataclysm:wither_howitzer",
@@ -333,14 +317,12 @@ public final class CataclysmCompat {
                 gasRadius(level, pos, GasRegistry.SOUL_SMOKE,           15f, 2);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS,      30f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "cataclysm:earthquake",
                  "cataclysm:earth_shard" -> {
                 partRadius(level, pos, ParticulateType.DUST,            50f, 4);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST,     35f, 3);
                 ShockwaveHandler.spawn(level, pos, 8f);
-                ShockwaveDataPacket.sendToNear(level, vec, 8f, 72f);
             }
             case "cataclysm:poison_dart",
                  "cataclysm:urchin_spike",
@@ -364,7 +346,6 @@ public final class CataclysmCompat {
                 partRadius(level, pos, ParticulateType.PYROTHEUM_DUST,  10f, 2);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,       30f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
         }
     }

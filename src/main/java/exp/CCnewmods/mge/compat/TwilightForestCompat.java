@@ -104,7 +104,6 @@ public final class TwilightForestCompat {
         if (!type.contains("twilightforest:")) return;
 
         BlockPos pos = proj.blockPosition();
-        Vec3 vec = proj.position();
 
         if (type.equals("twilightforest:ur_ghast_fireball")) {
             // Ur-Ghast fireball — large shockwave + heavy blaze fume burst
@@ -113,7 +112,6 @@ public final class TwilightForestCompat {
             drainRadius(level, pos, GasRegistry.OXYGEN, 30f, 3);
             partRadius(level, pos, ParticulateType.ASH_CLOUD, 120f, 4);
             ShockwaveHandler.spawn(level, pos, 9f);
-            ShockwaveDataPacket.sendToNear(level, vec, 9f, 80f);
 
         } else if (type.equals("twilightforest:lich_bolt") || type.equals("twilightforest:lich_bomb")) {
             // Lich magic bolt/bomb — soul essence + wither burst
@@ -121,7 +119,6 @@ public final class TwilightForestCompat {
             gasRadius(level, pos, GasRegistry.WITHER_MIASMA, 10f, 2);
             partRadius(level, pos, ParticulateType.SOUL_WISPS, 25f, 2);
             ShockwaveHandler.spawn(level, pos, 3f);
-            ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
         }
     }
 }

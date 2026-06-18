@@ -159,7 +159,6 @@ public final class RatsCompat {
         if (!type.startsWith("rats:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "rats:rat_king" -> {
@@ -170,7 +169,6 @@ public final class RatsCompat {
                 partRadius(level, pos, ParticulateType.OPHIOCORDYCEPS_HUMANUS, 80f, 7);
                 partRadius(level, pos, ParticulateType.ORGANIC_AEROSOL,        60f, 6);
                 ShockwaveHandler.spawn(level, pos, 10f);
-                ShockwaveDataPacket.sendToNear(level, vec, 10f, 80f);
             }
             case "rats:black_death" -> {
                 gasRadius(level, pos, GasRegistry.CADAVERINE,       40f, 5);
@@ -178,7 +176,6 @@ public final class RatsCompat {
                 gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE, 30f, 4);
                 partRadius(level, pos, ParticulateType.OPHIOCORDYCEPS_HUMANUS, 60f, 5);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 56f);
             }
             case "rats:plague_beast" -> {
                 gasRadius(level, pos, GasRegistry.CADAVERINE,       25f, 4);
@@ -197,7 +194,6 @@ public final class RatsCompat {
         if (!type.startsWith("rats:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "rats:plague_shot",
@@ -212,13 +208,11 @@ public final class RatsCompat {
                 gasRadius(level, pos, GasRegistry.CARBON_DIOXIDE, 10f, 2);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  30f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "rats:thrown_block" -> {
                 partRadius(level, pos, ParticulateType.DUST,        25f, 2);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 15f, 2);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 36f);
             }
             // Ratlantis projectiles
             case "rats:ratlantean_automaton_beam",
@@ -228,13 +222,11 @@ public final class RatsCompat {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 15f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 18f, 2);
                 ShockwaveHandler.spawn(level, pos, 2f);
-                ShockwaveDataPacket.sendToNear(level, vec, 2f, 18f);
             }
             case "rats:cheese_cannonball" -> {
                 partRadius(level, pos, ParticulateType.DUST,       20f, 2);
                 partRadius(level, pos, ParticulateType.ORGANIC_AEROSOL, 12f, 2);
                 ShockwaveHandler.spawn(level, pos, 4f);
-                ShockwaveDataPacket.sendToNear(level, vec, 4f, 36f);
             }
             case "rats:vial_of_sentience" -> {
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE, 12f, 2);

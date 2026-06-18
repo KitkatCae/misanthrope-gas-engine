@@ -96,7 +96,6 @@ public final class IceAndFireCompat {
 
         String type = proj.getType().toString();
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         // Registry IDs confirmed: iceandfire:fire_dragon_charge, iceandfire:ice_dragon_charge,
         // iceandfire:lightning_dragon_charge
@@ -109,7 +108,6 @@ public final class IceAndFireCompat {
             gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 8f, 2);
             partRadius(level, pos, ParticulateType.ASH_CLOUD, 80f, 3);
             ShockwaveHandler.spawn(level, pos, 5f);
-            ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
 
         } else if (type.equals("iceandfire:ice_dragon_charge")) {
             // Ice charge — burst of ice cloud + crystals; if lava nearby, steam explosion
@@ -120,7 +118,6 @@ public final class IceAndFireCompat {
                 if (level.getFluidState(adj).is(net.minecraft.tags.FluidTags.LAVA)) {
                     gasRadius(level, pos, GasRegistry.WATER_VAPOR, 50f, 2);
                     ShockwaveHandler.spawn(level, pos, 4f);
-                    ShockwaveDataPacket.sendToNear(level, vec, 4f, 40f);
                     break;
                 }
             }
@@ -135,7 +132,6 @@ public final class IceAndFireCompat {
             GridAtmosphereCompat.setComposition(level, pos, comp);
             partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 20f, 2);
             ShockwaveHandler.spawn(level, pos, 6f);
-            ShockwaveDataPacket.sendToNear(level, vec, 6f, 56f);
         }
     }
 

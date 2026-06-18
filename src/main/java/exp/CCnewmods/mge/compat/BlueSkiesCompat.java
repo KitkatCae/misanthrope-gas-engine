@@ -113,7 +113,6 @@ public final class BlueSkiesCompat {
                 part(level, pos, ParticulateType.DUST,       15f);
                 part(level, pos, ParticulateType.GRAVEL_DUST, 10f);
                 ShockwaveHandler.spawn(level, pos, 2f);
-                ShockwaveDataPacket.sendToNear(level, entity.position(), 2f, 20f);
             }
             case "blue_skies:emberback",
                  "blue_skies:charscale_moki" -> {
@@ -140,7 +139,6 @@ public final class BlueSkiesCompat {
         if (!type.startsWith("blue_skies:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "blue_skies:gatekeeper" -> {
@@ -148,13 +146,11 @@ public final class BlueSkiesCompat {
                 gasRadius(level, pos, GasRegistry.SOUL_ESSENCE,  25f, 4);
                 partRadius(level, pos, ParticulateType.SOUL_WISPS, 50f, 5);
                 ShockwaveHandler.spawn(level, pos, 8f);
-                ShockwaveDataPacket.sendToNear(level, vec, 8f, 64f);
             }
             case "blue_skies:starlit_crusher" -> {
                 partRadius(level, pos, ParticulateType.DUST,        80f, 6);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 60f, 5);
                 ShockwaveHandler.spawn(level, pos, 9f);
-                ShockwaveDataPacket.sendToNear(level, vec, 9f, 72f);
             }
         }
     }
@@ -168,7 +164,6 @@ public final class BlueSkiesCompat {
         if (!type.startsWith("blue_skies:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "blue_skies:strange_lightning" -> {
@@ -185,13 +180,11 @@ public final class BlueSkiesCompat {
                 GridAtmosphereCompat.setComposition(level, pos, comp);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 12f, 2);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "blue_skies:venom_bomb" -> {
                 gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE, 18f, 3);
                 partRadius(level, pos, ParticulateType.ORGANIC_AEROSOL, 25f, 3);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "blue_skies:venom_spit" ->
                 gas(level, pos, GasRegistry.HYDROGEN_SULFIDE, 6f);
@@ -203,14 +196,12 @@ public final class BlueSkiesCompat {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 15f, 2);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 18f, 2);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "blue_skies:spear",
                  "blue_skies:ent_root",
                  "blue_skies:ent_wall" -> {
                 partRadius(level, pos, ParticulateType.DUST,       15f, 2);
                 ShockwaveHandler.spawn(level, pos, 2f);
-                ShockwaveDataPacket.sendToNear(level, vec, 2f, 18f);
             }
         }
     }

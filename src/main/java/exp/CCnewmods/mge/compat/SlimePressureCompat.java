@@ -323,8 +323,8 @@ public final class SlimePressureCompat {
             applyScaleHealth(entity, scale, 1.0f / scale);
             // Temperature-gated compression melt: if ambient ≥ 0°C AND the crystal
             // shell is being compressed, it melts and the whole structure fails
-            if (scale < 0.85f && MisanthropeCoreCompat.isLoaded()) {
-                double celsius = MisanthropeCoreCompat.getAmbientCelsius(level, pos);
+            if (scale < 0.85f && MisanthropeWorldCompat.isLoaded()) {
+                double celsius = MisanthropeWorldCompat.getAmbientCelsius(level, pos);
                 if (!Double.isNaN(celsius) && celsius >= 0.0) {
                     popIceCube(entity, level, pos);
                     return;
@@ -373,7 +373,7 @@ public final class SlimePressureCompat {
         if (scale <= MAGMA_MAX[size] && scale >= MAGMA_MIN[size]) return; // natural death, not a pop
 
         spawnFragmentGrenade(level, entity.blockPosition(), entity.position(),
-                5.0f, 48.0f,
+                5.0f,
                 new ItemStack(Items.MAGMA_CREAM),
                 GasRegistry.BLAZE_FUME, GasRegistry.SULFUR_DIOXIDE);
     }
@@ -397,7 +397,7 @@ public final class SlimePressureCompat {
         Vec3 vec = entity.position();
         switch (type) {
             case FRAGMENT_GRENADE ->
-                spawnFragmentGrenade(level, pos, vec, 5.0f, 40.0f,
+                spawnFragmentGrenade(level, pos, vec, 5.0f,
                         new ItemStack(Items.SLIME_BALL),
                         GasRegistry.NITROGEN, GasRegistry.OXYGEN);
             case SULFUR_CLOUD ->
@@ -416,12 +416,11 @@ public final class SlimePressureCompat {
      * Used for: magma cube, ice cube, and any fragment-grenade-style pop.
      *
      * @param shockwaveStrength  radius passed to {@link ShockwaveHandler#spawn}
-     * @param shockwaveSendRange client-side packet radius
      * @param drop               item to scatter (3–5 copies with random velocity)
      * @param gases              gases to inject in a radius-3 sphere
      */
     private static void spawnFragmentGrenade(ServerLevel level, BlockPos pos, Vec3 vec,
-                                              float shockwaveStrength, float shockwaveSendRange,
+                                              float shockwaveStrength,
                                               ItemStack drop, Gas... gases) {
         var rng = level.getRandom();
         int count = 3 + rng.nextInt(3);
@@ -438,7 +437,6 @@ public final class SlimePressureCompat {
         }
         level.playSound(null, pos, SoundEvents.SLIME_SQUISH, SoundSource.HOSTILE, 1.5f, 0.45f);
         ShockwaveHandler.spawn(level, pos, shockwaveStrength);
-        ShockwaveDataPacket.sendToNear(level, vec, shockwaveStrength, shockwaveSendRange);
         EnvironmentGrid.enqueue(level, pos);
         // Actual kill is the caller's responsibility (checkPop → popGeneric, or onLivingDeath)
     }
@@ -480,7 +478,6 @@ public final class SlimePressureCompat {
         MobAtmosphereUtil.gasRadius(level, pos, GasRegistry.WATER_VAPOR, 50f, 3);
         level.playSound(null, pos, SoundEvents.GLASS_BREAK, SoundSource.HOSTILE, 1.3f, 1.5f);
         ShockwaveHandler.spawn(level, pos, 4.0f);
-        ShockwaveDataPacket.sendToNear(level, vec, 4.0f, 36.0f);
         EnvironmentGrid.enqueue(level, pos);
         entity.setHealth(0);
         entity.kill();

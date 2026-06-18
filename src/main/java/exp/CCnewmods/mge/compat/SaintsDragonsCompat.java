@@ -126,7 +126,6 @@ public final class SaintsDragonsCompat {
         if (!type.startsWith("saintsdragons:")) return;
 
         BlockPos pos = event.getEntity().blockPosition();
-        Vec3 vec = event.getEntity().position();
 
         switch (type) {
             case "saintsdragons:nulljaw" -> {
@@ -143,7 +142,6 @@ public final class SaintsDragonsCompat {
                 drainRadius(level, pos, GasRegistry.OXYGEN,   60f, 6);
                 drainRadius(level, pos, GasRegistry.NITROGEN, 50f, 5);
                 ShockwaveHandler.spawn(level, pos, 12f);
-                ShockwaveDataPacket.sendToNear(level, vec, 12f, 100f);
             }
             case "saintsdragons:ignivorus" -> {
                 gasRadius(level, pos, GasRegistry.VOLCANIC_FUMES, 80f, 7);
@@ -151,21 +149,18 @@ public final class SaintsDragonsCompat {
                 gasRadius(level, pos, GasRegistry.BLAZE_FUME,     60f, 6);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD, 140f, 7);
                 ShockwaveHandler.spawn(level, pos, 12f);
-                ShockwaveDataPacket.sendToNear(level, vec, 12f, 100f);
             }
             case "saintsdragons:raevyx" -> {
                 gasRadius(level, pos, GasRegistry.IONISED_AIR, 60f, 6);
                 gasRadius(level, pos, GasRegistry.OZONE,       25f, 4);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 80f, 6);
                 ShockwaveHandler.spawn(level, pos, 10f);
-                ShockwaveDataPacket.sendToNear(level, vec, 10f, 80f);
             }
             case "saintsdragons:cindervane" -> {
                 gasRadius(level, pos, GasRegistry.CARBON_DIOXIDE, 50f, 5);
                 gasRadius(level, pos, GasRegistry.SULFUR_DIOXIDE, 25f, 4);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  90f, 5);
                 ShockwaveHandler.spawn(level, pos, 9f);
-                ShockwaveDataPacket.sendToNear(level, vec, 9f, 72f);
             }
         }
     }
@@ -179,7 +174,6 @@ public final class SaintsDragonsCompat {
         if (!type.startsWith("saintsdragons:")) return;
 
         BlockPos pos = BlockPos.containing(proj.position());
-        Vec3 vec = proj.position();
 
         switch (type) {
             case "saintsdragons:raevyx_lightning_chain" -> {
@@ -196,26 +190,22 @@ public final class SaintsDragonsCompat {
                 GridAtmosphereCompat.setComposition(level, pos, comp);
                 partRadius(level, pos, ParticulateType.IONISED_PARTICLES, 20f, 2);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 56f);
             }
             case "saintsdragons:raevyx_ground_rend_trail" -> {
                 partRadius(level, pos, ParticulateType.DUST,        35f, 3);
                 partRadius(level, pos, ParticulateType.GRAVEL_DUST, 25f, 2);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "saintsdragons:cindervane_magma_block" -> {
                 gasRadius(level, pos, GasRegistry.VOLCANIC_FUMES, 25f, 3);
                 gasRadius(level, pos, GasRegistry.BLAZE_FUME,     20f, 2);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  50f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "saintsdragons:volitans_poison_ball" -> {
                 gasRadius(level, pos, GasRegistry.HYDROGEN_SULFIDE, 20f, 3);
                 partRadius(level, pos, ParticulateType.ORGANIC_AEROSOL, 30f, 3);
                 ShockwaveHandler.spawn(level, pos, 3f);
-                ShockwaveDataPacket.sendToNear(level, vec, 3f, 28f);
             }
             case "saintsdragons:volitans_water_breath" ->
                 gasRadius(level, pos, GasRegistry.WATER_VAPOR, 30f, 3);
@@ -228,7 +218,6 @@ public final class SaintsDragonsCompat {
                 gasRadius(level, pos, GasRegistry.BLAZE_FUME,     20f, 2);
                 partRadius(level, pos, ParticulateType.ASH_CLOUD,  60f, 3);
                 ShockwaveHandler.spawn(level, pos, 5f);
-                ShockwaveDataPacket.sendToNear(level, vec, 5f, 48f);
             }
             case "saintsdragons:ignivorus_magma_block",
                  "saintsdragons:ignivorus_magma_pillar" -> {
@@ -236,7 +225,6 @@ public final class SaintsDragonsCompat {
                 gasRadius(level, pos, GasRegistry.MAGMATIC_CO2,    10f, 2);
                 partRadius(level, pos, ParticulateType.DUST,       40f, 3);
                 ShockwaveHandler.spawn(level, pos, 6f);
-                ShockwaveDataPacket.sendToNear(level, vec, 6f, 56f);
             }
         }
     }
