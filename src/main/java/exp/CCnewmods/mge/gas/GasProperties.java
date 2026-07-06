@@ -26,6 +26,13 @@ package exp.CCnewmods.mge.gas;
  * @param windSensitivity       Multiplier on wind-vector contribution during propagation (0.0–2.0).
  *                              Light gases like H₂ and He have high sensitivity; heavy gases like Rn have low.
  * @param reactivityFlags       Bitmask of {@link ReactivityFlag} values for special interaction handling.
+ * @param phValue                Effective pH (0–14) this gas imparts to an aqueous film it contacts
+ *                              (condensation, rain, damp surfaces, mucous membranes). 7.0 = neutral.
+ *                              &lt; 7 = acidic (HCl ≈ 0, SO₂ ≈ 1.5, CO₂ ≈ 5.6); &gt; 7 = alkaline
+ *                              (NH₃ ≈ 11.5). Inert/non-aqueous-reactive gases default to 7.0.
+ *                              This is a bulk-solution approximation for gameplay, not a rigorous
+ *                              equilibrium calculation — it exists to drive corrosion magnitude via
+ *                              {@code BlockPhysicsData.PhReactivity}, not to model real dissociation.
  */
 public record GasProperties(
         double molarMassGPerMol,
@@ -38,12 +45,13 @@ public record GasProperties(
         boolean breathable,
         float  o2EquivalentFraction,
         float  windSensitivity,
-        int    reactivityFlags
+        int    reactivityFlags,
+        float  phValue
 ) {
     /** Non-flammable, non-toxic, invisible default — matches standard N₂ behaviour. */
     public static final GasProperties INERT_INVISIBLE = new GasProperties(
             28.014, 0.967, 0x00000000, 0f, ToxicEffect.NONE,
-            0f, 0f, false, 0f, 0.8f, ReactivityFlag.NONE
+            0f, 0f, false, 0f, 0.8f, ReactivityFlag.NONE, 7.0f
     );
 
     public boolean isFlammable() {
@@ -78,6 +86,7 @@ public record GasProperties(
         private float   o2Equiv         = 0f;
         private float   windSens        = 0.8f;
         private int     reactivity      = ReactivityFlag.NONE;
+        private float   ph              = 7.0f;
 
         private Builder(double molarMass) { this.molarMass = molarMass; }
 
@@ -89,11 +98,13 @@ public record GasProperties(
         public Builder breathable(float o2Equiv)          { breathable = true; this.o2Equiv = o2Equiv; return this; }
         public Builder windSensitivity(float s)           { windSens = s;             return this; }
         public Builder reactivity(int flags)              { reactivity = flags;       return this; }
+        /** Effective pH (0–14) imparted to an aqueous film on contact. 7.0 = neutral (default). */
+        public Builder ph(float value)                    { ph = value;               return this; }
 
         public GasProperties build() {
             return new GasProperties(molarMass, densityRatio, color,
                     toxicThreshold, toxicEffect, lel, uel,
-                    breathable, o2Equiv, windSens, reactivity);
+                    breathable, o2Equiv, windSens, reactivity, ph);
         }
     }
 }

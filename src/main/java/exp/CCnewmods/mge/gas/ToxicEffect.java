@@ -27,7 +27,17 @@ public enum ToxicEffect {
 
     // Narcotic / CNS
     LEVITATION(MobEffects.LEVITATION, 0),   // repurposed for gas narcosis disorientation
-    MINING_FATIGUE(MobEffects.DIG_SLOWDOWN, 2);
+    MINING_FATIGUE(MobEffects.DIG_SLOWDOWN, 2),
+
+    /**
+     * Failed alchemy potion gas. The actual MobEffect applied is not stored here —
+     * it is looked up at application time via
+     * {@link exp.CCnewmods.mge.event.PlayerGasEffectHandler#getPotionGasEffect(net.minecraft.core.BlockPos)},
+     * which reads from a side-channel map written by the alchemy outcome resolver.
+     * This entry uses null/0 as a sentinel; {@link #isSpecialHandled()} returns true,
+     * routing it through the special-case branch in PlayerGasEffectHandler.
+     */
+    POTION_EFFECT(null, 0);
 
     /** The vanilla MobEffect to apply, or null for specially-handled effects. */
     public final MobEffect effect;

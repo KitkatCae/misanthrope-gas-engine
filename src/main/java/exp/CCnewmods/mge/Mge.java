@@ -100,6 +100,7 @@ public class Mge {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
 
         BLOCKS.register(modBus);
+        exp.CCnewmods.mge.sail.MisanthropeSailBlocks.touch();
         GasFluidRegistry.registerAll(modBus);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, MgeConfig.SPEC);
 
@@ -137,6 +138,7 @@ public class Mge {
             WitherStormCompat.tryLoad();
             SupplementariesCompat.tryLoad();
             CreateCompat.tryLoad();
+            exp.CCnewmods.mge.contraption.MisanthropeContraptionTypes.register();
             TfmgCompat.tryLoad();
             BurntCompat.tryLoad();
             OreganizedCompat.tryLoad();

@@ -9,14 +9,14 @@
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.spongepowered/mixin/0.8.5/6d1c8bf4c28e697f472a83bd6add76ec4951734/mixin-0.8.5-processor.jar" />
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.30/f195ee86e6c896ea47a1d39defbe20eb59cd149d/lombok-1.18.30.jar" />
         </processorPath>
-        <module name="misanthrope-gas-engine.main" />
+        <module name="Misanthrope_Gas_Engine.main" />
       </profile>
       <profile name="Gradle Imported" enabled="true">
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.30/f195ee86e6c896ea47a1d39defbe20eb59cd149d/lombok-1.18.30.jar" />
         </processorPath>
-        <module name="misanthrope-gas-engine.test" />
+        <module name="Misanthrope_Gas_Engine.test" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="21" />
@@ -24,6 +24,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_STRING" value="-Xlint:-processing" />
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Misanthrope_Gas_Engine.main" options="-Xlint:-processing -AmixinRefMapDefault=mge.refmap.json" />
       <module name="misanthrope-gas-engine.main" options="-Xlint:-processing -AmixinRefMapDefault=mge.refmap.json" />
     </option>
   </component>

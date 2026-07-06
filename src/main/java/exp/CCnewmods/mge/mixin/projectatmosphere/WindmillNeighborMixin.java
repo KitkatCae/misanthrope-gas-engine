@@ -1,9 +1,8 @@
 package exp.CCnewmods.mge.mixin.projectatmosphere;
 
 import com.simibubi.create.content.contraptions.bearing.WindmillBearingBlockEntity;
-import exp.CCnewmods.mge.compat.projectatmosphere.WindmillWindIntegration;
+import exp.CCnewmods.mge.compat.projectatmosphere.GasFlowSampler;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
@@ -46,6 +45,6 @@ public class WindmillNeighborMixin {
     private void misanthrope_invalidateWindCache(
             BlockState state, Level level, BlockPos pos, BlockPos fromPos,
             CallbackInfo ci) {
-        WindmillWindIntegration.invalidateCache(pos);
+        GasFlowSampler.invalidateCache(pos);
     }
 }

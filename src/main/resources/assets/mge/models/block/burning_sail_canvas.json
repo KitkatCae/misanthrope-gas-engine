@@ -1,0 +1,7 @@
+{
+  "parent": "create:block/white_sail",
+  "textures": {
+    "0": "mge:block/sail/canvas_burning",
+    "1": "mge:block/sail/frame_singed"
+  }
+}

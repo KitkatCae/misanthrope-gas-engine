@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/misanthrope-gas-engine.main.iml" filepath="$PROJECT_DIR$/.idea/modules/misanthrope-gas-engine.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/misanthrope-gas-engine.test.iml" filepath="$PROJECT_DIR$/.idea/modules/misanthrope-gas-engine.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Misanthrope_Gas_Engine.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Misanthrope_Gas_Engine.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Misanthrope_Gas_Engine.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Misanthrope_Gas_Engine.test.iml" />
     </modules>
   </component>
 </project>

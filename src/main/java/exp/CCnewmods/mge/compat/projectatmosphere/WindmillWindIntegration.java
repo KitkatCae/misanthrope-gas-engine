@@ -11,6 +11,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * @deprecated SUPERSEDED by {@link GasFlowSampler} as of the gas-flow unification
+ * pass. Nothing in the codebase calls this class anymore — both mixins
+ * ({@code WindmillAtmosphereMixin}, {@code WindmillNeighborMixin}) were
+ * repointed at {@code GasFlowSampler}. Left in place rather than deleted
+ * since it's a complete, working reference implementation of the old
+ * PA-only wind model and may be useful to compare against. Safe to delete
+ * once you've confirmed GasFlowSampler's behaviour matches expectations
+ * in-game.
+ * <p>
  * All Project Atmosphere wind math for the windmill integration.
  * <p>
  * Separated from the Mixin so this class can be guarded behind a
@@ -49,6 +58,7 @@ import java.util.Map;
  * <p>
  * ────────────────────────────────────────────────────────────────────────────
  */
+@Deprecated
 public final class WindmillWindIntegration {
 
     private WindmillWindIntegration() {

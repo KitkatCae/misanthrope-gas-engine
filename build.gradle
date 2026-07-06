@@ -99,6 +99,7 @@ dependencies {
     compileOnly fg.deobf("curse.maven:the-twilight-forest-227639:5468648")
     compileOnly fg.deobf("curse.maven:mowzies-mobs-250498:7815705")
     compileOnly fg.deobf("curse.maven:alexs-mobs-426558:5698791")
+    compileOnly fg.deobf('curse.maven:tinkers-construct-74072:6111032')
     compileOnly fg.deobf("curse.maven:betterend-forge-1435127:7800936")
     compileOnly fg.deobf("curse.maven:betternether-forge-1436171:7713601")
     compileOnly fg.deobf("curse.maven:born-in-chaos-686437:7917933")
@@ -133,6 +134,7 @@ dependencies {
     compileOnly files('libs/beyond_oxygen-0.12.8-all.jar')
     compileOnly files('libs/chemica-0.3.0.jar')
     compileOnly files('libs/sandworm_mod-1.2.0.jar')
+    compileOnly files('libs/misanthrope_world-2.1.2.jar')
     compileOnly files('libs/threateningly_mobs-1.1.1-forge-1.20.1.jar')
     compileOnly files('libs/misanthrope_world-2.0.6.jar')
 }
@@ -148,7 +150,7 @@ jar {
         attributes([
                 'Specification-Title'     : mod_id,
                 'Specification-Vendor'    : mod_authors,
-                'Specification-Version'   : '2.7.3',
+                'Specification-Version'   : mod_version,
                 'MixinConfigs'            : "${mod_id}.mixins.json",
                 'Implementation-Title'    : project.name,
                 'Implementation-Version'  : project.jar.archiveVersion,

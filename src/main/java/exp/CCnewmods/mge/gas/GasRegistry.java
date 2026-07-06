@@ -3,6 +3,7 @@ package exp.CCnewmods.mge.gas;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Central registry of all gases known to MGE.
@@ -28,6 +29,7 @@ public final class GasRegistry {
             GasProperties.builder(28.014)
                     .density(0.967)
                     .windSensitivity(0.8f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas OXYGEN = register("oxygen",
@@ -36,12 +38,14 @@ public final class GasRegistry {
                     .windSensitivity(0.8f)
                     .breathable(1.0f)
                     .reactivity(ReactivityFlag.OXIDISER)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas ARGON = register("argon",
             GasProperties.builder(39.948)
                     .density(1.379)
                     .windSensitivity(0.6f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas CARBON_DIOXIDE = register("carbon_dioxide",
@@ -51,6 +55,7 @@ public final class GasRegistry {
                     .color(0x10334444)
                     .toxic(50f, ToxicEffect.SUFFOCATION)   // asphyxiant at high conc.
                     .reactivity(ReactivityFlag.GREENHOUSE)
+                    .ph(5.6f)
                     .build());
 
     public static final Gas NEON = register("neon",
@@ -58,12 +63,14 @@ public final class GasRegistry {
                     .density(0.696)
                     .windSensitivity(1.1f)
                     .color(0x18FF6633)   // faint orange glow at high conc
+                    .ph(7.0f)
                     .build());
 
     public static final Gas HELIUM = register("helium",
             GasProperties.builder(4.003)
                     .density(0.138)
                     .windSensitivity(2.0f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas METHANE = register("methane",
@@ -72,12 +79,14 @@ public final class GasRegistry {
                     .windSensitivity(1.3f)
                     .flammable(0.05f, 0.15f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2 | ReactivityFlag.GREENHOUSE)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas KRYPTON = register("krypton",
             GasProperties.builder(83.798)
                     .density(2.868)
                     .windSensitivity(0.3f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas HYDROGEN = register("hydrogen",
@@ -86,6 +95,7 @@ public final class GasRegistry {
                     .windSensitivity(2.0f)
                     .flammable(0.04f, 0.75f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas NITROUS_OXIDE = register("nitrous_oxide",
@@ -95,6 +105,7 @@ public final class GasRegistry {
                     .color(0x12FFFFFF)
                     .toxic(200f, ToxicEffect.NAUSEA)
                     .reactivity(ReactivityFlag.OXIDISER | ReactivityFlag.GREENHOUSE)
+                    .ph(6.5f)
                     .build());
 
     public static final Gas CARBON_MONOXIDE = register("carbon_monoxide",
@@ -104,6 +115,7 @@ public final class GasRegistry {
                     .toxic(30f, ToxicEffect.WITHER)         // binds hemoglobin
                     .flammable(0.125f, 0.74f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(6.8f)
                     .build());
 
     public static final Gas XENON = register("xenon",
@@ -111,6 +123,7 @@ public final class GasRegistry {
                     .density(4.524)
                     .windSensitivity(0.1f)
                     .color(0x0AAAAAFF)
+                    .ph(7.0f)
                     .build());
 
     // =========================================================================
@@ -124,6 +137,7 @@ public final class GasRegistry {
                     .color(0x30CCCC00)
                     .toxic(5f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID | ReactivityFlag.SULFUROUS)
+                    .ph(1.5f)  // SO2 — forms sulfurous acid, moderately strong
                     .build());
 
     public static final Gas SULFUR_TRIOXIDE = register("sulfur_trioxide",
@@ -133,6 +147,7 @@ public final class GasRegistry {
                     .color(0x40CCAA00)
                     .toxic(3f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID | ReactivityFlag.SULFUROUS)
+                    .ph(1.0f)  // SO3 — forms H2SO4 on contact with water
                     .build());
 
     public static final Gas HYDROGEN_SULFIDE = register("hydrogen_sulfide",
@@ -143,6 +158,7 @@ public final class GasRegistry {
                     .toxic(10f, ToxicEffect.WITHER)
                     .flammable(0.04f, 0.44f)
                     .reactivity(ReactivityFlag.SULFUROUS | ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(4.5f)  // H2S — weak diprotic acid
                     .build());
 
     public static final Gas AMMONIA = register("ammonia",
@@ -153,6 +169,7 @@ public final class GasRegistry {
                     .toxic(15f, ToxicEffect.POISON)
                     .flammable(0.15f, 0.28f)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(11.6f)  // NH3 — weak base, NH4OH in solution
                     .build());
 
     public static final Gas CHLORINE = register("chlorine",
@@ -162,6 +179,7 @@ public final class GasRegistry {
                     .color(0x5066CC22)
                     .toxic(3f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.OXIDISER | ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(2.0f)  // Cl2 — forms HCl + HOCl on water contact
                     .build());
 
     public static final Gas HYDROGEN_CHLORIDE = register("hydrogen_chloride",
@@ -171,6 +189,7 @@ public final class GasRegistry {
                     .color(0x28DDDD88)
                     .toxic(10f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(0.1f)  // HCl — strong acid, fully dissociates
                     .build());
 
     public static final Gas HYDROGEN_FLUORIDE = register("hydrogen_fluoride",
@@ -180,6 +199,7 @@ public final class GasRegistry {
                     .color(0x30EEEEFF)
                     .toxic(2f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(0.0f)  // HF — extremely strong acid in solution
                     .build());
 
     public static final Gas NITROGEN_DIOXIDE = register("nitrogen_dioxide",
@@ -189,6 +209,7 @@ public final class GasRegistry {
                     .color(0x48CC6600)
                     .toxic(8f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.OXIDISER | ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(2.0f)  // NO2 — forms nitric + nitrous acid
                     .build());
 
     public static final Gas NITRIC_OXIDE = register("nitric_oxide",
@@ -197,6 +218,7 @@ public final class GasRegistry {
                     .windSensitivity(0.8f)
                     .color(0x20AA8844)
                     .toxic(20f, ToxicEffect.WITHER)
+                    .ph(5.5f)
                     .build());
 
     public static final Gas OZONE = register("ozone",
@@ -206,6 +228,7 @@ public final class GasRegistry {
                     .color(0x20448899)
                     .toxic(5f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.OXIDISER | ReactivityFlag.HYPERGOLIC)
+                    .ph(5.0f)
                     .build());
 
     public static final Gas PHOSGENE = register("phosgene",
@@ -214,6 +237,7 @@ public final class GasRegistry {
                     .windSensitivity(0.2f)
                     .color(0x38CCDDAA)
                     .toxic(2f, ToxicEffect.INSTANT_DAMAGE)
+                    .ph(1.5f)
                     .build());
 
     // =========================================================================
@@ -226,6 +250,7 @@ public final class GasRegistry {
                     .windSensitivity(0.8f)
                     .flammable(0.03f, 0.125f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas PROPANE = register("propane",
@@ -234,6 +259,7 @@ public final class GasRegistry {
                     .windSensitivity(0.5f)
                     .flammable(0.021f, 0.095f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas BUTANE = register("butane",
@@ -242,6 +268,7 @@ public final class GasRegistry {
                     .windSensitivity(0.4f)
                     .flammable(0.018f, 0.084f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas ETHYLENE = register("ethylene",
@@ -250,6 +277,7 @@ public final class GasRegistry {
                     .windSensitivity(0.9f)
                     .flammable(0.027f, 0.36f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas ACETYLENE = register("acetylene",
@@ -258,6 +286,7 @@ public final class GasRegistry {
                     .windSensitivity(1.0f)
                     .flammable(0.025f, 0.80f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas PROPYLENE = register("propylene",
@@ -266,6 +295,7 @@ public final class GasRegistry {
                     .windSensitivity(0.6f)
                     .flammable(0.02f, 0.115f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas ISOBUTANE = register("isobutane",
@@ -274,6 +304,7 @@ public final class GasRegistry {
                     .windSensitivity(0.4f)
                     .flammable(0.018f, 0.084f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas PENTANE = register("pentane",
@@ -282,6 +313,7 @@ public final class GasRegistry {
                     .windSensitivity(0.3f)
                     .flammable(0.014f, 0.076f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(7.0f)
                     .build());
 
     // =========================================================================
@@ -294,6 +326,7 @@ public final class GasRegistry {
                     .windSensitivity(0.05f)
                     .color(0x10FF4444)
                     .reactivity(ReactivityFlag.RADIOACTIVE)
+                    .ph(7.0f)
                     .build());
 
     // =========================================================================
@@ -306,6 +339,7 @@ public final class GasRegistry {
                     .windSensitivity(1.3f)
                     .color(0x10CCDDFF)
                     .reactivity(ReactivityFlag.CONDENSABLE | ReactivityFlag.GREENHOUSE)
+                    .ph(7.0f)
                     .build());
 
     // =========================================================================
@@ -318,6 +352,7 @@ public final class GasRegistry {
                     .windSensitivity(0.15f)
                     .color(0x08EEEEFF)
                     .reactivity(ReactivityFlag.GREENHOUSE)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas FREON_22 = register("freon_22",           // CHClF₂
@@ -325,6 +360,7 @@ public final class GasRegistry {
                     .density(2.986)
                     .windSensitivity(0.2f)
                     .reactivity(ReactivityFlag.GREENHOUSE)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas TETRAFLUOROETHYLENE = register("tetrafluoroethylene",
@@ -332,6 +368,7 @@ public final class GasRegistry {
                     .density(3.455)
                     .windSensitivity(0.2f)
                     .flammable(0.0f, 0.0f)   // non-flammable under normal conditions
+                    .ph(7.0f)
                     .build());
 
     // =========================================================================
@@ -345,6 +382,7 @@ public final class GasRegistry {
                     .color(0x6033AAFF)
                     .toxic(50f, ToxicEffect.WITHER)
                     .reactivity(ReactivityFlag.OPAQUE_DENSE)
+                    .ph(5.0f)
                     .build());
 
     public static final Gas BLAZE_FUME = register("blaze_fume",
@@ -355,6 +393,7 @@ public final class GasRegistry {
                     .toxic(30f, ToxicEffect.FIRE)
                     .flammable(0.01f, 0.99f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(4.0f)
                     .build());
 
     public static final Gas ENDER_PARTICULATE = register("ender_particulate",
@@ -363,6 +402,7 @@ public final class GasRegistry {
                     .windSensitivity(0.0f)
                     .color(0x508833AA)
                     .toxic(100f, ToxicEffect.BLINDNESS)
+                    .ph(6.0f)
                     .build());
 
     // =========================================================================
@@ -376,6 +416,7 @@ public final class GasRegistry {
                     .color(0x28889966)
                     .toxic(2f, ToxicEffect.WITHER)
                     .flammable(0.05f, 0.78f)
+                    .ph(4.0f)
                     .build());
 
     public static final Gas PHOSPHINE = register("phosphine",
@@ -385,6 +426,7 @@ public final class GasRegistry {
                     .color(0x20AACC88)
                     .toxic(5f, ToxicEffect.WITHER)
                     .flammable(0.017f, 0.98f)
+                    .ph(4.5f)
                     .build());
 
     public static final Gas SILANE = register("silane",
@@ -394,6 +436,7 @@ public final class GasRegistry {
                     .toxic(15f, ToxicEffect.POISON)
                     .flammable(0.014f, 0.96f)
                     .reactivity(ReactivityFlag.HYPERGOLIC)  // self-ignites in air
+                    .ph(3.0f)
                     .build());
 
     public static final Gas DIBORANE = register("diborane",
@@ -404,6 +447,7 @@ public final class GasRegistry {
                     .toxic(3f, ToxicEffect.INSTANT_DAMAGE)
                     .flammable(0.008f, 0.88f)
                     .reactivity(ReactivityFlag.HYPERGOLIC)
+                    .ph(2.5f)
                     .build());
 
     public static final Gas FLUORINE = register("fluorine",
@@ -413,6 +457,7 @@ public final class GasRegistry {
                     .color(0x38EEFFCC)
                     .toxic(1f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.OXIDISER | ReactivityFlag.HYPERGOLIC | ReactivityFlag.FORMS_ACID)
+                    .ph(0.3f)  // F2 — reacts violently with water forming HF + O2/O3
                     .build());
 
     public static final Gas BROMINE_GAS = register("bromine_gas",
@@ -422,6 +467,7 @@ public final class GasRegistry {
                     .color(0x50AA3300)
                     .toxic(3f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.OXIDISER | ReactivityFlag.WATER_SOLUBLE)
+                    .ph(2.5f)  // Br2 — forms HBr + HOBr, similar to chlorine
                     .build());
 
     public static final Gas IODINE_GAS = register("iodine_gas",
@@ -430,6 +476,7 @@ public final class GasRegistry {
                     .windSensitivity(0.05f)
                     .color(0x50550066)
                     .toxic(10f, ToxicEffect.POISON)
+                    .ph(3.0f)
                     .build());
 
     public static final Gas BORON_TRIFLUORIDE = register("boron_trifluoride",
@@ -439,6 +486,7 @@ public final class GasRegistry {
                     .color(0x28EEEEFF)
                     .toxic(3f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(1.2f)  // BF3 — hydrolyzes to HF + boric acid
                     .build());
 
     public static final Gas TUNGSTEN_HEXAFLUORIDE = register("tungsten_hexafluoride",
@@ -448,6 +496,7 @@ public final class GasRegistry {
                     .color(0x30DDDDCC)
                     .toxic(2f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(0.8f)  // WF6 — hydrolyzes to HF, strongly acidic
                     .build());
 
     public static final Gas NITROGEN_TRIFLUORIDE = register("nitrogen_trifluoride",
@@ -457,6 +506,7 @@ public final class GasRegistry {
                     .color(0x18AABBCC)
                     .toxic(20f, ToxicEffect.WITHER)
                     .reactivity(ReactivityFlag.OXIDISER | ReactivityFlag.GREENHOUSE)
+                    .ph(6.5f)
                     .build());
 
     public static final Gas SULFUR_HEXAFLUORIDE = register("sulfur_hexafluoride",
@@ -465,6 +515,7 @@ public final class GasRegistry {
                     .windSensitivity(0.1f)
                     .toxic(600f, ToxicEffect.SUFFOCATION)   // asphyxiant at extreme conc only
                     .reactivity(ReactivityFlag.GREENHOUSE)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas CARBON_DISULFIDE = register("carbon_disulfide",
@@ -475,6 +526,7 @@ public final class GasRegistry {
                     .toxic(15f, ToxicEffect.NAUSEA)
                     .flammable(0.01f, 0.50f)
                     .reactivity(ReactivityFlag.SULFUROUS)
+                    .ph(3.5f)  // CS2 — slow hydrolysis, mildly acidic
                     .build());
 
     public static final Gas DIMETHYL_ETHER = register("dimethyl_ether",
@@ -483,6 +535,7 @@ public final class GasRegistry {
                     .windSensitivity(0.5f)
                     .flammable(0.034f, 0.27f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas FORMALDEHYDE = register("formaldehyde",
@@ -492,6 +545,7 @@ public final class GasRegistry {
                     .color(0x20DDDDAA)
                     .toxic(5f, ToxicEffect.POISON)
                     .flammable(0.07f, 0.73f)
+                    .ph(4.0f)
                     .build());
 
     public static final Gas ACETALDEHYDE = register("acetaldehyde",
@@ -501,6 +555,7 @@ public final class GasRegistry {
                     .color(0x18EEEECC)
                     .toxic(30f, ToxicEffect.NAUSEA)
                     .flammable(0.04f, 0.57f)
+                    .ph(4.5f)
                     .build());
 
     public static final Gas ACROLEIN = register("acrolein",
@@ -510,6 +565,7 @@ public final class GasRegistry {
                     .color(0x30CCAA88)
                     .toxic(2f, ToxicEffect.INSTANT_DAMAGE)
                     .flammable(0.028f, 0.31f)
+                    .ph(4.0f)
                     .build());
 
     public static final Gas ETHYLENE_OXIDE = register("ethylene_oxide",
@@ -520,6 +576,7 @@ public final class GasRegistry {
                     .toxic(5f, ToxicEffect.WITHER)
                     .flammable(0.03f, 0.80f)
                     .reactivity(ReactivityFlag.HYPERGOLIC)
+                    .ph(6.5f)
                     .build());
 
     public static final Gas METHYL_CHLORIDE = register("methyl_chloride",
@@ -528,6 +585,7 @@ public final class GasRegistry {
                     .windSensitivity(0.5f)
                     .toxic(20f, ToxicEffect.NAUSEA)
                     .flammable(0.085f, 0.175f)
+                    .ph(5.0f)
                     .build());
 
     public static final Gas VINYL_CHLORIDE = register("vinyl_chloride",
@@ -537,6 +595,7 @@ public final class GasRegistry {
                     .color(0x20CCCCEE)
                     .toxic(15f, ToxicEffect.WITHER)
                     .flammable(0.038f, 0.31f)
+                    .ph(5.5f)
                     .build());
 
     public static final Gas TRICHLOROSILANE = register("trichlorosilane",
@@ -547,6 +606,7 @@ public final class GasRegistry {
                     .toxic(5f, ToxicEffect.POISON)
                     .flammable(0.07f, 0.61f)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(1.0f)  // HSiCl3 — hydrolyzes to HCl, strongly acidic
                     .build());
 
     public static final Gas NITRIC_ACID_VAPOR = register("nitric_acid_vapor",
@@ -556,6 +616,7 @@ public final class GasRegistry {
                     .color(0x38FFEE44)
                     .toxic(3f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.OXIDISER | ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(1.0f)  // HNO3 — strong acid
                     .build());
 
     public static final Gas SULFURIC_ACID_VAPOR = register("sulfuric_acid_vapor",
@@ -565,6 +626,7 @@ public final class GasRegistry {
                     .color(0x40EECC00)
                     .toxic(2f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID | ReactivityFlag.SULFUROUS)
+                    .ph(0.3f)  // H2SO4 — strong diprotic acid
                     .build());
 
     public static final Gas HYDRAZINE = register("hydrazine",
@@ -575,6 +637,7 @@ public final class GasRegistry {
                     .toxic(3f, ToxicEffect.WITHER)
                     .flammable(0.025f, 1.00f)
                     .reactivity(ReactivityFlag.HYPERGOLIC)
+                    .ph(10.5f)
                     .build());
 
     public static final Gas OXYGEN_DIFLUORIDE = register("oxygen_difluoride",
@@ -584,6 +647,7 @@ public final class GasRegistry {
                     .color(0x30EEEEFF)
                     .toxic(1f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.OXIDISER | ReactivityFlag.HYPERGOLIC | ReactivityFlag.FORMS_ACID)
+                    .ph(1.0f)  // OF2 — hydrolyzes to HF, strongly acidic
                     .build());
 
     public static final Gas CHLORINE_TRIFLUORIDE = register("chlorine_trifluoride",
@@ -593,6 +657,7 @@ public final class GasRegistry {
                     .color(0x40DDFF88)
                     .toxic(1f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.OXIDISER | ReactivityFlag.HYPERGOLIC | ReactivityFlag.FORMS_ACID)
+                    .ph(0.5f)  // ClF3 — hydrolyzes to HF + HOCl, both strongly acidic
                     .build());
 
     public static final Gas NITROGEN_MUSTARD_GAS = register("nitrogen_mustard",
@@ -601,6 +666,7 @@ public final class GasRegistry {
                     .windSensitivity(0.1f)
                     .color(0x50886644)
                     .toxic(1f, ToxicEffect.INSTANT_DAMAGE)
+                    .ph(3.0f)
                     .build());
 
     public static final Gas CYANOGEN = register("cyanogen",
@@ -610,6 +676,7 @@ public final class GasRegistry {
                     .color(0x20AAAAAA)
                     .toxic(5f, ToxicEffect.WITHER)
                     .flammable(0.062f, 0.428f)
+                    .ph(5.5f)
                     .build());
 
     public static final Gas HYDROGEN_CYANIDE = register("hydrogen_cyanide",
@@ -619,6 +686,7 @@ public final class GasRegistry {
                     .color(0x18DDDDCC)
                     .toxic(3f, ToxicEffect.WITHER)
                     .flammable(0.056f, 0.40f)
+                    .ph(5.0f)
                     .build());
 
     public static final Gas CARBONYL_SULFIDE = register("carbonyl_sulfide",
@@ -628,6 +696,7 @@ public final class GasRegistry {
                     .toxic(25f, ToxicEffect.NAUSEA)
                     .flammable(0.12f, 0.29f)
                     .reactivity(ReactivityFlag.SULFUROUS)
+                    .ph(3.0f)  // COS — slow hydrolysis to H2S + CO2, mild acid
                     .build());
 
     public static final Gas METHYL_BROMIDE = register("methyl_bromide",
@@ -636,6 +705,7 @@ public final class GasRegistry {
                     .windSensitivity(0.25f)
                     .color(0x28CC9988)
                     .toxic(5f, ToxicEffect.WITHER)
+                    .ph(6.0f)
                     .build());
 
     public static final Gas PERCHLOROETHYLENE = register("perchloroethylene",
@@ -644,6 +714,7 @@ public final class GasRegistry {
                     .windSensitivity(0.1f)
                     .color(0x18CCDDDD)
                     .toxic(25f, ToxicEffect.NAUSEA)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas TRICHLOROETHYLENE = register("trichloroethylene",
@@ -652,6 +723,7 @@ public final class GasRegistry {
                     .windSensitivity(0.15f)
                     .color(0x20CCDDDD)
                     .toxic(30f, ToxicEffect.NAUSEA)
+                    .ph(6.8f)
                     .build());
 
     public static final Gas DICHLOROMETHANE = register("dichloromethane",
@@ -660,6 +732,7 @@ public final class GasRegistry {
                     .windSensitivity(0.25f)
                     .color(0x18DDEEEE)
                     .toxic(40f, ToxicEffect.NAUSEA)
+                    .ph(6.8f)
                     .build());
 
     public static final Gas DIMETHYLSULFIDE = register("dimethylsulfide",
@@ -670,6 +743,7 @@ public final class GasRegistry {
                     .toxic(50f, ToxicEffect.NAUSEA)
                     .flammable(0.022f, 0.195f)
                     .reactivity(ReactivityFlag.SULFUROUS)
+                    .ph(5.5f)  // weakly acidic in solution, mostly inert
                     .build());
 
     public static final Gas METHANETHIOL = register("methanethiol",
@@ -680,6 +754,7 @@ public final class GasRegistry {
                     .toxic(15f, ToxicEffect.NAUSEA)
                     .flammable(0.037f, 0.215f)
                     .reactivity(ReactivityFlag.SULFUROUS)
+                    .ph(5.0f)  // weakly acidic thiol
                     .build());
 
     public static final Gas ACETONE_VAPOR = register("acetone_vapor",
@@ -689,6 +764,7 @@ public final class GasRegistry {
                     .color(0x10EEEEDD)
                     .toxic(80f, ToxicEffect.NAUSEA)
                     .flammable(0.025f, 0.128f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas ISOPROPANOL_VAPOR = register("isopropanol_vapor",
@@ -696,6 +772,7 @@ public final class GasRegistry {
                     .density(2.076)
                     .windSensitivity(0.4f)
                     .flammable(0.02f, 0.123f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas TOLUENE_VAPOR = register("toluene_vapor",
@@ -705,6 +782,7 @@ public final class GasRegistry {
                     .color(0x18DDDDAA)
                     .toxic(40f, ToxicEffect.NAUSEA)
                     .flammable(0.012f, 0.071f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas BENZENE_VAPOR = register("benzene_vapor",
@@ -714,6 +792,7 @@ public final class GasRegistry {
                     .color(0x18EEEEAA)
                     .toxic(20f, ToxicEffect.WITHER)
                     .flammable(0.014f, 0.081f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas ETHANOL_VAPOR = register("ethanol_vapor",
@@ -721,6 +800,7 @@ public final class GasRegistry {
                     .density(1.590)
                     .windSensitivity(0.5f)
                     .flammable(0.033f, 0.19f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas STYRENE_VAPOR = register("styrene_vapor",
@@ -730,6 +810,7 @@ public final class GasRegistry {
                     .color(0x18DDDDA0)
                     .toxic(50f, ToxicEffect.NAUSEA)
                     .flammable(0.009f, 0.068f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas ACRYLONITRILE = register("acrylonitrile",
@@ -739,6 +820,7 @@ public final class GasRegistry {
                     .color(0x28BBDDCC)
                     .toxic(10f, ToxicEffect.WITHER)
                     .flammable(0.027f, 0.17f)
+                    .ph(6.0f)
                     .build());
 
     public static final Gas DIMETHYLAMINE = register("dimethylamine",
@@ -748,6 +830,7 @@ public final class GasRegistry {
                     .color(0x18AAAAFF)
                     .toxic(20f, ToxicEffect.POISON)
                     .flammable(0.028f, 0.145f)
+                    .ph(12.6f)  // (CH3)2NH — stronger base than ammonia
                     .build());
 
     public static final Gas TRIMETHYLAMINE = register("trimethylamine",
@@ -757,6 +840,7 @@ public final class GasRegistry {
                     .color(0x20AABBFF)
                     .toxic(30f, ToxicEffect.NAUSEA)
                     .flammable(0.02f, 0.115f)
+                    .ph(12.0f)  // (CH3)3N — strong amine base
                     .build());
 
     public static final Gas METHYLAMINE = register("methylamine",
@@ -766,6 +850,7 @@ public final class GasRegistry {
                     .color(0x18AAAAFF)
                     .toxic(15f, ToxicEffect.POISON)
                     .flammable(0.049f, 0.208f)
+                    .ph(12.4f)  // CH3NH2 — stronger base than ammonia
                     .build());
 
     public static final Gas BUTADIENE = register("butadiene",
@@ -773,6 +858,7 @@ public final class GasRegistry {
                     .density(1.869)
                     .windSensitivity(0.45f)
                     .flammable(0.02f, 0.12f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas ISOPRENE = register("isoprene",
@@ -780,6 +866,7 @@ public final class GasRegistry {
                     .density(2.353)
                     .windSensitivity(0.35f)
                     .flammable(0.019f, 0.085f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas CYCLOPROPANE = register("cyclopropane",
@@ -788,6 +875,7 @@ public final class GasRegistry {
                     .windSensitivity(0.6f)
                     .toxic(200f, ToxicEffect.NAUSEA)     // anesthetic at high conc
                     .flammable(0.024f, 0.105f)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas DIFLUOROMETHANE = register("difluoromethane",
@@ -796,6 +884,7 @@ public final class GasRegistry {
                     .windSensitivity(0.5f)
                     .flammable(0.148f, 0.31f)
                     .reactivity(ReactivityFlag.GREENHOUSE)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas TETRAFLUOROMETHANE = register("tetrafluoromethane",
@@ -803,6 +892,7 @@ public final class GasRegistry {
                     .density(3.034)
                     .windSensitivity(0.25f)
                     .reactivity(ReactivityFlag.GREENHOUSE)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas HEXAFLUOROETHANE = register("hexafluoroethane",
@@ -810,6 +900,7 @@ public final class GasRegistry {
                     .density(4.766)
                     .windSensitivity(0.15f)
                     .reactivity(ReactivityFlag.GREENHOUSE)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas PERFLUOROPROPANE = register("perfluoropropane",
@@ -817,6 +908,7 @@ public final class GasRegistry {
                     .density(6.495)
                     .windSensitivity(0.08f)
                     .reactivity(ReactivityFlag.GREENHOUSE)
+                    .ph(7.0f)
                     .build());
 
     public static final Gas NITROGEN_PENTOXIDE = register("nitrogen_pentoxide",
@@ -826,6 +918,7 @@ public final class GasRegistry {
                     .color(0x40FFEE66)
                     .toxic(2f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.OXIDISER | ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(1.0f)  // N2O5 — forms concentrated HNO3
                     .build());
 
     public static final Gas DINITROGEN_TETROXIDE = register("dinitrogen_tetroxide",
@@ -835,6 +928,7 @@ public final class GasRegistry {
                     .color(0x38DDAA00)
                     .toxic(3f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.OXIDISER | ReactivityFlag.HYPERGOLIC)
+                    .ph(1.5f)
                     .build());
 
     public static final Gas SMOKE_PARTICULATE = register("smoke_particulate",
@@ -844,6 +938,7 @@ public final class GasRegistry {
                     .color(0x70444444)
                     .toxic(100f, ToxicEffect.MINING_FATIGUE)
                     .reactivity(ReactivityFlag.OPAQUE_DENSE)
+                    .ph(6.0f)
                     .build());
 
     public static final Gas ASH_CLOUD = register("ash_cloud",
@@ -853,6 +948,7 @@ public final class GasRegistry {
                     .color(0x80555555)
                     .toxic(150f, ToxicEffect.SUFFOCATION)
                     .reactivity(ReactivityFlag.OPAQUE_DENSE)
+                    .ph(9.0f)
                     .build());
 
     // =========================================================================
@@ -872,6 +968,7 @@ public final class GasRegistry {
                     .color(0x70331144)
                     .toxic(2f, ToxicEffect.WITHER)
                     .reactivity(ReactivityFlag.OPAQUE_DENSE)
+                    .ph(4.5f)
                     .build());
 
     /** Necrotic acid vapour — hydrochloric and organic acid outgassing from digested matter. */
@@ -882,6 +979,7 @@ public final class GasRegistry {
                     .color(0x50226622)
                     .toxic(1f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.FORMS_ACID | ReactivityFlag.WATER_SOLUBLE)
+                    .ph(1.5f)  // lore acid — treated as strong-acid-equivalent
                     .build());
 
     /** Methane-rich biogas produced by anaerobic digestion inside the Wither Storm. */
@@ -893,6 +991,7 @@ public final class GasRegistry {
                     .toxic(40f, ToxicEffect.NAUSEA)
                     .flammable(0.05f, 0.15f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(6.0f)
                     .build());
 
     // =========================================================================
@@ -922,6 +1021,7 @@ public final class GasRegistry {
                     .color(0x60553366)
                     .toxic(5f, ToxicEffect.WITHER)
                     .reactivity(ReactivityFlag.OPAQUE_DENSE)
+                    .ph(5.5f)
                     .build());
 
     // =========================================================================
@@ -941,6 +1041,7 @@ public final class GasRegistry {
                     .color(0x6033AACC)
                     .toxic(15f, ToxicEffect.WITHER)
                     .reactivity(ReactivityFlag.OPAQUE_DENSE)
+                    .ph(6.5f)
                     .build());
 
     // =========================================================================
@@ -960,6 +1061,7 @@ public final class GasRegistry {
                     .color(0x8888CCFF)
                     .toxic(20f, ToxicEffect.SLOWNESS)
                     .reactivity(ReactivityFlag.CONDENSABLE | ReactivityFlag.OPAQUE_DENSE)
+                    .ph(6.8f)
                     .build());
 
     // =========================================================================
@@ -980,6 +1082,7 @@ public final class GasRegistry {
                     .color(0x5599BBFF)
                     .toxic(30f, ToxicEffect.WEAKNESS)
                     .reactivity(ReactivityFlag.OXIDISER)
+                    .ph(5.5f)
                     .build());
 
     // =========================================================================
@@ -998,6 +1101,7 @@ public final class GasRegistry {
                     .windSensitivity(0.08f)
                     .color(0x60CCCCCC)
                     .toxic(0.5f, ToxicEffect.WITHER)   // IDLH 10 mg/m³ — extremely low threshold
+                    .ph(6.5f)
                     .build());
 
     /** Lead vapor — produced when lead is heated above its boiling point (~1750 °C),
@@ -1009,6 +1113,7 @@ public final class GasRegistry {
                     .windSensitivity(0.05f)
                     .color(0x40888888)
                     .toxic(1f, ToxicEffect.WITHER)
+                    .ph(6.5f)
                     .build());
 
     /** Cadmium vapor — released when zinc ore or galvanized metal is smelted.
@@ -1019,6 +1124,7 @@ public final class GasRegistry {
                     .windSensitivity(0.15f)
                     .color(0x30AAAAAA)
                     .toxic(1f, ToxicEffect.WITHER)
+                    .ph(6.5f)
                     .build());
 
     /** Zinc vapor — produced during brass/zinc smelting. Causes metal fume fever
@@ -1030,6 +1136,7 @@ public final class GasRegistry {
                     .windSensitivity(0.35f)
                     .color(0x20BBBBCC)
                     .toxic(20f, ToxicEffect.NAUSEA)    // metal fume fever onset
+                    .ph(7.5f)
                     .build());
 
     /** Tin vapor — released during high-temperature tin smelting. Lower acute toxicity
@@ -1040,6 +1147,7 @@ public final class GasRegistry {
                     .windSensitivity(0.12f)
                     .color(0x18CCCCCC)
                     .toxic(40f, ToxicEffect.NAUSEA)
+                    .ph(6.5f)
                     .build());
 
     /** Copper vapor — produced at extreme forge temperatures. Distinctly blue-green tint
@@ -1051,6 +1159,7 @@ public final class GasRegistry {
                     .windSensitivity(0.35f)
                     .color(0x3044AA66)   // blue-green
                     .toxic(80f, ToxicEffect.NAUSEA)
+                    .ph(6.5f)
                     .build());
 
     /** Bismuth vapor — from bismuth smelting. Very low toxicity among heavy metals;
@@ -1061,6 +1170,7 @@ public final class GasRegistry {
                     .windSensitivity(0.05f)
                     .color(0x28DDAACC)   // iridescent pink tinge
                     .toxic(150f, ToxicEffect.NAUSEA)   // relatively benign
+                    .ph(6.8f)
                     .build());
 
     /** Antimony vapor — from stibnite roasting. Toxic metalloid vapor; causes antimony
@@ -1071,6 +1181,7 @@ public final class GasRegistry {
                     .windSensitivity(0.12f)
                     .color(0x28888899)
                     .toxic(5f, ToxicEffect.WITHER)
+                    .ph(5.5f)
                     .build());
 
     /** Thallium vapor — extremely toxic, produced from thallium-bearing sulfide ore smelting.
@@ -1082,6 +1193,7 @@ public final class GasRegistry {
                     .windSensitivity(0.05f)
                     .color(0x30999988)
                     .toxic(0.5f, ToxicEffect.WITHER)   // extremely potent
+                    .ph(9.0f)
                     .build());
 
     /** Beryllium vapor — produced at extreme temperatures from beryl ore.
@@ -1093,6 +1205,7 @@ public final class GasRegistry {
                     .windSensitivity(1.8f)   // very light, disperses rapidly upward
                     .color(0x20AAFFBB)
                     .toxic(0.5f, ToxicEffect.INSTANT_DAMAGE)
+                    .ph(5.0f)
                     .build());
 
     /** Manganese vapor — produced in manganese steel and ferromanganese smelting.
@@ -1104,6 +1217,7 @@ public final class GasRegistry {
                     .windSensitivity(0.45f)
                     .color(0x28AA9988)
                     .toxic(5f, ToxicEffect.WEAKNESS)
+                    .ph(7.0f)
                     .build());
 
     /** Chromium vapor / chromium(VI) fumes — produced during stainless steel welding
@@ -1114,6 +1228,7 @@ public final class GasRegistry {
                     .windSensitivity(0.5f)
                     .color(0x30889966)
                     .toxic(3f, ToxicEffect.WITHER)
+                    .ph(6.0f)
                     .build());
 
     /** Nickel carbonyl — Ni(CO)₄, the highly toxic volatile compound formed when carbon
@@ -1127,6 +1242,7 @@ public final class GasRegistry {
                     .toxic(0.5f, ToxicEffect.INSTANT_DAMAGE)   // IDLH 7 ppm — lethal
                     .flammable(0.02f, 0.034f)
                     .reactivity(ReactivityFlag.COMBUSTS_TO_CO2)
+                    .ph(6.5f)
                     .build());
 
     /** Iron oxide fumes — produced during iron/steel welding and smelting. Not acutely
@@ -1139,6 +1255,7 @@ public final class GasRegistry {
                     .color(0x50AA5500)   // rust-orange
                     .toxic(200f, ToxicEffect.MINING_FATIGUE)   // benign at low conc
                     .reactivity(ReactivityFlag.OPAQUE_DENSE)
+                    .ph(8.5f)
                     .build());
 
     /** Sodium vapor — produced by burning sodium metal or in sodium-cooled reactors.
@@ -1151,6 +1268,7 @@ public final class GasRegistry {
                     .color(0x60FFEE00)   // intense sodium-yellow
                     .toxic(30f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.HYPERGOLIC)
+                    .ph(13.5f)  // Na + H2O -> NaOH, strong base
                     .build());
 
     /** Potassium vapor — similar to sodium vapor but even more reactive.
@@ -1162,6 +1280,7 @@ public final class GasRegistry {
                     .color(0x50CC44FF)   // violet flame
                     .toxic(20f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.HYPERGOLIC)
+                    .ph(13.8f)  // K + H2O -> KOH, strong base, more vigorous than Na
                     .build());
 
     /** Lithium vapor — from lithium metal fires or battery thermal runaway.
@@ -1173,6 +1292,7 @@ public final class GasRegistry {
                     .color(0x40FF2222)   // crimson-red
                     .toxic(15f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.HYPERGOLIC)
+                    .ph(13.0f)  // Li + H2O -> LiOH, strong base
                     .build());
 
     /** Aluminium oxide fumes (alumina dust) — produced during aluminium smelting and welding.
@@ -1185,6 +1305,7 @@ public final class GasRegistry {
                     .color(0x40DDDDDD)
                     .toxic(150f, ToxicEffect.MINING_FATIGUE)
                     .reactivity(ReactivityFlag.OPAQUE_DENSE)
+                    .ph(8.0f)
                     .build());
 
     /** Tungsten vapor — extremely high boiling point (5555 °C); only produced in
@@ -1196,6 +1317,7 @@ public final class GasRegistry {
                     .windSensitivity(0.06f)
                     .color(0x30BBBBBB)
                     .toxic(30f, ToxicEffect.WITHER)
+                    .ph(6.5f)
                     .build());
 
     /** Osmium tetroxide — OsO₄, the highly volatile and extremely toxic oxide of osmium
@@ -1208,6 +1330,7 @@ public final class GasRegistry {
                     .windSensitivity(0.04f)
                     .color(0x40AABBAA)
                     .toxic(0.5f, ToxicEffect.INSTANT_DAMAGE)   // IDLH 1 mg/m³ — extremely toxic
+                    .ph(5.5f)
                     .build());
 
     /** Silver vapor — produced in cupellation (silver refining) and argentite roasting.
@@ -1219,6 +1342,7 @@ public final class GasRegistry {
                     .windSensitivity(0.15f)
                     .color(0x18DDDDEE)
                     .toxic(100f, ToxicEffect.NAUSEA)
+                    .ph(7.0f)
                     .build());
 
     /** Gold vapor — extremely high boiling point (2856 °C); only produced in magical
@@ -1229,6 +1353,7 @@ public final class GasRegistry {
                     .windSensitivity(0.06f)
                     .color(0x28FFDD44)
                     .toxic(200f, ToxicEffect.NAUSEA)   // relatively inert
+                    .ph(7.0f)
                     .build());
 
     /** Platinum vapor — from platinum group metal smelting. Extremely rare; faint gray.
@@ -1239,6 +1364,7 @@ public final class GasRegistry {
                     .windSensitivity(0.06f)
                     .color(0x18DDDDDD)
                     .toxic(300f, ToxicEffect.NAUSEA)
+                    .ph(7.0f)
                     .build());
 
     /** Titanium tetrachloride (tickle) — TiCl₄, produced when titanium ore reacts with
@@ -1251,6 +1377,7 @@ public final class GasRegistry {
                     .color(0x60DDDDCC)
                     .toxic(3f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID | ReactivityFlag.OPAQUE_DENSE)
+                    .ph(0.7f)  // TiCl4 — hydrolyzes violently to HCl, strongly acidic
                     .build());
 
     // =========================================================================
@@ -1266,6 +1393,7 @@ public final class GasRegistry {
                     .windSensitivity(0.3f)
                     .color(0x28AA3300)
                     .toxic(5f, ToxicEffect.WITHER)
+                    .ph(4.5f)
                     .build());
 
     /** Tellurium vapor — byproduct of copper/gold refining. Causes tellurium breath
@@ -1276,6 +1404,7 @@ public final class GasRegistry {
                     .windSensitivity(0.12f)
                     .color(0x28993300)
                     .toxic(8f, ToxicEffect.NAUSEA)
+                    .ph(5.0f)
                     .build());
 
     /** Germanium tetrafluoride — volatile fluoride of germanium formed during
@@ -1288,6 +1417,7 @@ public final class GasRegistry {
                     .color(0x20DDEEEE)
                     .toxic(10f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(1.0f)  // GeF4 — hydrolyzes to HF, strongly acidic
                     .build());
 
     /** Silicon tetrafluoride — SiF₄, produced when fluorine or HF contacts silica.
@@ -1300,6 +1430,7 @@ public final class GasRegistry {
                     .color(0x28EEEEFF)
                     .toxic(5f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(1.0f)  // SiF4 — hydrolyzes to HF + silicic acid, strongly acidic
                     .build());
 
     // =========================================================================
@@ -1317,6 +1448,7 @@ public final class GasRegistry {
                     .color(0x60AAAA00)
                     .toxic(4f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.SULFUROUS | ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID)
+                    .ph(2.0f)  // mixed SO2/H2S/HCl plume — net moderately acidic
                     .build());
 
     /** Hydrochloric acid gas plume — volcanic HCl, emitted by lava/seawater interaction
@@ -1330,6 +1462,7 @@ public final class GasRegistry {
                     .color(0x40DDEE88)
                     .toxic(5f, ToxicEffect.POISON)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID | ReactivityFlag.OPAQUE_DENSE)
+                    .ph(0.5f)  // concentrated HCl plume
                     .build());
 
     /** Magmatic carbon dioxide — high-pressure CO₂ degassing from magma chambers.
@@ -1342,6 +1475,7 @@ public final class GasRegistry {
                     .color(0x18334444)
                     .toxic(30f, ToxicEffect.SUFFOCATION)
                     .reactivity(ReactivityFlag.GREENHOUSE)
+                    .ph(5.6f)
                     .build());
 
     // =========================================================================
@@ -1357,6 +1491,7 @@ public final class GasRegistry {
                     .windSensitivity(0.25f)
                     .color(0x30448833)
                     .toxic(20f, ToxicEffect.NAUSEA)
+                    .ph(11.0f)
                     .build());
 
     /** Cadaverine — 1,5-diaminopentane, produced alongside putrescine in decaying tissue.
@@ -1367,6 +1502,7 @@ public final class GasRegistry {
                     .windSensitivity(0.2f)
                     .color(0x30338833)
                     .toxic(25f, ToxicEffect.NAUSEA)
+                    .ph(11.0f)
                     .build());
 
     /** Indole vapor — produced during tryptophan decomposition. Strong fecal/putrid smell
@@ -1377,6 +1513,7 @@ public final class GasRegistry {
                     .windSensitivity(0.15f)
                     .color(0x20336633)
                     .toxic(30f, ToxicEffect.NAUSEA)
+                    .ph(8.5f)
                     .build());
 
     /** Skatole (3-methylindole) — alongside indole in fecal/putrid decomposition.
@@ -1387,6 +1524,7 @@ public final class GasRegistry {
                     .windSensitivity(0.15f)
                     .color(0x20335533)
                     .toxic(20f, ToxicEffect.NAUSEA)
+                    .ph(8.5f)
                     .build());
 
     /** Acetoin vapor — produced during fermentation and dough leavening (Farmers Delight).
@@ -1396,6 +1534,7 @@ public final class GasRegistry {
                     .density(3.042)
                     .windSensitivity(0.25f)
                     .toxic(200f, ToxicEffect.NAUSEA)
+                    .ph(7.0f)
                     .build());
 
     /** Diacetyl vapor — the intense buttery compound from brewing/fermentation.
@@ -1407,6 +1546,7 @@ public final class GasRegistry {
                     .windSensitivity(0.3f)
                     .color(0x10FFEECC)
                     .toxic(50f, ToxicEffect.MINING_FATIGUE)
+                    .ph(7.0f)
                     .build());
 
     /** Acetic acid vapor — vinegar; produced during fermentation, pickling, and
@@ -1420,6 +1560,7 @@ public final class GasRegistry {
                     .toxic(60f, ToxicEffect.NAUSEA)
                     .flammable(0.04f, 0.196f)
                     .reactivity(ReactivityFlag.FORMS_ACID)
+                    .ph(2.4f)  // CH3COOH — weak organic acid, concentrated vapor still low pH
                     .build());
 
     /** Formic acid vapor — produced by ant venom, wood distillation, and some
@@ -1433,6 +1574,7 @@ public final class GasRegistry {
                     .toxic(30f, ToxicEffect.POISON)
                     .flammable(0.18f, 0.57f)
                     .reactivity(ReactivityFlag.FORMS_ACID)
+                    .ph(2.2f)  // HCOOH — weak organic acid, slightly stronger than acetic
                     .build());
 
     /** Turpentine vapor — from pine resin distillation; relevant to Create distillation
@@ -1444,6 +1586,7 @@ public final class GasRegistry {
                     .color(0x18DDCC99)
                     .toxic(35f, ToxicEffect.NAUSEA)
                     .flammable(0.008f, 0.095f)
+                    .ph(6.5f)
                     .build());
 
     /** Phenol vapor — carbolic acid; produced by coal tar distillation and wood
@@ -1455,6 +1598,7 @@ public final class GasRegistry {
                     .color(0x20CCCC88)
                     .toxic(10f, ToxicEffect.WITHER)
                     .flammable(0.017f, 0.089f)
+                    .ph(5.5f)
                     .build());
 
     /** Coal tar vapor — mixed aromatic compounds from coal distillation/coking.
@@ -1467,6 +1611,7 @@ public final class GasRegistry {
                     .toxic(15f, ToxicEffect.WITHER)
                     .flammable(0.01f, 0.07f)
                     .reactivity(ReactivityFlag.OPAQUE_DENSE)
+                    .ph(6.0f)
                     .build());
 
     // =========================================================================
@@ -1482,6 +1627,7 @@ public final class GasRegistry {
                     .windSensitivity(0.2f)
                     .color(0x28CCCC88)
                     .toxic(5f, ToxicEffect.WITHER)
+                    .ph(6.0f)
                     .build());
 
     /** Thionyl chloride — SOCl₂. Reactive intermediate produced when SO₂ and Cl₂ coexist
@@ -1493,6 +1639,7 @@ public final class GasRegistry {
                     .color(0x40DDCC66)
                     .toxic(3f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID | ReactivityFlag.SULFUROUS)
+                    .ph(0.8f)  // SOCl2 — hydrolyzes to HCl + SO2, strongly acidic
                     .build());
 
     /** Disulfur dichloride — S₂Cl₂. Byproduct of sulfur chlorination; extremely
@@ -1504,6 +1651,7 @@ public final class GasRegistry {
                     .color(0x38BBAA00)
                     .toxic(2f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.WATER_SOLUBLE | ReactivityFlag.FORMS_ACID | ReactivityFlag.SULFUROUS)
+                    .ph(1.2f)  // S2Cl2 — hydrolyzes to HCl + sulfur species, strongly acidic
                     .build());
 
     // =========================================================================
@@ -1520,6 +1668,7 @@ public final class GasRegistry {
                     .windSensitivity(0.0f)
                     .color(0x30110022)
                     .toxic(5f, ToxicEffect.INSTANT_DAMAGE)
+                    .ph(7.0f)
                     .build());
 
     /** Shulker acid mist — ejected during a Shulker's levitation projectile impact.
@@ -1531,6 +1680,30 @@ public final class GasRegistry {
                     .color(0x50AA88CC)
                     .toxic(1f, ToxicEffect.INSTANT_DAMAGE)
                     .reactivity(ReactivityFlag.FORMS_ACID | ReactivityFlag.CONDENSABLE)
+                    .ph(1.0f)  // lore acid — End-chemistry, treated as strong-acid-equivalent
+                    .build());
+
+    /**
+     * Alchemy potion gas — the escaped magical energy of a failed brew.
+     *
+     * <p>This is a single gas type; the specific {@link net.minecraft.world.effect.MobEffect}
+     * it delivers is NOT stored in {@link GasProperties}. Instead, the alchemy outcome
+     * resolver writes the effect ResourceLocation into a per-position side-channel
+     * ({@link exp.CCnewmods.mge.event.PlayerGasEffectHandler#registerPotionGasEffect})
+     * at injection time. {@link PlayerGasEffectHandler} reads from that map when
+     * {@code POTION_EFFECT} ToxicEffect fires.
+     *
+     * <p>Physical properties: lighter than air (rises, dissipates faster),
+     * iridescent purple-gold shimmer, mildly toxic threshold so it affects
+     * players at low concentrations near the failure site.
+     */
+    public static final Gas POTION_GAS = register("potion_gas",
+            GasProperties.builder(18.0)   // lighter than air — magical vapour
+                    .density(0.62)
+                    .windSensitivity(1.4f)
+                    .color(0x60C084FC)    // iridescent purple, matches Quanta ousia colour
+                    .toxic(2f, ToxicEffect.POTION_EFFECT)
+                    .ph(7.0f)             // magically neutral — pH effect comes from the brew contents
                     .build());
 
     // =========================================================================
@@ -1602,6 +1775,51 @@ public final class GasRegistry {
     public static float getOrDefault(Gas gas, float defaultVal) {
         Float v = (Float) standardAtmosphere().get(gas);
         return v != null ? v : defaultVal;
+    }
+
+    // =========================================================================
+    // pH overrides — datapack-tunable on top of the hardcoded chemistry above
+    // =========================================================================
+
+    /**
+     * Runtime pH overrides, applied on top of the hardcoded
+     * {@link GasProperties#phValue()} baked into each gas at registration.
+     *
+     * <p>Populated by a JSON loader (gas-shaped {@code material_properties}
+     * entries using {@code "gas": "mge:sulfur_dioxide"} instead of
+     * {@code "block"}/{@code "tag"}) so the hand-tuned chemistry values above
+     * remain the source of truth by default, while still being datapack-tunable
+     * without recompiling. Cleared and repopulated on every resource reload.
+     */
+    private static final Map<String, Float> PH_OVERRIDES = new ConcurrentHashMap<>();
+
+    /**
+     * Returns the effective pH for a gas: a datapack override if one is loaded
+     * for this gas, otherwise the hardcoded {@link GasProperties#phValue()}.
+     * All gameplay code that reads gas pH (corrosion, acid-rain, etc.) should
+     * go through this method rather than {@code gas.properties().phValue()}
+     * directly, so datapack overrides take effect everywhere uniformly.
+     */
+    public static float effectivePh(Gas gas) {
+        Float override = PH_OVERRIDES.get(gas.id().toString());
+        return override != null ? override : gas.properties().phValue();
+    }
+
+    /**
+     * Sets a runtime pH override for a gas. Called by the gas-properties JSON
+     * loader; not intended for direct use elsewhere.
+     */
+    public static void setPhOverride(ResourceLocation gasId, float phValue) {
+        PH_OVERRIDES.put(gasId.toString(), phValue);
+    }
+
+    /**
+     * Clears all pH overrides. Called at the start of every resource reload
+     * before the gas-properties JSON loader repopulates from currently loaded
+     * datapacks.
+     */
+    public static void clearPhOverrides() {
+        PH_OVERRIDES.clear();
     }
 }
 

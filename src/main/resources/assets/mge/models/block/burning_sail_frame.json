@@ -1,0 +1,6 @@
+{
+  "parent": "create:block/sail_frame",
+  "textures": {
+    "1": "mge:block/sail/frame_burning"
+  }
+}

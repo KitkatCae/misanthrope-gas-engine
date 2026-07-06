@@ -25,4 +25,14 @@ public final class WindProviderManager {
     public static Vec3 getWind(LevelAccessor level, BlockPos pos) {
         return provider.getWindAt(level, pos);
     }
+
+    /** Returns the active provider's altitude-based wind multiplier at the given position. */
+    public static float getAltitudeMultiplier(LevelAccessor level, BlockPos pos) {
+        return provider.getAltitudeMultiplier(level, pos);
+    }
+
+    /** Returns the active provider's storm-intensity wind multiplier at the given position. */
+    public static float getStormMultiplier(LevelAccessor level, BlockPos pos) {
+        return provider.getStormMultiplier(level, pos);
+    }
 }

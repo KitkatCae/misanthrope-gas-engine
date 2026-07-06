@@ -26,4 +26,34 @@ public interface IWindProvider {
      *         when wind data is unavailable.
      */
     Vec3 getWindAt(LevelAccessor level, BlockPos pos);
+
+    /**
+     * Returns an altitude-based multiplier on wind strength at the given
+     * position — e.g. a jet-stream bonus at high Y levels. Applied
+     * multiplicatively on top of {@link #getWindAt}'s magnitude by callers
+     * that want altitude effects (windmill/turbine RPM, sail wear, etc.).
+     *
+     * <p>Providers with no altitude model (most of them — this is a niche,
+     * PA-specific weather feature) should not override this; the default
+     * of {@code 1.0f} (no bonus, no penalty) is correct for them.
+     *
+     * @return Multiplier, normally &gt;= 1.0. Default 1.0 (no altitude effect).
+     */
+    default float getAltitudeMultiplier(LevelAccessor level, BlockPos pos) {
+        return 1.0f;
+    }
+
+    /**
+     * Returns a storm-intensity multiplier on wind strength at the given
+     * position. Applied multiplicatively on top of {@link #getWindAt}'s
+     * magnitude by callers that want storm effects.
+     *
+     * <p>Providers with no storm/weather-event model should not override
+     * this; the default of {@code 1.0f} (no bonus) is correct for them.
+     *
+     * @return Multiplier, normally &gt;= 1.0. Default 1.0 (no storm effect).
+     */
+    default float getStormMultiplier(LevelAccessor level, BlockPos pos) {
+        return 1.0f;
+    }
 }

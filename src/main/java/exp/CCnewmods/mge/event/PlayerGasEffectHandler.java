@@ -11,6 +11,7 @@ import exp.CCnewmods.mge.gas.ReactivityFlag;
 import exp.CCnewmods.mge.particulate.ParticulateComposition;
 import exp.CCnewmods.mge.particulate.ParticulateType;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -20,6 +21,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Applies gas and particulate effects to living entities based on the atmosphere
@@ -47,6 +52,58 @@ public final class PlayerGasEffectHandler {
     private static final int   CHECK_INTERVAL_TICKS  = 11;
     private static final int   EFFECT_DURATION_TICKS  = CHECK_INTERVAL_TICKS * 3;
 
+    // ── Potion gas side-channel ───────────────────────────────────────────────
+
+    /**
+     * Maps BlockPos (as long) → MobEffect ResourceLocation for active potion gas clouds.
+     *
+     * <p>Written by the alchemy outcome resolver immediately before injecting
+     * {@link GasRegistry#POTION_GAS} at a position. Read here when a player
+     * inhales potion gas at that position. Entries expire after
+     * {@link #POTION_GAS_LIFETIME_TICKS} ticks without renewal.
+     *
+     * <p>Thread-safe: written on server tick thread by the brew outcome resolver,
+     * read on server tick thread by this handler. ConcurrentHashMap for safety
+     * during chunk unload edge cases.
+     */
+    private static final Map<Long, PotionGasEntry> POTION_GAS_EFFECTS
+            = new ConcurrentHashMap<>();
+
+    private static final int POTION_GAS_LIFETIME_TICKS = 1200; // 60 seconds
+
+    private record PotionGasEntry(ResourceLocation effectId, long expiryTick) {}
+
+    /**
+     * Registers a MobEffect to apply when {@link GasRegistry#POTION_GAS} is
+     * inhaled at the given position. Call this immediately before injecting
+     * potion gas at that position via {@link EnvironmentGrid#addGas}.
+     *
+     * <p>The registration expires after {@link #POTION_GAS_LIFETIME_TICKS} ticks
+     * so stale entries don't linger indefinitely after the gas dissipates.
+     *
+     * @param pos       the block position where potion gas is being injected
+     * @param effectId  the ResourceLocation of the MobEffect to apply to inhaling entities
+     * @param gameTick  current {@link net.minecraft.server.level.ServerLevel#getGameTime()}
+     */
+    public static void registerPotionGasEffect(BlockPos pos, ResourceLocation effectId,
+                                                long gameTick) {
+        POTION_GAS_EFFECTS.put(pos.asLong(),
+                new PotionGasEntry(effectId, gameTick + POTION_GAS_LIFETIME_TICKS));
+    }
+
+    /**
+     * Returns the MobEffect RL registered for potion gas at the given position,
+     * or null if none is registered or the entry has expired.
+     */
+    public static ResourceLocation getPotionGasEffect(BlockPos pos, long gameTick) {
+        PotionGasEntry entry = POTION_GAS_EFFECTS.get(pos.asLong());
+        if (entry == null || gameTick > entry.expiryTick()) {
+            POTION_GAS_EFFECTS.remove(pos.asLong());
+            return null;
+        }
+        return entry.effectId();
+    }
+
     private PlayerGasEffectHandler() {}
 
     @SubscribeEvent
@@ -64,7 +121,7 @@ public final class PlayerGasEffectHandler {
         EntityBreathingProfile profile = EntityBreathingLoader.get(entity);
 
         if (profile.needsToBreathe) applyBreathingEffects(entity, gases, profile);
-        if (profile.toxicSensitivity > 0f) applyToxicGasEffects(entity, gases, profile);
+        if (profile.toxicSensitivity > 0f) applyToxicGasEffects(entity, gases, profile, eyePos, level);
         applyFlammabilityIgnition(entity, level, eyePos, gases);
         applyParticulateEffects(entity, particulates);
     }
@@ -93,7 +150,9 @@ public final class PlayerGasEffectHandler {
 
     private static void applyToxicGasEffects(LivingEntity entity,
                                               GasComposition comp,
-                                              EntityBreathingProfile profile) {
+                                              EntityBreathingProfile profile,
+                                              BlockPos eyePos,
+                                              ServerLevel level) {
         for (String key : comp.getTag().getAllKeys()) {
             Gas gas = GasRegistry.get(key).orElse(null);
             if (gas == null || !gas.properties().isToxic()) continue;
@@ -119,6 +178,17 @@ public final class PlayerGasEffectHandler {
                 case NONE        -> {}
                 case SUFFOCATION -> entity.hurt(entity.damageSources().drown(), 1.0f);
                 case FIRE        -> entity.setSecondsOnFire(3);
+                case POTION_EFFECT -> {
+                    // Look up the specific effect registered for this position
+                    long gameTick = level.getGameTime();
+                    ResourceLocation effectId = getPotionGasEffect(eyePos, gameTick);
+                    if (effectId != null) {
+                        MobEffect potionEffect = ForgeRegistries.MOB_EFFECTS.getValue(effectId);
+                        if (potionEffect != null) {
+                            addEffect(entity, potionEffect, EFFECT_DURATION_TICKS, amp);
+                        }
+                    }
+                }
                 default -> {
                     MobEffect effect = gas.properties().toxicEffect().effect;
                     if (effect != null) addEffect(entity, effect, EFFECT_DURATION_TICKS, amp);

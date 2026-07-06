@@ -114,6 +114,39 @@ public final class EnvironmentGrid {
                 .orElse(defaultComposition(level));
     }
 
+    /**
+     * Cumulative acid/base "load" at a world position: for every gas present,
+     * {@code (7.0 - effectivePh) * partialPressureMbar} is summed.
+     *
+     * <p>This is deliberately <em>not</em> a true pH average — pH is a log
+     * scale, so a partial-pressure-weighted linear average across gases would
+     * be physically meaningless. A cumulative load instead scales naturally
+     * with both how extreme a gas's pH is and how much of it is present: a
+     * trace of a strong acid and a large volume of a weak acid can produce
+     * comparable load, which is the intended gameplay behaviour for exposure
+     * mechanics (e.g. {@code BlockPhysicsData.PhReactivity} corrosion).
+     *
+     * <p>Positive return = net acidic exposure; negative = net alkaline;
+     * zero = neutral or no tracked gas data at this position. Standard
+     * atmosphere (N₂/O₂/Ar, all pH 7.0) contributes zero regardless of total
+     * pressure.
+     *
+     * <p>Uses {@link GasRegistry#effectivePh} so datapack pH overrides are
+     * respected automatically.
+     */
+    public static float getPhLoad(Level level, BlockPos pos) {
+        GasComposition comp = getComposition(level, pos);
+        float load = 0f;
+        for (String key : comp.getTag().getAllKeys()) {
+            float mbar = comp.get(key);
+            if (mbar <= 0f) continue;
+            Gas gas = GasRegistry.get(key).orElse(null);
+            if (gas == null) continue;
+            load += (7.0f - GasRegistry.effectivePh(gas)) * mbar;
+        }
+        return load;
+    }
+
     // ── Gas writes ────────────────────────────────────────────────────────────
 
     public static void setGas(Level level, BlockPos pos, Gas gas, float mbar) {

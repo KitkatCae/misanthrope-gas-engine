@@ -63,6 +63,58 @@ public final class ProjectAtmosphereCompat implements IWindProvider {
         }
     }
 
+    /**
+     * Jet-stream altitude bonus. Linear ramp from 1.0 at
+     * {@link #JET_STREAM_BASE_Y} to {@link #JET_STREAM_PEAK_MULTIPLIER} at
+     * {@link #JET_STREAM_PEAK_Y}. Moved here from the windmill-specific
+     * {@code WindmillWindIntegration} so any consumer of the generic
+     * {@link IWindProvider} abstraction (not just windmills) gets the same
+     * altitude behaviour for free.
+     */
+    @Override
+    public float getAltitudeMultiplier(LevelAccessor level, BlockPos pos) {
+        int y = pos.getY();
+        if (y <= JET_STREAM_BASE_Y) return 1.0f;
+        if (y >= JET_STREAM_PEAK_Y) return JET_STREAM_PEAK_MULTIPLIER;
+        float t = (float) (y - JET_STREAM_BASE_Y) / (float) (JET_STREAM_PEAK_Y - JET_STREAM_BASE_Y);
+        return 1.0f + t * (JET_STREAM_PEAK_MULTIPLIER - 1.0f);
+    }
+
+    /**
+     * Storm-intensity bonus. Flat {@link #STORM_MULTIPLIER} when PA reports
+     * {@code isStorming} at this position, {@code 1.0} otherwise. Moved here
+     * from {@code WindmillWindIntegration} for the same reason as
+     * {@link #getAltitudeMultiplier}.
+     */
+    @Override
+    public float getStormMultiplier(LevelAccessor level, BlockPos pos) {
+        if (!(level instanceof ServerLevel sl)) return 1.0f;
+        try {
+            WeatherSnapshot snap = AtmoApi.getInstance().getCurrentWeather(sl, pos);
+            if (snap == null) return 1.0f;
+            return snap.isStorming() ? STORM_MULTIPLIER : 1.0f;
+        } catch (Exception e) {
+            return 1.0f;
+        }
+    }
+
+    // ── Altitude / storm tunables ─────────────────────────────────────────────
+    // Moved here from WindmillWindIntegration — these are PA-specific weather
+    // features, not generic to all wind providers, so they belong on the PA
+    // implementation rather than on windmill code.
+
+    /** Y level at which the altitude bonus starts. Below this = ×1.0. */
+    private static final int JET_STREAM_BASE_Y = 128;
+
+    /** Y level at which the altitude bonus peaks. */
+    private static final int JET_STREAM_PEAK_Y = 220;
+
+    /** Maximum altitude multiplier (at or above JET_STREAM_PEAK_Y). */
+    private static final float JET_STREAM_PEAK_MULTIPLIER = 3.0f;
+
+    /** Additional multiplier applied during a storm. */
+    private static final float STORM_MULTIPLIER = 2.0f;
+
     // ── Periodic weather → atmosphere sync ───────────────────────────────────
 
     @SubscribeEvent
